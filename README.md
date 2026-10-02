@@ -2,7 +2,7 @@
 
 危険物取扱者乙種第4類の学習アプリ。「うかラボ」シリーズの第1陣4番目（決定66）。
 
-本アプリは免責事項として、消防試験研究センター等の試験実施団体とは無関係の非公式アプリであることをアプリ内に明記する（未実装・TODO）。
+本アプリは免責事項として、消防試験研究センター等の試験実施団体とは無関係の非公式アプリであることをアプリ内に明記している（`lib/views/settings_view.dart` の `appDisclaimer`）。
 
 ## 位置づけ
 
@@ -21,9 +21,9 @@
 - [x] pubspec.yaml（依存をタグ固定で追加）
 - [x] ExamConfig（`assets/exam/hazmat4_exam.json`）: 法令15問・物理化学10問・性質消火10問の計35問、2時間、科目別60%以上で合格（消防試験研究センター 公式試験案内で確認済み）
 - [ ] 問題データ（約600問。法令240／物理化学180／性質消火180、計算問題は自動生成併用）: **未着手**。理由は下記「一次資料アクセスの制約」を参照
-- [ ] Flutter プロジェクトの雛形（`flutter create` で生成する android/ios/web 等）: **未生成**。このクラウド実行環境に Flutter/Dart SDK が入っておらず、`flutter create`・`flutter pub get`・`dart analyze` の実行確認ができないため。ローカル（Windows実機。日本語パス回避）で `flutter create .` 相当を行い、本リポジトリの `pubspec.yaml`・`assets/` をマージすることを想定
-- [ ] lib/（画面・サービス）: 未着手。`yourwish_kentei` にはまだ UI 側の学習体験の「型」（決定76の9種）が無く、G検定セッションで型①〜④を先行実装中。乙4で使う型⑤〜⑨の実装状況を確認してから着手する
-- [ ] 画期的な機能5件（違反探しモード・温度スライダー・貯蔵所パズル・消火マッチング・現場の1日モード）: 企画は確定済み（設計書参照）。実装は型の実装・問題データ整備後
+- [ ] Flutter プロジェクトの雛形（`flutter create` で生成する android/ios/web 等）: **未生成**。このクラウド実行環境に Flutter/Dart SDK が入っておらず、`flutter create`・`flutter pub get`・`dart analyze` の実行確認ができないため。ローカル（Windows実機。日本語パス回避）で `flutter create .` 相当を行い、本リポジトリの `pubspec.yaml`・`lib/`・`assets/` をマージすることを想定
+- [x] lib/（基本学習フローのみ）: ホーム（試験概要）・学ぶ（一問一答。`PracticeSession`）・模擬試験（`scoreMockExam`）・記録（空状態のみ）・設定（免責文言）を実装。`UkalabShell`・`QuestionCard`・`ChoiceTile`・`ExplanationPanel`・`ResultSummary`・`EmptyState`・`ErrorState`（app_common_kit）を使用。**このクラウド環境に Flutter/Dart SDK が無く `flutter pub get`・`dart analyze`・実機確認を一度も行っていない。** ローカル環境で確認してから取り込むこと
+- [ ] 画期的な機能5件（違反探しモード・温度スライダー・貯蔵所パズル・消火マッチング・現場の1日モード）・推し（MascotWidget）・コイン: **未着手**。`yourwish_kentei` にはまだ学習体験の「型」（決定76の9種。乙4で使うのは⑤〜⑨）が無く、G検定セッションでの型①〜④の実装もまだリポジトリ上には見当たらない（2026-10-02時点）。型の実装状況を確認してから着手する
 
 ## 一次資料アクセスの制約（重要）
 
