@@ -1,0 +1,20 @@
+{
+  "examId": "hazmat4",
+  "name": "危険物取扱者乙種第4類",
+  "audience": "adult",
+  "subjects": [
+    { "subjectId": "law", "name": "危険物に関する法令", "order": 1 },
+    { "subjectId": "physics_chem", "name": "基礎的な物理学及び基礎的な化学", "order": 2 },
+    { "subjectId": "property_extinguish", "name": "危険物の性質並びにその火災予防及び消火の方法", "order": 3 }
+  ],
+  "levels": [
+    {
+      "levelId": "otsu4",
+      "name": "乙種第4類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 }
+    }
+  ],
+  "examDates": []
+}
