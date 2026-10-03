@@ -12,7 +12,7 @@
 
 このリポジトリが持つのは、試験定義（ExamConfig）・問題データ・テーマ（資格ID）・ストア設定のみ。共通の仕組みは `app_common_kit` / `yourwish_kentei` 側にあり、ここでは作り直さない。
 
-- `app_common_kit`: `ref: v0.2.0`
+- `app_common_kit`: `ref: v0.4.0`
 - `yourwish_kentei`: `ref: v0.4.0`
 - 資格ID: `UkalabCert.hazmat4`（app_common_kit に実装済み。テーマ色 ライト `#C23D16` / ダーク `#F0997F`）
 
@@ -28,7 +28,9 @@
 - [x] 画期的な機能D「消火マッチング」（`lib/views/extinguisher_match_view.dart`）: 物質（水溶性かどうか）と消火剤4種（水・一般泡・耐アルコール泡・粉末）の組み合わせが有効か不適かを答えるクイズ形式。`lib/data/extinguisher.dart` に判定ロジックと理由文を集約。二酸化炭素は第4類への適用を示す確度の高い資料が見つからず対象から除外した。企画書にある「線で結ぶ」操作に近づけ、カードをドラッグ＆ドロップで「有効」「不適」の枠に振り分ける形に改善済み（2026-10-03。配置し直しも可能）
 - [x] 画期的な機能A「違反探しモード」（`lib/views/violation_hunt_view.dart`）: 4つの行動のうち、法令・消火の知識に違反しているものを1つ見つけるクイズ形式。新たな未確認データは追加せず、既に確認済みの `extinguisher.dart`（消火剤の適否）・`substance.dart`（指定数量）のロジックのみを組み合わせて `lib/data/violation.dart` で生成
 - [x] 画期的な機能E「現場の1日」（`lib/views/field_day_view.dart`）: 1日の勤務を模した4つの場面（08:00/11:00/14:00/17:00）で、温度（引火点）・指定数量・消火剤の判断を順番に答える。新たな未確認データは追加せず、既存の3つのロジック（`substance.dart`・`extinguisher.dart`・指定数量の考え方）を場面として組み合わせた `lib/data/field_day.dart` で生成
-- [ ] 推し（MascotWidget）・コイン: **未着手**
+- [x] 推し（MascotWidget）・学習コイン（`lib/widgets/oshi_card.dart`・`lib/main.dart`）: app_common_kit v0.4.0 の `MascotWidget`・`CoinService`・`OutfitService`・`WardrobeScreen`・`showPassReportDialog` を導入（`kanken`・`bike` の `oshi_card.dart` を手本にした）。ホーム画面に推しカードを表示し、着替え・ショップ・合格報告ができる。
+
+  **問題データが無い間の暫定措置**: `lib/views/home_view.dart` には元々「推し・コインの実装は問題データ投入後」という方針のTODOがあったが、ユーザー判断（2026-10-03）により、問題データが無い今の段階でも画期的な機能A〜E・一問一答の解答数を暫定の進捗指標として使い、先行して統合した（`lib/data/progress_store.dart` の `ProgressSnapshot`。網羅率は「100問相当で頭打ち」とする暫定の目安、正答率は解答に対する正解率）。問題データが入ったら、`yourwish_kentei` の `Question` の網羅率・正答率に基づく正式な計算に差し替えること。コインは、A〜Eの演習の正解時に `CoinEvent.reviewCorrected`（本来は「間隔を空けた復習」用の枠だが、固定の問題IDが無いA〜Eでは代わりにこの枠を再利用する製品判断。1日20問・2コインまで）、模擬試験の実施・合格時に `CoinEvent.mockDone`/`mockPass` を付与する。課金・広告視聴での付与は実装していない（仕様どおり）。
 - [ ] `yourwish_kentei` の学習体験の「型」（決定76の9種。乙4で使うのは⑤〜⑨）: まだ無く、G検定セッションでの型①〜④の実装もまだリポジトリ上には見当たらない（2026-10-03時点）。型の実装状況を確認してから着手する
 
 ## 一次資料アクセスの制約（重要）

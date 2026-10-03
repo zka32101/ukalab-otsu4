@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/exercise_coins.dart';
 import '../data/extinguisher.dart';
 import '../data/substance.dart';
 
@@ -11,14 +13,14 @@ import '../data/substance.dart';
 ///
 /// 企画書にある「線で結ぶ」操作の代わりに、ドラッグ＆ドロップで
 /// 分類する形に改善した（2026-10-03。2択ボタン版からの改善）。
-class ExtinguisherMatchView extends StatefulWidget {
+class ExtinguisherMatchView extends ConsumerStatefulWidget {
   const ExtinguisherMatchView({super.key});
 
   @override
-  State<ExtinguisherMatchView> createState() => _ExtinguisherMatchViewState();
+  ConsumerState<ExtinguisherMatchView> createState() => _ExtinguisherMatchViewState();
 }
 
-class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
+class _ExtinguisherMatchViewState extends ConsumerState<ExtinguisherMatchView> {
   Substance _substance = substances[Random(0).nextInt(substances.length)];
   final Map<Extinguisher, bool> _placed = {};
   bool _checked = false;
@@ -59,6 +61,7 @@ class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
       _totalCount++;
       if (allCorrect) _correctCount++;
     });
+    recordExerciseAnswer(ref, correct: allCorrect);
   }
 
   void _next() => _pick(DateTime.now().millisecondsSinceEpoch);

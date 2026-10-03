@@ -1,21 +1,24 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/exam_repository.dart';
+import '../widgets/oshi_card.dart';
 
 /// ホーム。試験の概要と、学ぶ・模擬への導線。
 ///
-/// TODO: 推し（MascotWidget）・コイン残高・「今日の1問ずつ」の具体的な
-/// 進捗表示は、問題データ投入後に追加する（共通デザイン仕様 §4b・推し仕様 v0.2）。
-class HomeView extends StatefulWidget {
+/// 推し（MascotWidget）・コイン残高は `OshiCard` で表示。正式な出題範囲の
+/// 網羅率・正答率はまだ無い（問題データ未着手）ため、暫定の進捗指標を使う
+/// （`lib/data/progress_store.dart`・README参照）。
+class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  ConsumerState<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends ConsumerState<HomeView> {
   final _repo = const ExamRepository();
   ExamConfig? _exam;
   Object? _error;
@@ -54,6 +57,8 @@ class _HomeViewState extends State<HomeView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        const OshiCard(),
+        const SizedBox(height: 16),
         Text(exam.name, style: theme.textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text(

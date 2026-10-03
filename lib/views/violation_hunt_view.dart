@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/exercise_coins.dart';
 import '../data/violation.dart';
 
 /// 違反探しモード（画期的な機能A）。4つの行動のうち、
 /// 法令・消火の知識に違反しているものを1つ見つける。
-class ViolationHuntView extends StatefulWidget {
+class ViolationHuntView extends ConsumerStatefulWidget {
   const ViolationHuntView({super.key});
 
   @override
-  State<ViolationHuntView> createState() => _ViolationHuntViewState();
+  ConsumerState<ViolationHuntView> createState() => _ViolationHuntViewState();
 }
 
-class _ViolationHuntViewState extends State<ViolationHuntView> {
+class _ViolationHuntViewState extends ConsumerState<ViolationHuntView> {
   ViolationScenario _scenario = ViolationScenario.generate(seed: 0);
   int? _selected;
   bool _answered = false;
@@ -20,12 +22,14 @@ class _ViolationHuntViewState extends State<ViolationHuntView> {
 
   void _select(int i) {
     if (_answered) return;
+    final correct = _scenario.statements[i].isViolation;
     setState(() {
       _selected = i;
       _answered = true;
       _totalCount++;
-      if (_scenario.statements[i].isViolation) _correctCount++;
+      if (correct) _correctCount++;
     });
+    recordExerciseAnswer(ref, correct: correct);
   }
 
   void _next() {
