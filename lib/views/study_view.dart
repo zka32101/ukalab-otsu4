@@ -7,6 +7,7 @@ import 'choice_labels.dart';
 import 'extinguisher_match_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
+import 'violation_hunt_view.dart';
 
 /// 一問一答の演習。問題データが入るまでは空状態を表示する。
 class StudyView extends StatefulWidget {
@@ -101,6 +102,15 @@ class _StudyViewState extends State<StudyView> {
             description: '物質と消火剤の組み合わせが有効か不適かを答えよう',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ExtinguisherMatchView()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ExperienceCard(
+            icon: Icons.search_outlined,
+            title: '違反探しモード',
+            description: '4つの行動から、法令・消火の知識に違反しているものを見つけよう',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ViolationHuntView()),
             ),
           ),
         ],
