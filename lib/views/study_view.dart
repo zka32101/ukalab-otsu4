@@ -4,6 +4,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/question_repository.dart';
 import 'choice_labels.dart';
+import 'extinguisher_match_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 
@@ -91,6 +92,15 @@ class _StudyViewState extends State<StudyView> {
             description: '指定数量の倍数を計算して、許可が必要か判定しよう',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const StoragePuzzleView()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ExperienceCard(
+            icon: Icons.local_fire_department_outlined,
+            title: '消火マッチング',
+            description: '物質と消火剤の組み合わせが有効か不適かを答えよう',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ExtinguisherMatchView()),
             ),
           ),
         ],
