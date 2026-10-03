@@ -6,7 +6,11 @@ import '../data/extinguisher.dart';
 import '../data/substance.dart';
 
 /// 消火マッチング（画期的な機能D）。物質（水溶性かどうか）と
-/// 消火剤の組み合わせが有効か不適かを答える。
+/// 消火剤の組み合わせが有効か不適かを、カードをドラッグして
+/// 「有効」「不適」の枠に振り分けることで答える。
+///
+/// 企画書にある「線で結ぶ」操作の代わりに、ドラッグ＆ドロップで
+/// 分類する形に改善した（2026-10-03。2択ボタン版からの改善）。
 class ExtinguisherMatchView extends StatefulWidget {
   const ExtinguisherMatchView({super.key});
 
@@ -16,30 +20,38 @@ class ExtinguisherMatchView extends StatefulWidget {
 
 class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
   Substance _substance = substances[Random(0).nextInt(substances.length)];
-  final Map<Extinguisher, bool> _answers = {};
+  final Map<Extinguisher, bool> _placed = {};
   bool _checked = false;
   int _correctCount = 0;
   int _totalCount = 0;
+
+  List<Extinguisher> get _remaining =>
+      Extinguisher.values.where((e) => !_placed.containsKey(e)).toList();
 
   void _pick(int seed) {
     final random = Random(seed);
     setState(() {
       _substance = substances[random.nextInt(substances.length)];
-      _answers.clear();
+      _placed.clear();
       _checked = false;
     });
   }
 
-  void _toggle(Extinguisher ext, bool value) {
+  void _drop(Extinguisher ext, bool zone) {
     if (_checked) return;
-    setState(() => _answers[ext] = value);
+    setState(() => _placed[ext] = zone);
+  }
+
+  void _unplace(Extinguisher ext) {
+    if (_checked) return;
+    setState(() => _placed.remove(ext));
   }
 
   void _check() {
-    if (_answers.length < Extinguisher.values.length) return;
+    if (_placed.length < Extinguisher.values.length) return;
     final allCorrect = Extinguisher.values.every(
       (ext) =>
-          _answers[ext] ==
+          _placed[ext] ==
           ext.isEffectiveFor(waterSoluble: _substance.waterSoluble),
     );
     setState(() {
@@ -54,7 +66,7 @@ class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final allAnswered = _answers.length == Extinguisher.values.length;
+    final allPlaced = _placed.length == Extinguisher.values.length;
 
     return Scaffold(
       appBar: AppBar(title: const Text('消火マッチング')),
@@ -63,25 +75,64 @@ class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
         children: [
           Text(
             '${_substance.name}（${_substance.waterSoluble ? '水溶性' : '非水溶性'}）'
-            'の火災に、それぞれの消火剤は有効でしょうか？',
+            'の火災に、それぞれの消火剤は有効でしょうか？'
+            'カードを「有効」か「不適」の枠にドラッグして振り分けよう。',
             style: theme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: 12),
-          for (final ext in Extinguisher.values)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _ExtinguisherTile(
-                extinguisher: ext,
-                substance: _substance,
-                answer: _answers[ext],
-                checked: _checked,
-                onAnswer: (v) => _toggle(ext, v),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _DropZone(
+                  label: '有効',
+                  color: theme.colorScheme.primary,
+                  zoneValue: true,
+                  substance: _substance,
+                  placed: _placed,
+                  checked: _checked,
+                  onAccept: (ext) => _drop(ext, true),
+                  onTapItem: _unplace,
+                ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DropZone(
+                  label: '不適',
+                  color: theme.colorScheme.error,
+                  zoneValue: false,
+                  substance: _substance,
+                  placed: _placed,
+                  checked: _checked,
+                  onAccept: (ext) => _drop(ext, false),
+                  onTapItem: _unplace,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_remaining.isNotEmpty) ...[
+            Text('残りのカード', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final ext in _remaining)
+                  Draggable<Extinguisher>(
+                    data: ext,
+                    feedback: _ExtinguisherCard(label: ext.label, dragging: true),
+                    childWhenDragging:
+                        _ExtinguisherCard(label: ext.label, faded: true),
+                    child: _ExtinguisherCard(label: ext.label),
+                  ),
+              ],
             ),
+          ],
           const SizedBox(height: 16),
           if (!_checked)
             FilledButton(
-              onPressed: allAnswered ? _check : null,
+              onPressed: allPlaced ? _check : null,
               child: const Text('採点する'),
             ),
           if (_checked)
@@ -94,96 +145,162 @@ class _ExtinguisherMatchViewState extends State<ExtinguisherMatchView> {
   }
 }
 
-class _ExtinguisherTile extends StatelessWidget {
-  const _ExtinguisherTile({
+class _DropZone extends StatelessWidget {
+  const _DropZone({
+    required this.label,
+    required this.color,
+    required this.zoneValue,
+    required this.substance,
+    required this.placed,
+    required this.checked,
+    required this.onAccept,
+    required this.onTapItem,
+  });
+
+  final String label;
+  final Color color;
+  final bool zoneValue;
+  final Substance substance;
+  final Map<Extinguisher, bool> placed;
+  final bool checked;
+  final ValueChanged<Extinguisher> onAccept;
+  final ValueChanged<Extinguisher> onTapItem;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final items = placed.entries.where((e) => e.value == zoneValue).map((e) => e.key);
+
+    return DragTarget<Extinguisher>(
+      onWillAcceptWithDetails: (_) => !checked,
+      onAcceptWithDetails: (details) => onAccept(details.data),
+      builder: (context, candidateData, rejectedData) {
+        final highlighted = candidateData.isNotEmpty;
+        return Container(
+          constraints: const BoxConstraints(minHeight: 140),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: highlighted ? color : theme.colorScheme.outlineVariant,
+              width: highlighted ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            color: highlighted ? color.withValues(alpha: 0.08) : null,
+          ),
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final ext in items)
+                    GestureDetector(
+                      onTap: checked ? null : () => onTapItem(ext),
+                      child: _PlacedCard(
+                        extinguisher: ext,
+                        substance: substance,
+                        givenAnswer: zoneValue,
+                        checked: checked,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ExtinguisherCard extends StatelessWidget {
+  const _ExtinguisherCard({
+    required this.label,
+    this.dragging = false,
+    this.faded = false,
+  });
+
+  final String label;
+  final bool dragging;
+  final bool faded;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Opacity(
+      opacity: faded ? 0.3 : 1,
+      child: Material(
+        elevation: dragging ? 4 : 1,
+        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Text(label, style: theme.textTheme.labelLarge),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlacedCard extends StatelessWidget {
+  const _PlacedCard({
     required this.extinguisher,
     required this.substance,
-    required this.answer,
+    required this.givenAnswer,
     required this.checked,
-    required this.onAnswer,
   });
 
   final Extinguisher extinguisher;
   final Substance substance;
-  final bool? answer;
+
+  /// このカードが置かれた枠（有効=true／不適=false）。
+  final bool givenAnswer;
   final bool checked;
-  final ValueChanged<bool> onAnswer;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final correctAnswer =
         extinguisher.isEffectiveFor(waterSoluble: substance.waterSoluble);
-    final wrong = checked && answer != correctAnswer;
+    final wrong = checked && givenAnswer != correctAnswer;
 
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: wrong
-            ? BorderSide(color: theme.colorScheme.error, width: 2)
-            : BorderSide.none,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(extinguisher.label, style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: checked ? null : () => onAnswer(true),
-                    style: answer == true
-                        ? OutlinedButton.styleFrom(
-                            backgroundColor:
-                                theme.colorScheme.primary.withValues(alpha: 0.12),
-                          )
-                        : null,
-                    child: const Text('有効'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: checked ? null : () => onAnswer(false),
-                    style: answer == false
-                        ? OutlinedButton.styleFrom(
-                            backgroundColor:
-                                theme.colorScheme.primary.withValues(alpha: 0.12),
-                          )
-                        : null,
-                    child: const Text('不適'),
-                  ),
+    return Tooltip(
+      message: checked ? extinguisher.reasonFor(waterSoluble: substance.waterSoluble) : '取り除くにはタップ',
+      child: Material(
+        elevation: 1,
+        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: wrong
+                ? Border.all(color: theme.colorScheme.error, width: 2)
+                : null,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(extinguisher.label, style: theme.textTheme.labelLarge),
+              if (checked) ...[
+                const SizedBox(width: 6),
+                Icon(
+                  wrong ? Icons.cancel : Icons.check_circle,
+                  size: 16,
+                  color: wrong ? theme.colorScheme.error : theme.colorScheme.primary,
                 ),
               ],
-            ),
-            if (checked) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    correctAnswer ? Icons.check_circle : Icons.cancel,
-                    color: correctAnswer
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.error,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    correctAnswer ? '正解は「有効」' : '正解は「不適」',
-                    style: theme.textTheme.labelMedium,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                extinguisher.reasonFor(waterSoluble: substance.waterSoluble),
-                style: theme.textTheme.bodySmall,
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
