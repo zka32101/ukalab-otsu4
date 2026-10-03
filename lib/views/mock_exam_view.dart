@@ -7,11 +7,8 @@ import '../data/question_repository.dart';
 import 'choice_labels.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
-///
-/// TODO: `yourwish_kentei` の `LevelConfig` には科目別の出題数配分
-/// （法令15／物理化学10／性質消火10）を表すフィールドが無いため、
-/// 現状は科目を区別せず全体から `questionCount` 問をランダム抽出している
-/// （README「ExamConfigモデルの制約」参照）。制限時間のタイマー表示も未実装。
+/// 出題は `pickMockExamQuestions` で科目別の配分（法令15／物理化学10／
+/// 性質消火10）どおりに選ぶ。制限時間のタイマー表示は未実装。
 class MockExamView extends StatefulWidget {
   const MockExamView({super.key});
 
@@ -25,7 +22,7 @@ class _MockExamViewState extends State<MockExamView> {
   ExamConfig? _exam;
   List<Question>? _questions;
   List<Question>? _picked;
-  final Map<String, int?> _answers = {};
+  final Map<String, Object?> _answers = {};
   int _index = 0;
   MockExamResult? _result;
   Object? _error;
@@ -53,13 +50,27 @@ class _MockExamViewState extends State<MockExamView> {
 
   void _start() {
     final level = _exam!.levels.first;
-    final shuffled = List<Question>.from(_questions!)..shuffle();
     setState(() {
-      _picked = shuffled.take(level.questionCount).toList();
+      _picked = pickMockExamQuestions(
+        pool: _questions!,
+        level: level,
+        seed: DateTime.now().millisecondsSinceEpoch,
+      );
       _answers.clear();
       _index = 0;
       _result = null;
     });
+  }
+
+  /// 科目別の配分（あれば）を満たす問題数が揃っているか。
+  bool _hasEnoughQuestions(List<Question> qs, LevelConfig level) {
+    final counts = level.subjectQuestionCounts;
+    if (counts == null) return qs.length >= level.questionCount;
+    final bySubject = <String, int>{};
+    for (final q in qs) {
+      bySubject[q.subjectId] = (bySubject[q.subjectId] ?? 0) + 1;
+    }
+    return counts.entries.every((e) => (bySubject[e.key] ?? 0) >= e.value);
   }
 
   void _select(int i) {
@@ -116,7 +127,7 @@ class _MockExamViewState extends State<MockExamView> {
     final picked = _picked;
     if (picked == null) {
       final level = exam.levels.first;
-      final enough = qs.length >= level.questionCount;
+      final enough = _hasEnoughQuestions(qs, level);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

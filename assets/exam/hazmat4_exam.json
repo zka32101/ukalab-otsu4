@@ -13,7 +13,8 @@
       "name": "乙種第4類",
       "questionCount": 35,
       "timeLimitSec": 7200,
-      "passRule": { "totalPct": 60, "subjectMinPct": 60 }
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish": 10 }
     }
   ],
   "examDates": []
