@@ -5,6 +5,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/question_repository.dart';
 import 'choice_labels.dart';
 import 'extinguisher_match_view.dart';
+import 'field_day_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
@@ -111,6 +112,15 @@ class _StudyViewState extends State<StudyView> {
             description: '4つの行動から、法令・消火の知識に違反しているものを見つけよう',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ViolationHuntView()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ExperienceCard(
+            icon: Icons.work_outline,
+            title: '現場の1日',
+            description: '1日の勤務を模した4つの場面で、温度・指定数量・消火剤の判断をしよう',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const FieldDayView()),
             ),
           ),
         ],
