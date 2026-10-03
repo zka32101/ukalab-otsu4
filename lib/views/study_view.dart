@@ -4,6 +4,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/question_repository.dart';
 import 'choice_labels.dart';
+import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 
 /// 一問一答の演習。問題データが入るまでは空状態を表示する。
@@ -81,6 +82,15 @@ class _StudyViewState extends State<StudyView> {
             description: '気温を変えて、引火点を超える物質を確かめよう',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const TemperatureLabView()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ExperienceCard(
+            icon: Icons.inventory_2_outlined,
+            title: '貯蔵所パズル',
+            description: '指定数量の倍数を計算して、許可が必要か判定しよう',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const StoragePuzzleView()),
             ),
           ),
         ],
