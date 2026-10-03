@@ -13,13 +13,13 @@
 このリポジトリが持つのは、試験定義（ExamConfig）・問題データ・テーマ（資格ID）・ストア設定のみ。共通の仕組みは `app_common_kit` / `yourwish_kentei` 側にあり、ここでは作り直さない。
 
 - `app_common_kit`: `ref: v0.2.0`
-- `yourwish_kentei`: `ref: v0.2.0`
+- `yourwish_kentei`: `ref: v0.4.0`
 - 資格ID: `UkalabCert.hazmat4`（app_common_kit に実装済み。テーマ色 ライト `#C23D16` / ダーク `#F0997F`）
 
-## 現在の状態（2026-10-02）
+## 現在の状態（2026-10-03）
 
 - [x] pubspec.yaml（依存をタグ固定で追加）
-- [x] ExamConfig（`assets/exam/hazmat4_exam.json`）: 法令15問・物理化学10問・性質消火10問の計35問、2時間、科目別60%以上で合格（消防試験研究センター 公式試験案内で確認済み）
+- [x] ExamConfig（`assets/exam/hazmat4_exam.json`）: 法令15問・物理化学10問・性質消火10問の計35問、2時間、科目別60%以上で合格（消防試験研究センター 公式試験案内で確認済み）。`subjectQuestionCounts` で科目別の出題数配分を明示（`yourwish_kentei` v0.4.0 で追加）
 - [ ] 問題データ（約600問。法令240／物理化学180／性質消火180、計算問題は自動生成併用）: **未着手**。理由は下記「一次資料アクセスの制約」を参照
 - [ ] Flutter プロジェクトの雛形（`flutter create` で生成する android/ios/web 等）: **未生成**。このクラウド実行環境に Flutter/Dart SDK が入っておらず、`flutter create`・`flutter pub get`・`dart analyze` の実行確認ができないため。ローカル（Windows実機。日本語パス回避）で `flutter create .` 相当を行い、本リポジトリの `pubspec.yaml`・`lib/`・`assets/` をマージすることを想定
 - [x] lib/（基本学習フローのみ）: ホーム（試験概要）・学ぶ（一問一答。`PracticeSession`）・模擬試験（`scoreMockExam`）・記録（空状態のみ）・設定（免責文言）を実装。`UkalabShell`・`QuestionCard`・`ChoiceTile`・`ExplanationPanel`・`ResultSummary`・`EmptyState`・`ErrorState`（app_common_kit）を使用。**このクラウド環境に Flutter/Dart SDK が無く `flutter pub get`・`dart analyze`・実機確認を一度も行っていない。** ローカル環境で確認してから取り込むこと
@@ -31,9 +31,9 @@
 
 ユーザー判断（2026-10-02）により、今回は問題データ作成を見送り、基盤整備のみ先に進めた。次回以降、一次資料にアクセスできる別環境で作業するか、必要な条文（危険物の規制に関する政令 別表第三〈指定数量〉、危険物の規制に関する規則の各規定など）をユーザーから共有してもらった上で着手する。
 
-## ExamConfig モデルの制約（共通基盤への申し送り）
+## ExamConfig モデルの制約（解消済み）
 
-`yourwish_kentei` の `LevelConfig` は模擬試験の出題数（`questionCount`）と合格基準（`passRule.totalPct` / `subjectMinPct`）のみを持ち、**科目別の出題数配分**（法令15問・物理化学10問・性質消火10問）を表現するフィールドが無い。乙4は科目ごとの配点が均等なため `totalPct: 60` と `subjectMinPct: 60` は数値上一致するが、模擬試験で科目ごとに決まった問題数を抽出する処理は、現状 `PracticeSession`/採点エンジン側に無い。問題データ整備時に `yourwish_kentei` 側の対応が必要か確認する。
+`yourwish_kentei` の `LevelConfig` に科目別の出題数配分を表すフィールドが無いという制約があったが、`yourwish_kentei` v0.4.0（[PR #4](https://github.com/zka32101/yourwish_kentei/pull/4)）で `LevelConfig.subjectQuestionCounts` と `pickMockExamQuestions` が追加され解消した。`hazmat4_exam.json` の `subjectQuestionCounts`（法令15／物理化学10／性質消火10）と `lib/views/mock_exam_view.dart` の `pickMockExamQuestions` 呼び出しで反映済み。
 
 ## 手本にするアプリ
 
