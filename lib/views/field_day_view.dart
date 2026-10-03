@@ -1,18 +1,20 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/exercise_coins.dart';
 import '../data/field_day.dart';
 
 /// 現場の1日モード（画期的な機能E）。1日の勤務を模した4つの場面で、
 /// 温度・指定数量・消火剤の判断を順番に答える。
-class FieldDayView extends StatefulWidget {
+class FieldDayView extends ConsumerStatefulWidget {
   const FieldDayView({super.key});
 
   @override
-  State<FieldDayView> createState() => _FieldDayViewState();
+  ConsumerState<FieldDayView> createState() => _FieldDayViewState();
 }
 
-class _FieldDayViewState extends State<FieldDayView> {
+class _FieldDayViewState extends ConsumerState<FieldDayView> {
   FieldDayScenario _scenario = FieldDayScenario.generate(seed: 0);
   int _index = 0;
   int? _selected;
@@ -22,11 +24,13 @@ class _FieldDayViewState extends State<FieldDayView> {
   void _select(int i) {
     if (_answered) return;
     final step = _scenario.steps[_index];
+    final correct = i == step.correctIndex;
     setState(() {
       _selected = i;
       _answered = true;
-      if (i == step.correctIndex) _correctCount++;
+      if (correct) _correctCount++;
     });
+    recordExerciseAnswer(ref, correct: correct);
   }
 
   void _next() {

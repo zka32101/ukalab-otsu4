@@ -12,12 +12,14 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.6
+  flutter_riverpod: ^2.6.1
+  shared_preferences: ^2.3.0
 
   # うかラボ共通基盤（タグ固定。main は参照しない）
   app_common_kit:
     git:
       url: https://github.com/zka32101/app_common_kit.git
-      ref: v0.2.0
+      ref: v0.4.0
   yourwish_kentei:
     git:
       url: https://github.com/zka32101/yourwish_kentei.git

@@ -1,7 +1,9 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/exercise_coins.dart';
 import '../data/question_repository.dart';
 import 'choice_labels.dart';
 import 'extinguisher_match_view.dart';
@@ -11,14 +13,14 @@ import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
 
 /// 一問一答の演習。問題データが入るまでは空状態を表示する。
-class StudyView extends StatefulWidget {
+class StudyView extends ConsumerStatefulWidget {
   const StudyView({super.key});
 
   @override
-  State<StudyView> createState() => _StudyViewState();
+  ConsumerState<StudyView> createState() => _StudyViewState();
 }
 
-class _StudyViewState extends State<StudyView> {
+class _StudyViewState extends ConsumerState<StudyView> {
   final _repo = const QuestionRepository();
   List<Question>? _questions;
   PracticeSession? _session;
@@ -45,11 +47,12 @@ class _StudyViewState extends State<StudyView> {
 
   void _select(int i) {
     if (_answered) return;
-    _session!.answer(i);
+    final record = _session!.answer(i);
     setState(() {
       _selected = i;
       _answered = true;
     });
+    recordExerciseAnswer(ref, correct: record.correct);
   }
 
   void _next() => setState(() {

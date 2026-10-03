@@ -1,5 +1,6 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/exam_repository.dart';
@@ -9,14 +10,14 @@ import 'choice_labels.dart';
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
 /// 出題は `pickMockExamQuestions` で科目別の配分（法令15／物理化学10／
 /// 性質消火10）どおりに選ぶ。制限時間のタイマー表示は未実装。
-class MockExamView extends StatefulWidget {
+class MockExamView extends ConsumerStatefulWidget {
   const MockExamView({super.key});
 
   @override
-  State<MockExamView> createState() => _MockExamViewState();
+  ConsumerState<MockExamView> createState() => _MockExamViewState();
 }
 
-class _MockExamViewState extends State<MockExamView> {
+class _MockExamViewState extends ConsumerState<MockExamView> {
   final _examRepo = const ExamRepository();
   final _questionRepo = const QuestionRepository();
   ExamConfig? _exam;
@@ -89,6 +90,10 @@ class _MockExamViewState extends State<MockExamView> {
       rule: _exam!.levels.first.passRule,
     );
     setState(() => _result = result);
+    ref.read(coinProvider.notifier).grant(CoinEvent.mockDone());
+    if (result.passed) {
+      ref.read(coinProvider.notifier).grant(CoinEvent.mockPass(_exam!.examId));
+    }
   }
 
   @override

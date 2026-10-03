@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/exercise_coins.dart';
 import '../data/storage_puzzle.dart';
 import '../data/substance.dart';
 
@@ -9,14 +11,14 @@ import '../data/substance.dart';
 /// 自動生成された物質リストに加え、物質の追加・削除・量の調整ができる。
 /// 「もしこの物質を減らしたら／もう1種類加えたら」を試しながら、
 /// 商の和の感覚をつかめるようにしている。
-class StoragePuzzleView extends StatefulWidget {
+class StoragePuzzleView extends ConsumerStatefulWidget {
   const StoragePuzzleView({super.key});
 
   @override
-  State<StoragePuzzleView> createState() => _StoragePuzzleViewState();
+  ConsumerState<StoragePuzzleView> createState() => _StoragePuzzleViewState();
 }
 
-class _StoragePuzzleViewState extends State<StoragePuzzleView> {
+class _StoragePuzzleViewState extends ConsumerState<StoragePuzzleView> {
   List<StorageItem> _items = StoragePuzzle.generate(seed: 0).items;
   bool? _answeredRequiresPermit;
   int _correctCount = 0;
@@ -81,11 +83,13 @@ class _StoragePuzzleViewState extends State<StoragePuzzleView> {
   }
 
   void _answer(bool requiresPermit) {
+    final correct = requiresPermit == _puzzle.requiresPermit;
     setState(() {
       _answeredRequiresPermit = requiresPermit;
       _totalCount++;
-      if (requiresPermit == _puzzle.requiresPermit) _correctCount++;
+      if (correct) _correctCount++;
     });
+    recordExerciseAnswer(ref, correct: correct);
   }
 
   @override
