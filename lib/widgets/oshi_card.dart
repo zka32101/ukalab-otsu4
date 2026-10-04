@@ -1,8 +1,11 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/progress_store.dart';
+
+const _kDisplayKey = 'ukalab_otsu4_oshi_display';
 
 /// 今の状況に合うセリフの場面。責める表現は使わない（セリフ集側で検査済み）。
 MascotSituation _situationFor(MascotDayState day, DateTime now) {
@@ -46,9 +49,32 @@ class _OshiCardState extends ConsumerState<OshiCard> {
   int _seed = 0;
   MascotDisplay _display = MascotDisplay.normal;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadDisplay();
+  }
+
+  Future<void> _loadDisplay() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString(_kDisplayKey);
+    final value = MascotDisplay.values.firstWhere(
+      (d) => d.name == name,
+      orElse: () => MascotDisplay.normal,
+    );
+    if (!mounted) return;
+    setState(() => _display = value);
+  }
+
+  Future<void> _setDisplay(MascotDisplay value) async {
+    setState(() => _display = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kDisplayKey, value.name);
+  }
+
   void _onMenu(Object value) {
     if (value is MascotDisplay) {
-      setState(() => _display = value);
+      _setDisplay(value);
       return;
     }
     final stage = _stageFor(ref.read(progressProvider));
