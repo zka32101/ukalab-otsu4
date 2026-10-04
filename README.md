@@ -20,9 +20,9 @@
 
 - [x] pubspec.yaml（依存をタグ固定で追加）
 - [x] ExamConfig（`assets/exam/hazmat4_exam.json`）: 法令15問・物理化学10問・性質消火10問の計35問、2時間、科目別60%以上で合格（消防試験研究センター 公式試験案内で確認済み）。`subjectQuestionCounts` で科目別の出題数配分を明示（`yourwish_kentei` v0.4.0 で追加）
-- [x] 問題データ・法令（第一弾。`assets/questions/law.jsonl`、20問）: ユーザーが e-Gov法令検索APIで取得した消防法・危険物の規制に関する政令・同規則の条文原文（Google Drive `乙4_一次資料_2026-10-04` フォルダ）に基づき作成。指定数量・商の和（消防法第10条）・別表第一の品名・別表第三の指定数量・免状・保安講習・混載禁止・貯蔵の通則・消火設備の適応性（別表第五）等をカバー
-- [x] 問題データ・性質並びに火災予防及び消火の方法（第一弾。`assets/questions/property_extinguish.jsonl`、12問）: 政令第11条・第25条・別表第五の条文原文と、一次資料で確認済みの `substance.dart`・`extinguisher.dart`（引火点・比重・水溶性・消火剤の適否）に基づき作成。二硫化炭素の水没貯蔵・消火設備の適応性・比重の傾向・特殊引火物の性質等をカバー。`test/question_data_test.dart` で2ファイル合計32問が `yourwish_kentei` の `validateQuestions`（配信前チェック）を通ることを確認
-- [ ] 問題データ（約600問）の残り（法令の残り約220問・物理化学180問・性質消火の残り約168問）: **未着手**。詳細は下記「一次資料アクセスの制約」を参照
+- [x] 問題データ・法令（第一弾・第二弾。`assets/questions/law.jsonl`、34問）: ユーザーが e-Gov法令検索APIで取得した消防法・危険物の規制に関する政令・同規則の条文原文（Google Drive `乙4_一次資料_2026-10-04` フォルダ）に基づき作成。指定数量・商の和（貯蔵: 消防法第10条、運搬: 政令第30条）・別表第一の品名・別表第三の指定数量・免状・保安講習・混載禁止・貯蔵の通則・消火設備の適応性（別表第五）・保安距離・保有空地・給油取扱所の給油空地・移動貯蔵タンクの容量等をカバー
+- [x] 問題データ・性質並びに火災予防及び消火の方法（第一弾。`assets/questions/property_extinguish.jsonl`、12問）: 政令第11条・第25条・別表第五の条文原文と、一次資料で確認済みの `substance.dart`・`extinguisher.dart`（引火点・比重・水溶性・消火剤の適否）に基づき作成。二硫化炭素の水没貯蔵・消火設備の適応性・比重の傾向・特殊引火物の性質等をカバー。`test/question_data_test.dart` で2ファイル合計46問が `yourwish_kentei` の `validateQuestions`（配信前チェック）を通ることを確認
+- [ ] 問題データ（約600問）の残り（法令の残り約200問・物理化学180問・性質消火の残り約168問）: **未着手**。詳細は下記「一次資料アクセスの制約」を参照
 - [ ] Flutter プロジェクトの雛形（`flutter create` で生成する android/ios/web 等）: **未生成**。このクラウド実行環境に Flutter/Dart SDK が入っておらず、`flutter create`・`flutter pub get`・`dart analyze` の実行確認ができないため。ローカル（Windows実機。日本語パス回避）で `flutter create .` 相当を行い、本リポジトリの `pubspec.yaml`・`lib/`・`assets/` をマージすることを想定
 - [x] lib/（基本学習フローのみ）: ホーム（試験概要）・学ぶ（一問一答。`PracticeSession`）・模擬試験（`scoreMockExam`）・記録（`ProgressSnapshot` による暫定の解答数・正答率・連続学習日数の表示。`lib/views/record_view.dart`）・設定（免責文言）を実装。`UkalabShell`・`QuestionCard`・`ChoiceTile`・`ExplanationPanel`・`ResultSummary`・`EmptyState`・`ErrorState`（app_common_kit）を使用。**このクラウド環境に Flutter/Dart SDK が無く `flutter pub get`・`dart analyze`・実機確認を一度も行っていない。** ローカル環境で確認してから取り込むこと
 - [x] 画期的な機能B「温度の実験室」（`lib/views/temperature_lab_view.dart`）: 気温スライダーで引火点を超えた物質が強調表示される。代表6物質（ガソリン・灯油・軽油・エタノール・ジエチルエーテル・二硫化炭素）の引火点・比重・水溶性・指定数量（`lib/data/substance.dart`）。学ぶタブの空状態から遷移。この機能は学習体験の「型」を使わず独立実装なので、`yourwish_kentei` 側の型実装を待たずに着手できた
