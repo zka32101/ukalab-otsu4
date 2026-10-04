@@ -20,8 +20,9 @@
 
 - [x] pubspec.yaml（依存をタグ固定で追加）
 - [x] ExamConfig（`assets/exam/hazmat4_exam.json`）: 法令15問・物理化学10問・性質消火10問の計35問、2時間、科目別60%以上で合格（消防試験研究センター 公式試験案内で確認済み）。`subjectQuestionCounts` で科目別の出題数配分を明示（`yourwish_kentei` v0.4.0 で追加）
-- [x] 問題データ・法令（第一弾。`assets/questions/law.jsonl`、20問）: ユーザーが e-Gov法令検索APIで取得した消防法・危険物の規制に関する政令・同規則の条文原文（Google Drive `乙4_一次資料_2026-10-04` フォルダ）に基づき作成。指定数量・商の和（消防法第10条）・別表第一の品名・別表第三の指定数量・免状・保安講習・混載禁止・貯蔵の通則・消火設備の適応性（別表第五）等をカバー。`test/law_questions_test.dart` で `yourwish_kentei` の `validateQuestions` を通ることを確認。残り220問（法令の残り分）と物理化学180問・性質消火180問は**未着手**
-- [ ] 問題データ（約600問）の残り: **未着手**。詳細は下記「一次資料アクセスの制約」を参照
+- [x] 問題データ・法令（第一弾。`assets/questions/law.jsonl`、20問）: ユーザーが e-Gov法令検索APIで取得した消防法・危険物の規制に関する政令・同規則の条文原文（Google Drive `乙4_一次資料_2026-10-04` フォルダ）に基づき作成。指定数量・商の和（消防法第10条）・別表第一の品名・別表第三の指定数量・免状・保安講習・混載禁止・貯蔵の通則・消火設備の適応性（別表第五）等をカバー
+- [x] 問題データ・性質並びに火災予防及び消火の方法（第一弾。`assets/questions/property_extinguish.jsonl`、12問）: 政令第11条・第25条・別表第五の条文原文と、一次資料で確認済みの `substance.dart`・`extinguisher.dart`（引火点・比重・水溶性・消火剤の適否）に基づき作成。二硫化炭素の水没貯蔵・消火設備の適応性・比重の傾向・特殊引火物の性質等をカバー。`test/question_data_test.dart` で2ファイル合計32問が `yourwish_kentei` の `validateQuestions`（配信前チェック）を通ることを確認
+- [ ] 問題データ（約600問）の残り（法令の残り約220問・物理化学180問・性質消火の残り約168問）: **未着手**。詳細は下記「一次資料アクセスの制約」を参照
 - [ ] Flutter プロジェクトの雛形（`flutter create` で生成する android/ios/web 等）: **未生成**。このクラウド実行環境に Flutter/Dart SDK が入っておらず、`flutter create`・`flutter pub get`・`dart analyze` の実行確認ができないため。ローカル（Windows実機。日本語パス回避）で `flutter create .` 相当を行い、本リポジトリの `pubspec.yaml`・`lib/`・`assets/` をマージすることを想定
 - [x] lib/（基本学習フローのみ）: ホーム（試験概要）・学ぶ（一問一答。`PracticeSession`）・模擬試験（`scoreMockExam`）・記録（`ProgressSnapshot` による暫定の解答数・正答率・連続学習日数の表示。`lib/views/record_view.dart`）・設定（免責文言）を実装。`UkalabShell`・`QuestionCard`・`ChoiceTile`・`ExplanationPanel`・`ResultSummary`・`EmptyState`・`ErrorState`（app_common_kit）を使用。**このクラウド環境に Flutter/Dart SDK が無く `flutter pub get`・`dart analyze`・実機確認を一度も行っていない。** ローカル環境で確認してから取り込むこと
 - [x] 画期的な機能B「温度の実験室」（`lib/views/temperature_lab_view.dart`）: 気温スライダーで引火点を超えた物質が強調表示される。代表6物質（ガソリン・灯油・軽油・エタノール・ジエチルエーテル・二硫化炭素）の引火点・比重・水溶性・指定数量（`lib/data/substance.dart`）。学ぶタブの空状態から遷移。この機能は学習体験の「型」を使わず独立実装なので、`yourwish_kentei` 側の型実装を待たずに着手できた
@@ -32,7 +33,7 @@
 - [x] 推し（MascotWidget）・学習コイン（`lib/widgets/oshi_card.dart`・`lib/main.dart`）: app_common_kit v0.4.0 の `MascotWidget`・`CoinService`・`OutfitService`・`WardrobeScreen`・`showPassReportDialog` を導入（`kanken`・`bike` の `oshi_card.dart` を手本にした）。ホーム画面に推しカードを表示し、着替え・ショップ・合格報告ができる。
 
   **問題データが無い間の暫定措置**: `lib/views/home_view.dart` には元々「推し・コインの実装は問題データ投入後」という方針のTODOがあったが、ユーザー判断（2026-10-03）により、問題データが無い今の段階でも画期的な機能A〜E・一問一答の解答数を暫定の進捗指標として使い、先行して統合した（`lib/data/progress_store.dart` の `ProgressSnapshot`。網羅率は「100問相当で頭打ち」とする暫定の目安、正答率は解答に対する正解率）。問題データが入ったら、`yourwish_kentei` の `Question` の網羅率・正答率に基づく正式な計算に差し替えること。コインは、A〜Eの演習の正解時に `CoinEvent.reviewCorrected`（本来は「間隔を空けた復習」用の枠だが、固定の問題IDが無いA〜Eでは代わりにこの枠を再利用する製品判断。1日20問・2コインまで）、模擬試験の実施・合格時に `CoinEvent.mockDone`/`mockPass` を付与する。課金・広告視聴での付与は実装していない（仕様どおり）。
-- [x] テスト（`test/`）: 画期的な機能A〜E・貯蔵所パズルの判定ロジック（`substance`・`extinguisher`・`storage_puzzle`・`violation`・`field_day`）、推し・コインの暫定進捗（`progress_store` の `ProgressSnapshot`・`ProgressService`）、法令問題データ（`law_questions_test.dart`。`yourwish_kentei` の `validateQuestions` を通ることを確認）の単体テストを追加。**このクラウド環境に Flutter/Dart SDK が無く `flutter test` を一度も実行していない。** ローカル環境で実行して確認すること
+- [x] テスト（`test/`）: 画期的な機能A〜E・貯蔵所パズルの判定ロジック（`substance`・`extinguisher`・`storage_puzzle`・`violation`・`field_day`）、推し・コインの暫定進捗（`progress_store` の `ProgressSnapshot`・`ProgressService`）、問題データ（`question_data_test.dart`。`yourwish_kentei` の `validateQuestions` を通ることを確認）の単体テストを追加。**このクラウド環境に Flutter/Dart SDK が無く `flutter test` を一度も実行していない。** ローカル環境で実行して確認すること
 - [ ] `yourwish_kentei` の学習体験の「型」（決定76の9種。乙4で使うのは⑤〜⑨）: まだ無く、G検定セッションでの型①〜④の実装もまだリポジトリ上には見当たらない（2026-10-03時点）。型の実装状況を確認してから着手する
 
 ## 一次資料アクセスの制約（2026-10-04 解消）
