@@ -31,6 +31,7 @@
 - [x] 推し（MascotWidget）・学習コイン（`lib/widgets/oshi_card.dart`・`lib/main.dart`）: app_common_kit v0.4.0 の `MascotWidget`・`CoinService`・`OutfitService`・`WardrobeScreen`・`showPassReportDialog` を導入（`kanken`・`bike` の `oshi_card.dart` を手本にした）。ホーム画面に推しカードを表示し、着替え・ショップ・合格報告ができる。
 
   **問題データが無い間の暫定措置**: `lib/views/home_view.dart` には元々「推し・コインの実装は問題データ投入後」という方針のTODOがあったが、ユーザー判断（2026-10-03）により、問題データが無い今の段階でも画期的な機能A〜E・一問一答の解答数を暫定の進捗指標として使い、先行して統合した（`lib/data/progress_store.dart` の `ProgressSnapshot`。網羅率は「100問相当で頭打ち」とする暫定の目安、正答率は解答に対する正解率）。問題データが入ったら、`yourwish_kentei` の `Question` の網羅率・正答率に基づく正式な計算に差し替えること。コインは、A〜Eの演習の正解時に `CoinEvent.reviewCorrected`（本来は「間隔を空けた復習」用の枠だが、固定の問題IDが無いA〜Eでは代わりにこの枠を再利用する製品判断。1日20問・2コインまで）、模擬試験の実施・合格時に `CoinEvent.mockDone`/`mockPass` を付与する。課金・広告視聴での付与は実装していない（仕様どおり）。
+- [x] テスト（`test/`）: 画期的な機能A〜E・貯蔵所パズルの判定ロジック（`substance`・`extinguisher`・`storage_puzzle`・`violation`・`field_day`）と、推し・コインの暫定進捗（`progress_store` の `ProgressSnapshot`・`ProgressService`）の単体テストを追加。**このクラウド環境に Flutter/Dart SDK が無く `flutter test` を一度も実行していない。** ローカル環境で実行して確認すること
 - [ ] `yourwish_kentei` の学習体験の「型」（決定76の9種。乙4で使うのは⑤〜⑨）: まだ無く、G検定セッションでの型①〜④の実装もまだリポジトリ上には見当たらない（2026-10-03時点）。型の実装状況を確認してから着手する
 
 ## 一次資料アクセスの制約（重要）
