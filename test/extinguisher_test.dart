@@ -22,6 +22,11 @@ void main() {
       expect(Extinguisher.powder.isEffectiveFor(waterSoluble: true), isTrue);
       expect(Extinguisher.powder.isEffectiveFor(waterSoluble: false), isTrue);
     });
+
+    test('二酸化炭素はどちらにも有効', () {
+      expect(Extinguisher.co2.isEffectiveFor(waterSoluble: true), isTrue);
+      expect(Extinguisher.co2.isEffectiveFor(waterSoluble: false), isTrue);
+    });
   });
 
   test('reasonForは空文字を返さない', () {

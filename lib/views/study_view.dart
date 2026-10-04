@@ -12,7 +12,9 @@ import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
 
-/// 一問一答の演習。問題データが入るまでは空状態を表示する。
+/// 一問一答の演習（問題データが無ければ空状態）と、体験型の演習（画期的な
+/// 機能A〜E）への入り口。体験型の演習は一問一答の問題データの有無に
+/// かかわらず常に表示する。
 class StudyView extends ConsumerStatefulWidget {
   const StudyView({super.key});
 
@@ -73,77 +75,84 @@ class _StudyViewState extends ConsumerState<StudyView> {
   Widget build(BuildContext context) {
     final qs = _questions;
     if (qs == null) return const Center(child: CircularProgressIndicator());
+    final theme = Theme.of(context);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildPractice(qs),
+        const SizedBox(height: 24),
+        Text('体験型の演習', style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        _ExperienceCard(
+          icon: Icons.thermostat_outlined,
+          title: '温度の実験室',
+          description: '気温を変えて、引火点を超える物質を確かめよう',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TemperatureLabView()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ExperienceCard(
+          icon: Icons.inventory_2_outlined,
+          title: '貯蔵所パズル',
+          description: '指定数量の倍数を計算して、許可が必要か判定しよう',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const StoragePuzzleView()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ExperienceCard(
+          icon: Icons.local_fire_department_outlined,
+          title: '消火マッチング',
+          description: '物質と消火剤の組み合わせが有効か不適かを答えよう',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ExtinguisherMatchView()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ExperienceCard(
+          icon: Icons.search_outlined,
+          title: '違反探しモード',
+          description: '4つの行動から、法令・消火の知識に違反しているものを見つけよう',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ViolationHuntView()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ExperienceCard(
+          icon: Icons.work_outline,
+          title: '現場の1日',
+          description: '1日の勤務を模した4つの場面で、温度・指定数量・消火剤の判断をしよう',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const FieldDayView()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 一問一答の演習部分（問題データが無ければ空状態）。
+  Widget _buildPractice(List<Question> qs) {
     if (qs.isEmpty) {
-      return ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const EmptyState(
-            message: '問題データはまだありません。準備中です。',
-            icon: Icons.menu_book_outlined,
-          ),
-          const SizedBox(height: 24),
-          _ExperienceCard(
-            icon: Icons.thermostat_outlined,
-            title: '温度の実験室',
-            description: '気温を変えて、引火点を超える物質を確かめよう',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TemperatureLabView()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _ExperienceCard(
-            icon: Icons.inventory_2_outlined,
-            title: '貯蔵所パズル',
-            description: '指定数量の倍数を計算して、許可が必要か判定しよう',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const StoragePuzzleView()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _ExperienceCard(
-            icon: Icons.local_fire_department_outlined,
-            title: '消火マッチング',
-            description: '物質と消火剤の組み合わせが有効か不適かを答えよう',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ExtinguisherMatchView()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _ExperienceCard(
-            icon: Icons.search_outlined,
-            title: '違反探しモード',
-            description: '4つの行動から、法令・消火の知識に違反しているものを見つけよう',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ViolationHuntView()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _ExperienceCard(
-            icon: Icons.work_outline,
-            title: '現場の1日',
-            description: '1日の勤務を模した4つの場面で、温度・指定数量・消火剤の判断をしよう',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const FieldDayView()),
-            ),
-          ),
-        ],
+      return const EmptyState(
+        message: '一問一答の問題データはまだ多くありません。',
+        icon: Icons.menu_book_outlined,
       );
     }
 
     final session = _session!;
     final q = session.current;
     if (q == null) {
-      return Center(
-        child: ResultSummary(
-          correct: session.correctCount,
-          total: session.questions.length,
-          onRetry: _retry,
-        ),
+      return ResultSummary(
+        correct: session.correctCount,
+        total: session.questions.length,
+        onRetry: _retry,
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         QuestionCard(text: q.prompt, index: session.index + 1, total: session.questions.length),
         const SizedBox(height: 12),
