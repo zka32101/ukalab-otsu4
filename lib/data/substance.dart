@@ -1,10 +1,9 @@
 /// 第4類危険物の代表物質の性質データ（温度の実験室 §B で使用）。
 ///
-/// 出典確認（2026-10-03、WebSearch経由。e-Gov法令検索・SDS類の内容を
-/// 検索結果の要約から確認。原文PDFへの直接アクセスはこの環境のネット
-/// ワーク制約で不可のため、各項目は複数の検索結果で一致した値のみ採用）。
-/// 発火点は出典間でばらつきが大きい物質があるため、確度の低いものは
-/// null にして画面側で「未確認」扱いにする。
+/// 出典確認（2026-10-04、ユーザー提供のSDS原文・e-Gov法令検索APIで
+/// 取得した条文原文で確認。灯油・軽油はENEOS製品SDS、エタノールは
+/// 厚生労働省「職場のあんぜんサイト」モデルSDSの発火点を採用。
+/// 各項目の `sourceRef` に出典を記載）。
 class Substance {
   const Substance({
     required this.id,
@@ -87,36 +86,39 @@ const substances = <Substance>[
     name: 'エタノール',
     category: 'アルコール類',
     flashPointC: 13,
-    ignitionPointC: null,
+    ignitionPointC: 363,
     specificGravity: 0.789,
     waterSoluble: true,
     designatedQuantityL: 400,
-    sourceRef: '引火点13℃・比重0.789をSDS類で確認。発火点は出典により'
-        '363〜425℃とばらつきが大きいため未確認扱い（2026-10-03、WebSearch経由）',
+    sourceRef: '引火点13℃・比重0.789をSDS類で確認。発火点は厚生労働省'
+        '「職場のあんぜんサイト」モデルSDS(CAS 64-17-5、出典ICSC)の363℃を採用'
+        '（他にキシダ化学SDSの400℃、NIES Webkis-Plusの423℃の報告もあり、'
+        '出典により差があるため厚労省の値に固定。2026-10-04、e-Gov/SDS原文で確認）',
   ),
   Substance(
     id: 'kerosene',
     name: '灯油',
     category: '第二石油類（非水溶性）',
     flashPointC: 40,
-    ignitionPointC: null,
+    ignitionPointC: 240,
     specificGravity: 0.80,
     waterSoluble: false,
     designatedQuantityL: 1000,
-    sourceRef: '引火点40℃以上・比重0.79〜0.80を品質規格資料で確認。発火点は'
-        '確度の高い出典が見つからず未確認扱い（2026-10-03、WebSearch経由）',
+    sourceRef: '引火点40℃以上（SDSのタグ密閉式で40〜75℃）・比重0.79〜0.80・'
+        '発火点約240℃をENEOS灯油SDS（改定2024-02-01）原文で確認'
+        '（2026-10-04）。製品銘柄により値が異なる可能性があり未検証',
   ),
   Substance(
     id: 'diesel',
     name: '軽油',
     category: '第二石油類（非水溶性）',
     flashPointC: 45,
-    ignitionPointC: null,
+    ignitionPointC: 240,
     specificGravity: 0.84,
     waterSoluble: false,
     designatedQuantityL: 1000,
-    sourceRef: '引火点45℃以上・比重0.86以下（代表値0.84）を品質規格資料で確認。'
-        '発火点は220〜250℃と出典にばらつきがあり未確認扱い'
-        '（2026-10-03、WebSearch経由）',
+    sourceRef: '引火点45℃以上（SDSのPMで45〜110℃）・比重0.86以下（代表値0.84）・'
+        '発火点約240℃をENEOS軽油SDS（改定2024-02-01）原文で確認'
+        '（2026-10-04）。製品銘柄により値が異なる可能性があり未検証',
   ),
 ];
