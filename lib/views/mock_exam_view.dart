@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
@@ -91,12 +92,14 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       answers: _answers,
       rule: _exam!.levels.first.passRule,
     );
-    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。
+    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。デイリー
+    // ミッションの解答数にも積み上げる。
     for (final q in _picked!) {
       final answer = _answers[q.qid];
       ref
           .read(srsProvider.notifier)
           .review(qid: q.qid, correct: answer is int && answer == q.answerIndex);
+      ref.read(dailyGoalProvider.notifier).recordAnswer();
     }
     setState(() => _result = result);
     ref.read(mockHistoryProvider.notifier).add(MockHistoryEntry(

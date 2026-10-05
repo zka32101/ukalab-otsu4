@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/bookmark_store.dart';
+import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
@@ -65,6 +66,7 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final dueQids = ref.watch(dueWeakQidsProvider).toSet();
     final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
     final bookmarkCount = ref.watch(bookmarkProvider).length;
+    final dailyGoal = ref.watch(dailyGoalProvider);
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
     final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
@@ -72,6 +74,47 @@ class _StudyViewState extends ConsumerState<StudyView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (dailyGoal.target != null) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    dailyGoal.achieved ? Icons.celebration_outlined : Icons.flag_outlined,
+                    color: dailyGoal.achieved ? theme.colorScheme.primary : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          dailyGoal.achieved ? '今日の目標を達成しました！' : '今日のデイリーミッション',
+                          style: theme.textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: (dailyGoal.todayCount / dailyGoal.target!).clamp(0, 1),
+                            minHeight: 8,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${dailyGoal.todayCount} / ${dailyGoal.target}問',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (dueCount > 0) ...[
           Card(
             child: ListTile(

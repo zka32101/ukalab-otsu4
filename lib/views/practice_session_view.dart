@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/bookmark_store.dart';
+import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
 import '../data/srs_store.dart';
 import 'choice_labels.dart';
@@ -62,6 +63,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     });
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
+    ref.read(dailyGoalProvider.notifier).recordAnswer();
   }
 
   void _next() => setState(() {

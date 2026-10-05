@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 import 'data/bookmark_store.dart';
+import 'data/daily_goal_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
@@ -37,6 +38,10 @@ void main() async {
   final bookmarkService = BookmarkService();
   await bookmarkService.load();
 
+  // デイリーミッション（今日の目標問題数）。端末内に保存する。
+  final dailyGoalService = DailyGoalService();
+  await dailyGoalService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -46,6 +51,7 @@ void main() async {
         srsServiceProvider.overrideWithValue(srsService),
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
+        dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
       ],
       child: const Otsu4App(),
     ),
