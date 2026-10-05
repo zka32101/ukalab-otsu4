@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/bookmark_store.dart';
 import '../data/exercise_coins.dart';
 import '../data/srs_store.dart';
 import 'choice_labels.dart';
@@ -93,10 +94,28 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
       );
     }
 
+    final bookmarked = ref.watch(bookmarkProvider).contains(q.qid);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        QuestionCard(text: q.prompt, index: session.index + 1, total: session.questions.length),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: QuestionCard(
+                text: q.prompt,
+                index: session.index + 1,
+                total: session.questions.length,
+              ),
+            ),
+            IconButton(
+              icon: Icon(bookmarked ? Icons.bookmark : Icons.bookmark_border),
+              tooltip: bookmarked ? 'ブックマークを外す' : 'ブックマークする',
+              onPressed: () => ref.read(bookmarkProvider.notifier).toggle(q.qid),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         for (var i = 0; i < q.choices.length; i++)
           Padding(

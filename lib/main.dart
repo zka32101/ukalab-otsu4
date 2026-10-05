@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/bookmark_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
@@ -32,6 +33,10 @@ void main() async {
   final mockHistoryService = MockHistoryService();
   await mockHistoryService.load();
 
+  // 気になる問題のブックマーク。端末内に保存する。
+  final bookmarkService = BookmarkService();
+  await bookmarkService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -40,6 +45,7 @@ void main() async {
         progressServiceProvider.overrideWithValue(progressService),
         srsServiceProvider.overrideWithValue(srsService),
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
+        bookmarkServiceProvider.overrideWithValue(bookmarkService),
       ],
       child: const Otsu4App(),
     ),
