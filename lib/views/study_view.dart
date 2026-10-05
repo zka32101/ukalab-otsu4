@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import 'extinguisher_match_view.dart';
@@ -23,8 +24,11 @@ class StudyView extends ConsumerStatefulWidget {
 }
 
 class _StudyViewState extends ConsumerState<StudyView> {
+  final _examRepo = const ExamRepository();
   final _repo = const QuestionRepository();
+  ExamConfig? _exam;
   List<Question>? _questions;
+  String? _subjectFilter;
 
   @override
   void initState() {
@@ -33,18 +37,34 @@ class _StudyViewState extends ConsumerState<StudyView> {
   }
 
   Future<void> _load() async {
+    final exam = await _examRepo.load();
     final qs = await _repo.load();
     if (!mounted) return;
-    setState(() => _questions = qs);
+    setState(() {
+      _exam = exam;
+      _questions = qs;
+    });
+  }
+
+  /// 問題データがある分野だけ、`ExamConfig` の並び順で返す。
+  List<SubjectConfig> _availableSubjects(ExamConfig exam, List<Question> qs) {
+    final ids = qs.map((q) => q.subjectId).toSet();
+    final subjects = [for (final s in exam.subjects) if (ids.contains(s.subjectId)) s];
+    subjects.sort((a, b) => a.order.compareTo(b.order));
+    return subjects;
   }
 
   @override
   Widget build(BuildContext context) {
+    final exam = _exam;
     final qs = _questions;
-    if (qs == null) return const Center(child: CircularProgressIndicator());
+    if (exam == null || qs == null) return const Center(child: CircularProgressIndicator());
     final theme = Theme.of(context);
     final dueQids = ref.watch(dueWeakQidsProvider).toSet();
     final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
+    final subjects = _availableSubjects(exam, qs);
+    final filter = _subjectFilter;
+    final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -63,9 +83,32 @@ class _StudyViewState extends ConsumerState<StudyView> {
           ),
           const SizedBox(height: 12),
         ],
+        if (subjects.length > 1) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              ChoiceChip(
+                label: const Text('すべて'),
+                selected: filter == null,
+                onSelected: (_) => setState(() => _subjectFilter = null),
+              ),
+              for (final s in subjects)
+                ChoiceChip(
+                  label: Text(s.name),
+                  selected: filter == s.subjectId,
+                  onSelected: (_) => setState(() => _subjectFilter = s.subjectId),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         PracticeSessionView(
-          pool: qs,
-          emptyMessage: '一問一答の問題データはまだ多くありません。',
+          key: ValueKey(filter),
+          pool: filteredQs,
+          emptyMessage: filter == null
+              ? '一問一答の問題データはまだ多くありません。'
+              : 'この分野の問題データはまだありません。',
         ),
         const SizedBox(height: 24),
         Text('体験型の演習', style: theme.textTheme.titleSmall),
