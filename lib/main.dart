@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
 
@@ -27,6 +28,10 @@ void main() async {
   final srsService = SrsService();
   await srsService.load();
 
+  // 模擬試験の結果履歴。端末内に保存する。
+  final mockHistoryService = MockHistoryService();
+  await mockHistoryService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -34,6 +39,7 @@ void main() async {
         outfitServiceProvider.overrideWithValue(outfitService),
         progressServiceProvider.overrideWithValue(progressService),
         srsServiceProvider.overrideWithValue(srsService),
+        mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
       ],
       child: const Otsu4App(),
     ),
