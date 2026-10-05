@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/bookmark_store.dart';
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
+import 'bookmark_list_view.dart';
 import 'extinguisher_match_view.dart';
 import 'field_day_view.dart';
 import 'practice_session_view.dart';
@@ -62,6 +64,7 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final theme = Theme.of(context);
     final dueQids = ref.watch(dueWeakQidsProvider).toSet();
     final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
+    final bookmarkCount = ref.watch(bookmarkProvider).length;
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
     final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
@@ -78,6 +81,20 @@ class _StudyViewState extends ConsumerState<StudyView> {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const WeakReviewView()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (bookmarkCount > 0) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.bookmark_outlined),
+              title: Text('ブックマーク（$bookmarkCount問）'),
+              subtitle: const Text('気になる問題だけをまとめて見返せます'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const BookmarkListView()),
               ),
             ),
           ),
