@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../data/daily_goal_store.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
 const String appDisclaimer =
@@ -8,15 +11,45 @@ const String appDisclaimer =
     '実際の試験の出題内容や合格を保証するものではありません。\n'
     '最新の試験情報は、実施団体の公式サイトでご確認ください。';
 
-class SettingsView extends StatelessWidget {
+/// デイリーミッションで選べる目標問題数。
+const List<int> dailyGoalChoices = [10, 20, 30];
+
+class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final target = ref.watch(dailyGoalProvider).target;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Text('デイリーミッション', style: theme.textTheme.titleSmall),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Text(
+            '1日の目標問題数を決めて、学ぶタブで達成状況を確認できます。',
+            style: TextStyle(fontSize: 12, height: 1.6),
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            ChoiceChip(
+              label: const Text('オフ'),
+              selected: target == null,
+              onSelected: (_) => ref.read(dailyGoalProvider.notifier).setTarget(null),
+            ),
+            for (final n in dailyGoalChoices)
+              ChoiceChip(
+                label: Text('$n問/日'),
+                selected: target == n,
+                onSelected: (_) => ref.read(dailyGoalProvider.notifier).setTarget(n),
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
         Text('このアプリについて', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 24),

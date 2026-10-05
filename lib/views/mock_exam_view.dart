@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
@@ -95,13 +96,15 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       rule: _exam!.levels.first.passRule,
     );
     // 間違えた問題は苦手問題の復習リストに入れつつ（間隔反復）、分野別の
-    // 正答率に積み上げ、振り返り画面用に控えておく。
+    // 正答率・デイリーミッションの解答数にも積み上げ、振り返り画面用に
+    // 控えておく。
     final wrong = <Question>[];
     for (final q in _picked!) {
       final answer = _answers[q.qid];
       final correct = answer is int && answer == q.answerIndex;
       ref.read(srsProvider.notifier).review(qid: q.qid, correct: correct);
       ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: q.subjectId, correct: correct);
+      ref.read(dailyGoalProvider.notifier).recordAnswer();
       if (!correct) wrong.add(q);
     }
     setState(() {
