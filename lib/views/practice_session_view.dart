@@ -6,6 +6,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/bookmark_store.dart';
 import '../data/exercise_coins.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 
 /// 一問一答の演習（`Question` のプール）共通部分。[pool] が空なら
@@ -55,6 +56,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
   }
 
   void _select(int i) {
+    final subjectId = _session!.current!.subjectId;
     final record = _session!.answer(i);
     setState(() {
       _selected = i;
@@ -62,6 +64,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     });
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
+    ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: subjectId, correct: record.correct);
   }
 
   void _next() => setState(() {

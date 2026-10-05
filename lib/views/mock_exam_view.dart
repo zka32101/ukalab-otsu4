@@ -7,6 +7,7 @@ import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 import 'mock_review_view.dart';
 
@@ -93,13 +94,14 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       answers: _answers,
       rule: _exam!.levels.first.passRule,
     );
-    // 間違えた問題は苦手問題の復習リストに入れつつ（間隔反復）、
-    // 振り返り画面用に控えておく。
+    // 間違えた問題は苦手問題の復習リストに入れつつ（間隔反復）、分野別の
+    // 正答率に積み上げ、振り返り画面用に控えておく。
     final wrong = <Question>[];
     for (final q in _picked!) {
       final answer = _answers[q.qid];
       final correct = answer is int && answer == q.answerIndex;
       ref.read(srsProvider.notifier).review(qid: q.qid, correct: correct);
+      ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: q.subjectId, correct: correct);
       if (!correct) wrong.add(q);
     }
     setState(() {
