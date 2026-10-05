@@ -1,12 +1,16 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/progress_store.dart';
+import '../data/srs_store.dart';
+import 'weak_review_view.dart';
 
 /// 学習記録。正式な出題範囲（`Question`）の網羅率・正答率はまだ無い
 /// （問題データ未着手）ため、`ProgressSnapshot`（演習の解答数）を暫定の
 /// 記録として表示する（`lib/data/progress_store.dart`・README参照）。
+/// 苦手問題の復習（間隔反復。`lib/data/srs_store.dart`）の状況も表示する。
 class RecordView extends ConsumerWidget {
   const RecordView({super.key});
 
@@ -21,6 +25,10 @@ class RecordView extends ConsumerWidget {
         icon: Icons.insights_outlined,
       );
     }
+
+    final srs = ref.watch(srsProvider);
+    final dueCount = ref.watch(dueWeakQidsProvider).length;
+    final masteredCount = srs.values.where((i) => i.box == Srs.maxBox).length;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -44,6 +52,33 @@ class RecordView extends ConsumerWidget {
             ),
           ),
         ),
+        if (srs.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('苦手問題の復習', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 12),
+                  _StatRow(label: '間違えて記録中の問題', value: '${srs.length}問'),
+                  _StatRow(label: '復習待ち', value: '$dueCount問'),
+                  _StatRow(label: '定着した問題', value: '$masteredCount問'),
+                  if (dueCount > 0) ...[
+                    const SizedBox(height: 12),
+                    FilledButton.tonal(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const WeakReviewView()),
+                      ),
+                      child: const Text('復習する'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
           '一問一答・画期的な機能（温度の実験室・貯蔵所パズル・消火マッチング・'
