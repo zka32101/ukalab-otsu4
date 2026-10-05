@@ -1,0 +1,52 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:otsu4/data/srs_store.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
+
+void main() {
+  group('SrsService.review', () {
+    test('不正解の問題はすぐ復習対象（due）になる', () async {
+      final now = DateTime(2026, 10, 5, 9);
+      final service = SrsService(store: _FakeSrsStore(), clock: () => now);
+      await service.review(qid: 'q1', correct: false);
+      expect(service.dueQids(), ['q1']);
+    });
+
+    test('正解の問題は復習間隔が空くまでdueにならない', () async {
+      final now = DateTime(2026, 10, 5, 9);
+      final service = SrsService(store: _FakeSrsStore(), clock: () => now);
+      await service.review(qid: 'q1', correct: true);
+      expect(service.dueQids(), isEmpty);
+    });
+
+    test('一度正解した問題を間違えると再びdueになる', () async {
+      var now = DateTime(2026, 10, 5, 9);
+      final service = SrsService(store: _FakeSrsStore(), clock: () => now);
+      await service.review(qid: 'q1', correct: true);
+      now = now.add(const Duration(days: 1));
+      await service.review(qid: 'q1', correct: false);
+      expect(service.dueQids(), ['q1']);
+    });
+
+    test('保存・再読み込みで状態が復元される', () async {
+      final now = DateTime(2026, 10, 5, 9);
+      final store = _FakeSrsStore();
+      final service = SrsService(store: store, clock: () => now);
+      await service.review(qid: 'q1', correct: false);
+
+      final reloaded = SrsService(store: store, clock: () => now);
+      await reloaded.load();
+      expect(reloaded.dueQids(), ['q1']);
+    });
+  });
+}
+
+/// テスト用。SharedPreferencesを使わずメモリ上に保存する。
+class _FakeSrsStore implements SrsStore {
+  Map<String, SrsItem> _saved = {};
+
+  @override
+  Future<Map<String, SrsItem>> read() async => _saved;
+
+  @override
+  Future<void> write(Map<String, SrsItem> items) async => _saved = items;
+}

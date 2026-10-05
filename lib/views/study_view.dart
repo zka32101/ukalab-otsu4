@@ -1,16 +1,16 @@
-import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
-import '../data/exercise_coins.dart';
 import '../data/question_repository.dart';
-import 'choice_labels.dart';
+import '../data/srs_store.dart';
 import 'extinguisher_match_view.dart';
 import 'field_day_view.dart';
+import 'practice_session_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
+import 'weak_review_view.dart';
 
 /// 一問一答の演習（問題データが無ければ空状態）と、体験型の演習（画期的な
 /// 機能A〜E）への入り口。体験型の演習は一問一答の問題データの有無に
@@ -25,9 +25,6 @@ class StudyView extends ConsumerStatefulWidget {
 class _StudyViewState extends ConsumerState<StudyView> {
   final _repo = const QuestionRepository();
   List<Question>? _questions;
-  PracticeSession? _session;
-  int? _selected;
-  bool _answered = false;
 
   @override
   void initState() {
@@ -38,37 +35,7 @@ class _StudyViewState extends ConsumerState<StudyView> {
   Future<void> _load() async {
     final qs = await _repo.load();
     if (!mounted) return;
-    setState(() {
-      _questions = qs;
-      if (qs.isNotEmpty) _session = _newSession(qs, seed: 0);
-    });
-  }
-
-  PracticeSession _newSession(List<Question> qs, {required int seed}) =>
-      PracticeSession(pool: qs, size: qs.length < 10 ? qs.length : 10, seed: seed);
-
-  void _select(int i) {
-    if (_answered) return;
-    final record = _session!.answer(i);
-    setState(() {
-      _selected = i;
-      _answered = true;
-    });
-    recordExerciseAnswer(ref, correct: record.correct);
-  }
-
-  void _next() => setState(() {
-        _selected = null;
-        _answered = false;
-      });
-
-  void _retry() {
-    final qs = _questions!;
-    setState(() {
-      _session = _newSession(qs, seed: DateTime.now().millisecondsSinceEpoch);
-      _selected = null;
-      _answered = false;
-    });
+    setState(() => _questions = qs);
   }
 
   @override
@@ -76,11 +43,30 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final qs = _questions;
     if (qs == null) return const Center(child: CircularProgressIndicator());
     final theme = Theme.of(context);
+    final dueQids = ref.watch(dueWeakQidsProvider).toSet();
+    final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildPractice(qs),
+        if (dueCount > 0) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.history_edu_outlined),
+              title: Text('苦手問題の復習（$dueCount問）'),
+              subtitle: const Text('間違えた問題を、間隔をあけて優先的に出題します'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WeakReviewView()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        PracticeSessionView(
+          pool: qs,
+          emptyMessage: '一問一答の問題データはまだ多くありません。',
+        ),
         const SizedBox(height: 24),
         Text('体験型の演習', style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
@@ -130,57 +116,6 @@ class _StudyViewState extends ConsumerState<StudyView> {
         ),
       ],
     );
-  }
-
-  /// 一問一答の演習部分（問題データが無ければ空状態）。
-  Widget _buildPractice(List<Question> qs) {
-    if (qs.isEmpty) {
-      return const EmptyState(
-        message: '一問一答の問題データはまだ多くありません。',
-        icon: Icons.menu_book_outlined,
-      );
-    }
-
-    final session = _session!;
-    final q = session.current;
-    if (q == null) {
-      return ResultSummary(
-        correct: session.correctCount,
-        total: session.questions.length,
-        onRetry: _retry,
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        QuestionCard(text: q.prompt, index: session.index + 1, total: session.questions.length),
-        const SizedBox(height: 12),
-        for (var i = 0; i < q.choices.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: ChoiceTile(
-              label: choiceLabels[i],
-              text: q.choices[i],
-              state: _choiceState(i, q.answerIndex),
-              onTap: _answered ? null : () => _select(i),
-            ),
-          ),
-        if (_answered) ...[
-          const SizedBox(height: 8),
-          ExplanationPanel(body: q.explanation, sourceRef: q.sourceRef),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: _next, child: const Text('次の問題')),
-        ],
-      ],
-    );
-  }
-
-  ChoiceState _choiceState(int i, int answerIndex) {
-    if (!_answered) return ChoiceState.idle;
-    if (i == answerIndex) return ChoiceState.correct;
-    if (i == _selected) return ChoiceState.incorrect;
-    return ChoiceState.idle;
   }
 }
 

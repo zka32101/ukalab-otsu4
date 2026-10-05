@@ -5,6 +5,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
+import '../data/srs_store.dart';
 import 'choice_labels.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
@@ -89,6 +90,13 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       answers: _answers,
       rule: _exam!.levels.first.passRule,
     );
+    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。
+    for (final q in _picked!) {
+      final answer = _answers[q.qid];
+      ref
+          .read(srsProvider.notifier)
+          .review(qid: q.qid, correct: answer is int && answer == q.answerIndex);
+    }
     setState(() => _result = result);
     ref.read(coinProvider.notifier).grant(CoinEvent.mockDone());
     if (result.passed) {
