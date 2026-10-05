@@ -7,6 +7,7 @@ import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
@@ -91,12 +92,13 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       answers: _answers,
       rule: _exam!.levels.first.passRule,
     );
-    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。
+    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。分野別の
+    // 正答率にも積み上げる。
     for (final q in _picked!) {
       final answer = _answers[q.qid];
-      ref
-          .read(srsProvider.notifier)
-          .review(qid: q.qid, correct: answer is int && answer == q.answerIndex);
+      final correct = answer is int && answer == q.answerIndex;
+      ref.read(srsProvider.notifier).review(qid: q.qid, correct: correct);
+      ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: q.subjectId, correct: correct);
     }
     setState(() => _result = result);
     ref.read(mockHistoryProvider.notifier).add(MockHistoryEntry(

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import 'weak_review_view.dart';
 
 /// 学習記録。正式な出題範囲（`Question`）の網羅率・正答率はまだ無い
@@ -21,6 +23,8 @@ class RecordView extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final theme = Theme.of(context);
     final mockHistory = ref.watch(mockHistoryProvider);
+    final subjectStats = ref.watch(subjectStatsProvider);
+    final exam = ref.watch(examConfigProvider).valueOrNull;
 
     if (progress.answered == 0 && mockHistory.isEmpty) {
       return const EmptyState(
@@ -100,6 +104,23 @@ class RecordView extends ConsumerWidget {
             ),
           ),
         ],
+        if (subjectStats.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('分野別の正答率', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 12),
+                  for (final s in _orderedSubjects(exam, subjectStats))
+                    _SubjectStatRow(label: s.$1, stat: s.$2),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
           '一問一答・画期的な機能（温度の実験室・貯蔵所パズル・消火マッチング・'
@@ -148,6 +169,52 @@ class _MockHistoryRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             '${entry.score}/${entry.max}（${entry.pct.round()}%）',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// データがある分野だけ、`ExamConfig` の並び順で（名前, 統計）を返す。
+/// `exam` が未取得（読み込み中）なら subjectId をそのまま名前にする。
+List<(String, SubjectStat)> _orderedSubjects(ExamConfig? exam, Map<String, SubjectStat> stats) {
+  if (exam == null) {
+    return [for (final e in stats.entries) (e.key, e.value)];
+  }
+  final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+  return [
+    for (final s in subjects)
+      if (stats.containsKey(s.subjectId)) (s.name, stats[s.subjectId]!),
+  ];
+}
+
+/// 分野別の正答率1行。解答数・正答率バーを表示する。
+class _SubjectStatRow extends StatelessWidget {
+  const _SubjectStatRow({required this.label, required this.stat});
+
+  final String label;
+  final SubjectStat stat;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+          Expanded(
+            flex: 2,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(value: stat.accuracy, minHeight: 8),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${stat.correct}/${stat.answered}（${(stat.accuracy * 100).round()}%）',
             style: theme.textTheme.bodySmall,
           ),
         ],
