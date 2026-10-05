@@ -9,6 +9,7 @@ import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
+import 'mock_review_view.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
 /// 出題は `pickMockExamQuestions` で科目別の配分（法令15／物理化学10／
@@ -29,6 +30,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
   final Map<String, Object?> _answers = {};
   int _index = 0;
   MockExamResult? _result;
+  List<Question> _wrongQuestions = [];
   Object? _error;
 
   @override
@@ -92,15 +94,20 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       answers: _answers,
       rule: _exam!.levels.first.passRule,
     );
-    // 間違えた問題は苦手問題の復習リストに入る（間隔反復）。分野別の
-    // 正答率にも積み上げる。
+    // 間違えた問題は苦手問題の復習リストに入れつつ（間隔反復）、分野別の
+    // 正答率に積み上げ、振り返り画面用に控えておく。
+    final wrong = <Question>[];
     for (final q in _picked!) {
       final answer = _answers[q.qid];
       final correct = answer is int && answer == q.answerIndex;
       ref.read(srsProvider.notifier).review(qid: q.qid, correct: correct);
       ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: q.subjectId, correct: correct);
+      if (!correct) wrong.add(q);
     }
-    setState(() => _result = result);
+    setState(() {
+      _result = result;
+      _wrongQuestions = wrong;
+    });
     ref.read(mockHistoryProvider.notifier).add(MockHistoryEntry(
           at: DateTime.now(),
           score: result.total.score,
@@ -136,12 +143,28 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     final result = _result;
     if (result != null) {
       return Center(
-        child: ResultSummary(
-          correct: result.total.score,
-          total: result.total.max,
-          passRatio: exam.levels.first.passRule.totalPct / 100,
-          passedText: result.passed ? '合格ライン到達' : '科目の足切りに注意',
-          onRetry: _start,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ResultSummary(
+              correct: result.total.score,
+              total: result.total.max,
+              passRatio: exam.levels.first.passRule.totalPct / 100,
+              passedText: result.passed ? '合格ライン到達' : '科目の足切りに注意',
+              onRetry: _start,
+            ),
+            if (_wrongQuestions.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MockReviewView(questions: _wrongQuestions, answers: _answers),
+                  ),
+                ),
+                child: Text('間違えた問題を振り返る（${_wrongQuestions.length}問）'),
+              ),
+            ],
+          ],
         ),
       );
     }
