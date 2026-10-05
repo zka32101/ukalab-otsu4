@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/exam_repository.dart';
+import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import 'choice_labels.dart';
@@ -98,6 +99,12 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
           .review(qid: q.qid, correct: answer is int && answer == q.answerIndex);
     }
     setState(() => _result = result);
+    ref.read(mockHistoryProvider.notifier).add(MockHistoryEntry(
+          at: DateTime.now(),
+          score: result.total.score,
+          max: result.total.max,
+          passed: result.passed,
+        ));
     ref.read(coinProvider.notifier).grant(CoinEvent.mockDone());
     if (result.passed) {
       ref.read(coinProvider.notifier).grant(CoinEvent.mockPass(_exam!.examId));
