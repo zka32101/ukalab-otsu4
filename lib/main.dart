@@ -8,6 +8,7 @@ import 'data/daily_goal_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
+import 'data/subject_stats_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,10 @@ void main() async {
   final dailyGoalService = DailyGoalService();
   await dailyGoalService.load();
 
+  // 分野別の解答数・正解数。端末内に保存する。
+  final subjectStatsService = SubjectStatsService();
+  await subjectStatsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -52,6 +57,7 @@ void main() async {
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
+        subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
       ],
       child: const Otsu4App(),
     ),
