@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 import 'data/progress_store.dart';
+import 'data/srs_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +23,17 @@ void main() async {
   final progressService = ProgressService();
   await progressService.load();
 
+  // 苦手問題の復習（間隔反復）。端末内に保存する。
+  final srsService = SrsService();
+  await srsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
         coinServiceProvider.overrideWithValue(coinService),
         outfitServiceProvider.overrideWithValue(outfitService),
         progressServiceProvider.overrideWithValue(progressService),
+        srsServiceProvider.overrideWithValue(srsService),
       ],
       child: const Otsu4App(),
     ),
