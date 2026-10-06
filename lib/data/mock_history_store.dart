@@ -103,3 +103,25 @@ class MockHistoryNotifier extends Notifier<List<MockHistoryEntry>> {
 
 final mockHistoryProvider =
     NotifierProvider<MockHistoryNotifier, List<MockHistoryEntry>>(MockHistoryNotifier.new);
+
+/// 直近の模試結果から、合格ラインへの到達見込みを示す簡易判定。
+enum PassPrediction {
+  /// 直近の平均得点率が合格ライン以上。
+  onTrack,
+
+  /// 合格ラインまで10ポイント未満。
+  closeToTarget,
+
+  /// 合格ラインまで10ポイント以上の開きがある。
+  needsWork,
+}
+
+/// 直近3回（無ければそれ以下）の模試の平均得点率から、合格ラインへの
+/// 到達見込みを判定する。[history] は空であってはならない。
+PassPrediction predictPassTrend(List<MockHistoryEntry> history, {required double passPct}) {
+  final recent = history.length > 3 ? history.sublist(history.length - 3) : history;
+  final avgPct = recent.map((e) => e.pct).reduce((a, b) => a + b) / recent.length;
+  if (avgPct >= passPct) return PassPrediction.onTrack;
+  if (avgPct >= passPct - 10) return PassPrediction.closeToTarget;
+  return PassPrediction.needsWork;
+}

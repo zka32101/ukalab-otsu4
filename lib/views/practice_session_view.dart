@@ -6,6 +6,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
+import '../data/question_memo_store.dart';
 import '../data/recent_questions.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
@@ -150,10 +151,69 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
         if (_answered) ...[
           const SizedBox(height: 8),
           ExplanationPanel(body: q.explanation, sourceRef: q.sourceRef),
+          const SizedBox(height: 12),
+          _MemoField(key: ValueKey(q.qid), qid: q.qid),
           const SizedBox(height: 16),
           FilledButton(onPressed: _next, child: const Text('次の問題')),
         ],
       ],
+    );
+  }
+}
+
+/// 問題ごとの自分用メモの入力欄。間違えた理由・覚え方等を書き残せる
+/// （`lib/data/question_memo_store.dart`）。問題が変わるたびに
+/// `key: ValueKey(qid)` で独立した State を作り、入力欄をリセットする。
+class _MemoField extends ConsumerStatefulWidget {
+  const _MemoField({super.key, required this.qid});
+
+  final String qid;
+
+  @override
+  ConsumerState<_MemoField> createState() => _MemoFieldState();
+}
+
+class _MemoFieldState extends ConsumerState<_MemoField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    final memo = ref.read(questionMemoProvider)[widget.qid] ?? '';
+    _controller = TextEditingController(text: memo);
+    _focusNode = FocusNode()..addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) _save();
+  }
+
+  void _save() {
+    ref.read(questionMemoProvider.notifier).setMemo(qid: widget.qid, memo: _controller.text);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      decoration: const InputDecoration(
+        labelText: '自分用メモ',
+        hintText: '間違えた理由や覚え方を書き残せます',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      maxLines: 3,
+      minLines: 1,
     );
   }
 }

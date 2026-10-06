@@ -7,6 +7,7 @@ import 'data/bookmark_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
+import 'data/question_memo_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_history_store.dart';
 import 'data/subject_stats_store.dart';
@@ -57,6 +58,10 @@ void main() async {
   final themeService = ThemeService();
   await themeService.load();
 
+  // 問題ごとの自分用メモ。端末内に保存する。
+  final questionMemoService = QuestionMemoService();
+  await questionMemoService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -70,6 +75,7 @@ void main() async {
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
         subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),
+        questionMemoServiceProvider.overrideWithValue(questionMemoService),
       ],
       child: const Otsu4App(),
     ),
