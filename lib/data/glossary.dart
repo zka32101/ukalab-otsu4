@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:app_common_kit/app_common_kit.dart';
 
 /// 乙4の頻出用語（暗記カードで使用）。
@@ -135,6 +137,11 @@ List<GlossaryTerm> searchGlossaryTerms(String keyword) {
       if (t.term.toLowerCase().contains(kw) || t.definition.toLowerCase().contains(kw)) t,
   ];
 }
+
+/// [terms] をランダムな順序に並べ替えて返す（暗記カードのシャッフルモード）。
+/// [random] を渡すとテストで結果を固定できる。
+List<GlossaryTerm> shuffledGlossaryTerms(List<GlossaryTerm> terms, {Random? random}) =>
+    [...terms]..shuffle(random);
 
 /// [text] 内に出現する用語集の用語を [TermReference] のリストにして返す。
 /// 解説文中の用語をタップ可能にする（`TappableTermText`。app_common_kit）ために使う。

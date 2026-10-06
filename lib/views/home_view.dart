@@ -74,6 +74,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final mockHistory = ref.watch(mockHistoryProvider);
     final showMockReminder = reminderSettings.mockReminderEnabled &&
         shouldShowMockIntervalReminder(mockHistory, DateTime.now());
+    final nextMockDate =
+        reminderSettings.mockReminderEnabled ? nextRecommendedMockDate(mockHistory) : null;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -133,6 +135,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (!showMockReminder && nextMockDate != null) ...[
+          Row(
+            children: [
+              Icon(Icons.event_note_outlined, size: 16, color: theme.colorScheme.secondary),
+              const SizedBox(width: 6),
+              Text(nextMockDateText(nextMockDate, DateTime.now()), style: theme.textTheme.bodySmall),
+            ],
           ),
           const SizedBox(height: 16),
         ],
