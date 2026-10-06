@@ -7,6 +7,7 @@ import 'memo_list_view.dart';
 import 'mock_wrong_review_view.dart';
 import 'question_search_view.dart';
 import 'recent_glossary_terms_view.dart';
+import 'streak_calendar_view.dart';
 import 'srs_calendar_view.dart';
 import 'weak_review_view.dart';
 
@@ -93,6 +94,14 @@ class StudyToolsView extends StatelessWidget {
             description: '用語集で定義を見た用語を、新しい順に振り返れます',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const RecentGlossaryTermsView()),
+            ),
+          ),
+          _ToolTile(
+            icon: Icons.calendar_month_outlined,
+            title: '学習カレンダー',
+            description: '目標達成日・解答した日を、直近28日間のカレンダーで見える化します',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const StreakCalendarView()),
             ),
           ),
         ],

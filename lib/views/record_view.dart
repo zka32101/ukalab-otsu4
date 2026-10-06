@@ -14,6 +14,7 @@ import '../data/subject_stats_store.dart';
 import 'achievements_view.dart';
 import 'focus_training_view.dart';
 import 'srs_calendar_view.dart';
+import 'streak_calendar_view.dart';
 import 'weak_review_view.dart';
 
 /// 学習記録。正式な出題範囲（`Question`）の網羅率・正答率はまだ無い
@@ -96,6 +97,13 @@ class RecordView extends ConsumerWidget {
                       ],
                     ),
                   ],
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StreakCalendarView()),
+                    ),
+                    child: const Text('学習カレンダーを見る'),
+                  ),
                 ],
               ),
             ),
