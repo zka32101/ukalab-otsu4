@@ -12,6 +12,7 @@ import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'achievements_view.dart';
+import 'focus_training_view.dart';
 import 'srs_calendar_view.dart';
 import 'weak_review_view.dart';
 
@@ -216,12 +217,20 @@ class RecordView extends ConsumerWidget {
                   Text('弱点マップ', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
                   Text(
-                    '正答率が低い分野から順に並べています',
+                    '正答率が低い分野から順に並べています。タップするとその分野を演習できます',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
-                  for (final s in sortedByWeakness(exam, subjectStats))
-                    _WeakMapBar(label: s.$1, stat: s.$2),
+                  for (final s in sortedByWeaknessWithId(exam, subjectStats))
+                    _WeakMapBar(
+                      label: s.$2,
+                      stat: s.$3,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => FocusTrainingView(subjectId: s.$1, subjectName: s.$2),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -564,12 +573,34 @@ List<(String, SubjectStat)> sortedByWeakness(ExamConfig? exam, Map<String, Subje
   return [...named]..sort((a, b) => a.$2.accuracy.compareTo(b.$2.accuracy));
 }
 
-/// 弱点マップの1行。正答率に応じて色を変えた横棒グラフ。
+/// データがある分野を、正答率が低い順に（subjectId, 名前, 統計）で返す
+/// （「弱点マップ」タップでその分野の演習に遷移するためsubjectIdも保持する）。
+/// `exam` が未取得なら subjectId をそのまま名前にする。
+List<(String, String, SubjectStat)> sortedByWeaknessWithId(
+  ExamConfig? exam,
+  Map<String, SubjectStat> stats,
+) {
+  final List<(String, String, SubjectStat)> named;
+  if (exam == null) {
+    named = [for (final e in stats.entries) (e.key, e.key, e.value)];
+  } else {
+    final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+    named = [
+      for (final s in subjects)
+        if (stats.containsKey(s.subjectId)) (s.subjectId, s.name, stats[s.subjectId]!),
+    ];
+  }
+  return [...named]..sort((a, b) => a.$3.accuracy.compareTo(b.$3.accuracy));
+}
+
+/// 弱点マップの1行。正答率に応じて色を変えた横棒グラフ。タップでその分野の
+/// 演習に遷移する。
 class _WeakMapBar extends StatelessWidget {
-  const _WeakMapBar({required this.label, required this.stat});
+  const _WeakMapBar({required this.label, required this.stat, required this.onTap});
 
   final String label;
   final SubjectStat stat;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -577,41 +608,51 @@ class _WeakMapBar extends StatelessWidget {
     final color = stat.accuracy < weakSubjectAccuracyThreshold
         ? theme.colorScheme.error
         : theme.colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(label, style: theme.textTheme.bodyMedium),
-              Text(
-                '${(stat.accuracy * 100).round()}%',
-                style: theme.textTheme.bodySmall?.copyWith(color: color),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          LayoutBuilder(
-            builder: (context, constraints) => Stack(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                Container(
-                  height: 8,
-                  width: constraints.maxWidth * stat.accuracy.clamp(0, 1),
-                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+                Text(label, style: theme.textTheme.bodyMedium),
+                Row(
+                  children: [
+                    Text(
+                      '${(stat.accuracy * 100).round()}%',
+                      style: theme.textTheme.bodySmall?.copyWith(color: color),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 16),
+                  ],
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            LayoutBuilder(
+              builder: (context, constraints) => Stack(
+                children: [
+                  Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  Container(
+                    height: 8,
+                    width: constraints.maxWidth * stat.accuracy.clamp(0, 1),
+                    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

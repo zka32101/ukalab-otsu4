@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
+import '../data/reminder_settings_store.dart';
 import '../data/theme_store.dart';
 import 'source_credits_view.dart';
 
@@ -29,6 +30,7 @@ class SettingsView extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final examDate = ref.watch(examDateProvider);
     final progress = ref.watch(progressProvider);
+    final reminderSettings = ref.watch(reminderSettingsProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -154,6 +156,29 @@ class SettingsView extends ConsumerWidget {
               ),
             ],
           ],
+        ),
+        const SizedBox(height: 24),
+        Text('リマインダー', style: theme.textTheme.titleSmall),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 4),
+          child: Text(
+            'ホームに表示するアプリ内リマインダーを個別にオフにできます。',
+            style: TextStyle(fontSize: 12, height: 1.6),
+          ),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('学習リマインダー'),
+          subtitle: const Text('夜（18時以降）に今日の目標が未達成なら知らせます'),
+          value: reminderSettings.studyReminderEnabled,
+          onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setStudyReminderEnabled(v),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('模試リマインダー'),
+          subtitle: const Text('前回の模擬試験から7日以上経ったら知らせます'),
+          value: reminderSettings.mockReminderEnabled,
+          onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setMockReminderEnabled(v),
         ),
         const SizedBox(height: 24),
         Text('このアプリについて', style: theme.textTheme.titleSmall),

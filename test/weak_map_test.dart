@@ -14,4 +14,16 @@ void main() {
       expect(sorted.map((s) => s.$1).toList(), ['property', 'physics', 'law']);
     });
   });
+
+  group('sortedByWeaknessWithId', () {
+    test('examが無いとき、subjectId・名前・統計を正答率の低い順に返す', () {
+      final stats = {
+        'law': const SubjectStat(answered: 10, correct: 9), // 90%
+        'property': const SubjectStat(answered: 10, correct: 3), // 30%
+      };
+      final sorted = sortedByWeaknessWithId(null, stats);
+      expect(sorted.map((s) => s.$1).toList(), ['property', 'law']);
+      expect(sorted.map((s) => s.$2).toList(), ['property', 'law']);
+    });
+  });
 }
