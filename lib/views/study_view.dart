@@ -7,9 +7,12 @@ import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import 'bookmark_list_view.dart';
 import 'extinguisher_match_view.dart';
 import 'field_day_view.dart';
+import 'focus_training_view.dart';
+import 'glossary_card_view.dart';
 import 'practice_session_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
@@ -67,6 +70,8 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
     final bookmarkCount = ref.watch(bookmarkProvider).length;
     final dailyGoal = ref.watch(dailyGoalProvider);
+    final weakIds = weakSubjectIds(ref.watch(subjectStatsProvider)).toSet();
+    final weakQuestionCount = qs.where((q) => weakIds.contains(q.subjectId)).length;
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
     final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
@@ -129,6 +134,20 @@ class _StudyViewState extends ConsumerState<StudyView> {
           ),
           const SizedBox(height: 12),
         ],
+        if (weakQuestionCount > 0) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.fitness_center_outlined),
+              title: Text('集中特訓（$weakQuestionCount問）'),
+              subtitle: const Text('正答率が低い分野だけを優先的に演習します'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FocusTrainingView()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (bookmarkCount > 0) ...[
           Card(
             child: ListTile(
@@ -143,6 +162,18 @@ class _StudyViewState extends ConsumerState<StudyView> {
           ),
           const SizedBox(height: 12),
         ],
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.menu_book_outlined),
+            title: const Text('用語集'),
+            subtitle: const Text('引火点・指定数量など、頻出用語を暗記カードで確認できます'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const GlossaryCardView()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         if (subjects.length > 1) ...[
           Wrap(
             spacing: 8,

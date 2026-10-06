@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/daily_goal_store.dart';
+import '../data/theme_store.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
 const String appDisclaimer =
@@ -21,9 +22,40 @@ class SettingsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final target = ref.watch(dailyGoalProvider).target;
+    final themeMode = ref.watch(themeModeProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Text('テーマ', style: theme.textTheme.titleSmall),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Text(
+            '画面の明るさを選べます。',
+            style: TextStyle(fontSize: 12, height: 1.6),
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            ChoiceChip(
+              label: const Text('端末に合わせる'),
+              selected: themeMode == ThemeMode.system,
+              onSelected: (_) => ref.read(themeModeProvider.notifier).setMode(ThemeMode.system),
+            ),
+            ChoiceChip(
+              label: const Text('ライト'),
+              selected: themeMode == ThemeMode.light,
+              onSelected: (_) => ref.read(themeModeProvider.notifier).setMode(ThemeMode.light),
+            ),
+            ChoiceChip(
+              label: const Text('ダーク'),
+              selected: themeMode == ThemeMode.dark,
+              onSelected: (_) => ref.read(themeModeProvider.notifier).setMode(ThemeMode.dark),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
         Text('デイリーミッション', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),

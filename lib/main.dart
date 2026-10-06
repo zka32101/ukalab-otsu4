@@ -9,6 +9,7 @@ import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_store.dart';
+import 'data/theme_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,10 @@ void main() async {
   final subjectStatsService = SubjectStatsService();
   await subjectStatsService.load();
 
+  // テーマ設定（ライト／ダーク／端末に合わせる）。端末内に保存する。
+  final themeService = ThemeService();
+  await themeService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -58,6 +63,7 @@ void main() async {
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
+        themeServiceProvider.overrideWithValue(themeService),
       ],
       child: const Otsu4App(),
     ),
