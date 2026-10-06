@@ -1,3 +1,5 @@
+import 'package:app_common_kit/app_common_kit.dart';
+
 /// 乙4の頻出用語（暗記カードで使用）。
 ///
 /// 既存の確認済みデータ（`substance.dart`・`extinguisher.dart`・問題データの
@@ -83,3 +85,21 @@ const glossaryTerms = <GlossaryTerm>[
     note: '蒸気が低所に溜まる性質は、換気・排気設備の必要性につながる。',
   ),
 ];
+
+/// [keyword] が用語または定義に含まれる用語を返す（大文字小文字は区別しない）。
+/// 空のキーワードでは何も返さない（検索前の一覧表示を避けるため）。
+List<GlossaryTerm> searchGlossaryTerms(String keyword) {
+  final kw = keyword.trim().toLowerCase();
+  if (kw.isEmpty) return [];
+  return [
+    for (final t in glossaryTerms)
+      if (t.term.toLowerCase().contains(kw) || t.definition.toLowerCase().contains(kw)) t,
+  ];
+}
+
+/// [text] 内に出現する用語集の用語を [TermReference] のリストにして返す。
+/// 解説文中の用語をタップ可能にする（`TappableTermText`。app_common_kit）ために使う。
+List<TermReference> termReferencesIn(String text) => [
+      for (final t in glossaryTerms)
+        if (text.contains(t.term)) TermReference(termId: t.term, matchText: t.term),
+    ];

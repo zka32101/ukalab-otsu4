@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/daily_goal_store.dart';
+import '../data/exam_date_store.dart';
 import '../data/theme_store.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
@@ -23,6 +24,7 @@ class SettingsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final target = ref.watch(dailyGoalProvider).target;
     final themeMode = ref.watch(themeModeProvider);
+    final examDate = ref.watch(examDateProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -79,6 +81,48 @@ class SettingsView extends ConsumerWidget {
                 selected: target == n,
                 onSelected: (_) => ref.read(dailyGoalProvider.notifier).setTarget(n),
               ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text('試験日', style: theme.textTheme.titleSmall),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Text(
+            '本番の日付を設定すると、ホームに残り日数が表示されます。',
+            style: TextStyle(fontSize: 12, height: 1.6),
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () async {
+                  final now = DateTime.now();
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: examDate ?? now,
+                    firstDate: now.subtract(const Duration(days: 1)),
+                    lastDate: now.add(const Duration(days: 730)),
+                  );
+                  if (picked != null) {
+                    ref.read(examDateProvider.notifier).setDate(picked);
+                  }
+                },
+                child: Text(
+                  examDate == null
+                      ? '試験日を設定'
+                      : '${examDate.year}/${examDate.month}/${examDate.day}',
+                ),
+              ),
+            ),
+            if (examDate != null) ...[
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.clear),
+                tooltip: '試験日の設定を解除',
+                onPressed: () => ref.read(examDateProvider.notifier).setDate(null),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 24),

@@ -14,6 +14,7 @@ import 'field_day_view.dart';
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';
 import 'practice_session_view.dart';
+import 'question_search_view.dart';
 import 'storage_puzzle_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
@@ -170,6 +171,18 @@ class _StudyViewState extends ConsumerState<StudyView> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const GlossaryCardView()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.search_outlined),
+            title: const Text('重要語句で探す'),
+            subtitle: const Text('キーワードから、関連する用語集・問題をまとめて探せます'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const QuestionSearchView()),
             ),
           ),
         ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/bookmark_store.dart';
 import 'data/daily_goal_store.dart';
+import 'data/exam_date_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/question_memo_store.dart';
@@ -62,6 +63,10 @@ void main() async {
   final questionMemoService = QuestionMemoService();
   await questionMemoService.load();
 
+  // 試験日（本番の日付）。端末内に保存する。
+  final examDateService = ExamDateService();
+  await examDateService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -76,6 +81,7 @@ void main() async {
         subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),
         questionMemoServiceProvider.overrideWithValue(questionMemoService),
+        examDateServiceProvider.overrideWithValue(examDateService),
       ],
       child: const Otsu4App(),
     ),
