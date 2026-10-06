@@ -7,6 +7,7 @@ import 'data/bookmark_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
 import 'data/mock_history_store.dart';
+import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
 import 'data/question_memo_store.dart';
 import 'data/srs_store.dart';
@@ -38,6 +39,10 @@ void main() async {
   // 模擬試験の結果履歴。端末内に保存する。
   final mockHistoryService = MockHistoryService();
   await mockHistoryService.load();
+
+  // 直近の模擬試験で間違えた問題のqid。端末内に保存する。
+  final mockWrongService = MockWrongService();
+  await mockWrongService.load();
 
   // 気になる問題のブックマーク。端末内に保存する。
   final bookmarkService = BookmarkService();
@@ -75,6 +80,7 @@ void main() async {
         progressServiceProvider.overrideWithValue(progressService),
         srsServiceProvider.overrideWithValue(srsService),
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
+        mockWrongServiceProvider.overrideWithValue(mockWrongService),
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),

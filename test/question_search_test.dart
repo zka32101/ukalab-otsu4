@@ -22,6 +22,23 @@ Question _q({
     );
 
 void main() {
+  group('filterByBookmark', () {
+    final pool = [_q(qid: 'q1'), _q(qid: 'q2'), _q(qid: 'q3')];
+
+    test('onlyBookmarkedがfalseならそのまま返す', () {
+      expect(filterByBookmark(pool, {'q1'}, onlyBookmarked: false), pool);
+    });
+
+    test('onlyBookmarkedがtrueならブックマーク済みだけに絞り込む', () {
+      final filtered = filterByBookmark(pool, {'q1', 'q3'}, onlyBookmarked: true);
+      expect(filtered.map((q) => q.qid), ['q1', 'q3']);
+    });
+
+    test('ブックマークが空ならonlyBookmarked指定時に空を返す', () {
+      expect(filterByBookmark(pool, {}, onlyBookmarked: true), isEmpty);
+    });
+  });
+
   group('searchQuestions', () {
     final pool = [
       _q(qid: 'q1', prompt: '引火点とは何か', explanation: '可燃性蒸気を発生する最低温度'),

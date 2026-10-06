@@ -8,6 +8,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
+import '../data/mock_wrong_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
@@ -150,6 +151,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       if (!correct) wrong.add(q);
     }
     ref.read(subjectStatsHistoryProvider.notifier).recordSnapshot(ref.read(subjectStatsProvider));
+    ref.read(mockWrongProvider.notifier).setWrong([for (final q in wrong) q.qid]);
     setState(() {
       _result = result;
       _wrongQuestions = wrong;

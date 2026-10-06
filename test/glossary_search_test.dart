@@ -25,6 +25,23 @@ void main() {
     });
   });
 
+  group('glossaryTermsBySubject', () {
+    test('指定した分野の用語だけを返す', () {
+      final terms = glossaryTermsBySubject('law');
+      expect(terms, isNotEmpty);
+      expect(terms.every((t) => t.subjectId == 'law'), isTrue);
+    });
+
+    test('全ての用語はlaw・physics_chem・property_extinguishのいずれかに属する', () {
+      const validSubjects = {'law', 'physics_chem', 'property_extinguish'};
+      expect(glossaryTerms.every((t) => validSubjects.contains(t.subjectId)), isTrue);
+    });
+
+    test('存在しない分野では空を返す', () {
+      expect(glossaryTermsBySubject('存在しない分野'), isEmpty);
+    });
+  });
+
   group('termReferencesIn', () {
     test('本文中に出現する用語集の用語をTermReferenceとして返す', () {
       final refs = termReferencesIn('引火点は可燃性蒸気を発生する最低温度。指定数量も重要。');
