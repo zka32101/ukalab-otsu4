@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/achievements.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
+import 'achievements_view.dart';
 import 'weak_review_view.dart';
 
 /// 学習記録。正式な出題範囲（`Question`）の網羅率・正答率はまだ無い
@@ -36,10 +38,29 @@ class RecordView extends ConsumerWidget {
     final srs = ref.watch(srsProvider);
     final dueCount = ref.watch(dueWeakQidsProvider).length;
     final masteredCount = srs.values.where((i) => i.box == Srs.maxBox).length;
+    final achievements = buildAchievements(
+      answered: progress.answered,
+      streakDays: progress.streakDays,
+      mockHistory: mockHistory,
+      subjectStats: subjectStats,
+    );
+    final unlockedCount = achievements.where((a) => a.unlocked).length;
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.emoji_events_outlined),
+            title: Text('実績（$unlockedCount / ${achievements.length}）'),
+            subtitle: const Text('連続学習日数・解答数・模試合格等のバッジを確認できます'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AchievementsView()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         if (progress.answered > 0) ...[
           Card(
             child: Padding(
@@ -134,6 +155,28 @@ class RecordView extends ConsumerWidget {
             ),
           ),
         ],
+        if (subjectStats.length > 1) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('弱点マップ', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    '正答率が低い分野から順に並べています',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  for (final s in sortedByWeakness(exam, subjectStats))
+                    _WeakMapBar(label: s.$1, stat: s.$2),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
           '一問一答・画期的な機能（温度の実験室・貯蔵所パズル・消火マッチング・'
@@ -214,6 +257,68 @@ List<(String, SubjectStat)> _orderedSubjects(ExamConfig? exam, Map<String, Subje
     for (final s in subjects)
       if (stats.containsKey(s.subjectId)) (s.name, stats[s.subjectId]!),
   ];
+}
+
+/// データがある分野を、正答率が低い順に（名前, 統計）で返す
+/// （「弱点マップ」用）。`exam` が未取得なら subjectId をそのまま名前にする。
+List<(String, SubjectStat)> sortedByWeakness(ExamConfig? exam, Map<String, SubjectStat> stats) {
+  final named = exam == null
+      ? [for (final e in stats.entries) (e.key, e.value)]
+      : _orderedSubjects(exam, stats);
+  return [...named]..sort((a, b) => a.$2.accuracy.compareTo(b.$2.accuracy));
+}
+
+/// 弱点マップの1行。正答率に応じて色を変えた横棒グラフ。
+class _WeakMapBar extends StatelessWidget {
+  const _WeakMapBar({required this.label, required this.stat});
+
+  final String label;
+  final SubjectStat stat;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = stat.accuracy < weakSubjectAccuracyThreshold
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: theme.textTheme.bodyMedium),
+              Text(
+                '${(stat.accuracy * 100).round()}%',
+                style: theme.textTheme.bodySmall?.copyWith(color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          LayoutBuilder(
+            builder: (context, constraints) => Stack(
+              children: [
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Container(
+                  height: 8,
+                  width: constraints.maxWidth * stat.accuracy.clamp(0, 1),
+                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// 分野別の正答率1行。解答数・正答率バーを表示する。
