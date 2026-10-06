@@ -13,6 +13,7 @@ import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
 import 'data/question_memo_store.dart';
+import 'data/recent_glossary_terms_store.dart';
 import 'data/reminder_settings_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_history_store.dart';
@@ -92,6 +93,10 @@ void main() async {
   final reminderSettingsService = ReminderSettingsService();
   await reminderSettingsService.load();
 
+  // 最近見た用語集の用語（新しい順）。端末内に保存する。
+  final recentGlossaryTermsService = RecentGlossaryTermsService();
+  await recentGlossaryTermsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -112,6 +117,7 @@ void main() async {
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
         reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
+        recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
       ],
       child: const Otsu4App(),
     ),

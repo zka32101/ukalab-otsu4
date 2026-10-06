@@ -6,6 +6,7 @@ import 'glossary_card_view.dart';
 import 'memo_list_view.dart';
 import 'mock_wrong_review_view.dart';
 import 'question_search_view.dart';
+import 'recent_glossary_terms_view.dart';
 import 'srs_calendar_view.dart';
 import 'weak_review_view.dart';
 
@@ -84,6 +85,14 @@ class StudyToolsView extends StatelessWidget {
             description: 'キーワードから、関連する用語集・問題をまとめて探せます',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const QuestionSearchView()),
+            ),
+          ),
+          _ToolTile(
+            icon: Icons.history_outlined,
+            title: '最近見た用語',
+            description: '用語集で定義を見た用語を、新しい順に振り返れます',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const RecentGlossaryTermsView()),
             ),
           ),
         ],

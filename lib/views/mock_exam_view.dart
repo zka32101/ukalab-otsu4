@@ -377,24 +377,54 @@ class _SubjectResultCard extends StatelessWidget {
             for (final id in ids)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_subjectName(id), style: theme.textTheme.bodyMedium),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (shortfalls.containsKey(id)) ...[
-                          Icon(Icons.warning_amber_outlined, size: 16, color: theme.colorScheme.error),
-                          const SizedBox(width: 4),
-                        ],
-                        Text(
-                          '${bySubject[id]!.score}/${bySubject[id]!.max}'
-                          '（${bySubject[id]!.pct.round()}%）',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: shortfalls.containsKey(id) ? theme.colorScheme.error : null,
-                          ),
+                        Text(_subjectName(id), style: theme.textTheme.bodyMedium),
+                        Row(
+                          children: [
+                            if (shortfalls.containsKey(id)) ...[
+                              Icon(Icons.warning_amber_outlined,
+                                  size: 16, color: theme.colorScheme.error),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              '${bySubject[id]!.score}/${bySubject[id]!.max}'
+                              '（${bySubject[id]!.pct.round()}%）',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                color: shortfalls.containsKey(id) ? theme.colorScheme.error : null,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    LayoutBuilder(
+                      builder: (context, constraints) => Stack(
+                        children: [
+                          Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          Container(
+                            height: 8,
+                            width: constraints.maxWidth * (bySubject[id]!.pct / 100).clamp(0, 1),
+                            decoration: BoxDecoration(
+                              color: shortfalls.containsKey(id)
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
