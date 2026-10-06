@@ -72,5 +72,90 @@ void main() {
       );
       expect(achievements.firstWhere((a) => a.id == 'subject_master').unlocked, isFalse);
     });
+
+    test('解除済みのバッジはprogressTextがnull', () {
+      final achievements = buildAchievements(
+        answered: 100,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+      );
+      expect(achievements.firstWhere((a) => a.id == 'answered_100').progressText, isNull);
+    });
+
+    test('未解除の解答数バッジは現在の解答数をprogressTextに表示する', () {
+      final achievements = buildAchievements(
+        answered: 30,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'answered_50').progressText,
+        '現在の解答数: 30問 / 50問',
+      );
+    });
+
+    test('未解除の連続学習バッジは現在の連続日数をprogressTextに表示する', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 2,
+        mockHistory: const [],
+        subjectStats: const {},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'streak_3').progressText,
+        '現在の連続学習日数: 2日 / 3日',
+      );
+    });
+
+    test('模試未受験ならmock_passのprogressTextは受験履歴なしの文言', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+      );
+      expect(achievements.firstWhere((a) => a.id == 'mock_pass').progressText, '模擬試験の受験履歴がまだありません');
+    });
+
+    test('不合格の模試履歴があればmock_passのprogressTextは合格未到達の文言', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: [MockHistoryEntry(at: DateTime(2026, 1, 1), score: 10, max: 35, passed: false)],
+        subjectStats: const {},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mock_pass').progressText,
+        '直近の模試はまだ合格ラインに届いていません',
+      );
+    });
+
+    test('対象分野が無ければsubject_masterのprogressTextは解答数不足の文言', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: {'law': const SubjectStat(answered: 3, correct: 3)},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'subject_master').progressText,
+        '10問以上解答した分野がまだありません',
+      );
+    });
+
+    test('解答数十分だが正答率が低ければsubject_masterのprogressTextは最高正答率を表示する', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: {'law': const SubjectStat(answered: 10, correct: 7)},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'subject_master').progressText,
+        '現在の最高正答率: 70%（10問以上解答した分野のうち）',
+      );
+    });
   });
 }
