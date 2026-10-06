@@ -5,6 +5,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
+import '../data/mock_wrong_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
@@ -13,6 +14,7 @@ import 'extinguisher_match_view.dart';
 import 'field_day_view.dart';
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';
+import 'mock_wrong_review_view.dart';
 import 'practice_session_view.dart';
 import 'question_search_view.dart';
 import 'storage_puzzle_view.dart';
@@ -73,6 +75,8 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final dailyGoal = ref.watch(dailyGoalProvider);
     final weakIds = weakSubjectIds(ref.watch(subjectStatsProvider)).toSet();
     final weakQuestionCount = qs.where((q) => weakIds.contains(q.subjectId)).length;
+    final mockWrongQids = ref.watch(mockWrongProvider).toSet();
+    final mockWrongCount = qs.where((q) => mockWrongQids.contains(q.qid)).length;
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
     final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
@@ -144,6 +148,20 @@ class _StudyViewState extends ConsumerState<StudyView> {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const FocusTrainingView()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (mockWrongCount > 0) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.replay_outlined),
+              title: Text('前回の模試の間違い（$mockWrongCount問）'),
+              subtitle: const Text('直近の模擬試験で間違えた問題をまとめて復習します'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MockWrongReviewView()),
               ),
             ),
           ),

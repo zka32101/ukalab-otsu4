@@ -1,7 +1,9 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/bookmark_store.dart';
 import '../data/glossary.dart';
 import '../data/question_repository.dart';
 import '../data/question_search.dart';
@@ -10,18 +12,21 @@ import 'glossary_card_view.dart';
 
 /// 重要語句で、用語集・問題を横断的に検索できる画面。学ぶタブの入り口から
 /// いつでも開ける（問題データの有無にかかわらず用語集の検索はできる）。
-class QuestionSearchView extends StatefulWidget {
+/// 「ブックマークのみ」をオンにすると、問題の検索対象をブックマーク済みの
+/// 問題だけに絞り込める。
+class QuestionSearchView extends ConsumerStatefulWidget {
   const QuestionSearchView({super.key});
 
   @override
-  State<QuestionSearchView> createState() => _QuestionSearchViewState();
+  ConsumerState<QuestionSearchView> createState() => _QuestionSearchViewState();
 }
 
-class _QuestionSearchViewState extends State<QuestionSearchView> {
+class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
   final _repo = const QuestionRepository();
   final _controller = TextEditingController();
   List<Question>? _all;
   String _keyword = '';
+  bool _bookmarkOnly = false;
 
   @override
   void initState() {
@@ -45,8 +50,14 @@ class _QuestionSearchViewState extends State<QuestionSearchView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final all = _all;
+    final bookmarked = ref.watch(bookmarkProvider);
     final matchedTerms = searchGlossaryTerms(_keyword);
-    final matchedQuestions = all == null ? const <Question>[] : searchQuestions(all, _keyword);
+    final searchPool = all == null ? const <Question>[] : filterByBookmark(
+          all,
+          bookmarked,
+          onlyBookmarked: _bookmarkOnly,
+        );
+    final matchedQuestions = searchQuestions(searchPool, _keyword);
     final keywordIsEmpty = _keyword.trim().isEmpty;
 
     return Scaffold(
@@ -64,6 +75,12 @@ class _QuestionSearchViewState extends State<QuestionSearchView> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (v) => setState(() => _keyword = v),
+            ),
+            const SizedBox(height: 8),
+            FilterChip(
+              label: const Text('ブックマークのみ'),
+              selected: _bookmarkOnly,
+              onSelected: (v) => setState(() => _bookmarkOnly = v),
             ),
             const SizedBox(height: 16),
             Expanded(
