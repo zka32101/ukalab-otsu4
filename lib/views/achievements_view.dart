@@ -46,6 +46,33 @@ class _AchievementTile extends StatelessWidget {
 
   final Achievement achievement;
 
+  void _showDetail(BuildContext context) {
+    final a = achievement;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(a.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(a.description),
+            if (a.progressText != null) ...[
+              const SizedBox(height: 12),
+              Text(a.progressText!, style: Theme.of(context).textTheme.bodySmall),
+            ] else if (a.unlocked) ...[
+              const SizedBox(height: 12),
+              Text('達成済みです。', style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('閉じる')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -53,6 +80,7 @@ class _AchievementTile extends StatelessWidget {
     final color = unlocked ? theme.colorScheme.primary : theme.disabledColor;
     return Card(
       child: ListTile(
+        onTap: () => _showDetail(context),
         leading: Icon(achievement.icon, color: color),
         title: Text(
           achievement.title,
