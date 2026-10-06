@@ -8,6 +8,7 @@ import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'achievements_view.dart';
 import 'weak_review_view.dart';
@@ -26,6 +27,7 @@ class RecordView extends ConsumerWidget {
     final theme = Theme.of(context);
     final mockHistory = ref.watch(mockHistoryProvider);
     final subjectStats = ref.watch(subjectStatsProvider);
+    final subjectStatsHistory = ref.watch(subjectStatsHistoryProvider);
     final exam = ref.watch(examConfigProvider).valueOrNull;
 
     if (progress.answered == 0 && mockHistory.isEmpty) {
@@ -177,6 +179,33 @@ class RecordView extends ConsumerWidget {
             ),
           ),
         ],
+        if (subjectStatsHistory.length > 1) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('分野別正答率の推移', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    '直近${subjectStatsHistory.length}日分の記録です',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  for (final s in _orderedSubjectIdsAndNames(exam, subjectStats))
+                    _SubjectTrendRow(
+                      label: s.$2,
+                      series: [
+                        for (final e in subjectStatsHistory) e.accuracyBySubject[s.$1] ?? 0,
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
           '一問一答・画期的な機能（温度の実験室・貯蔵所パズル・消火マッチング・'
@@ -257,6 +286,91 @@ List<(String, SubjectStat)> _orderedSubjects(ExamConfig? exam, Map<String, Subje
     for (final s in subjects)
       if (stats.containsKey(s.subjectId)) (s.name, stats[s.subjectId]!),
   ];
+}
+
+/// データがある分野だけ、`ExamConfig` の並び順で（subjectId, 名前）を返す
+/// （「分野別正答率の推移」用。履歴のキーは subjectId のため）。
+List<(String, String)> _orderedSubjectIdsAndNames(ExamConfig? exam, Map<String, SubjectStat> stats) {
+  if (exam == null) {
+    return [for (final id in stats.keys) (id, id)];
+  }
+  final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+  return [
+    for (final s in subjects)
+      if (stats.containsKey(s.subjectId)) (s.subjectId, s.name),
+  ];
+}
+
+/// 分野別正答率の推移1行。分野名・最新の正答率・折れ線の推移を表示する。
+class _SubjectTrendRow extends StatelessWidget {
+  const _SubjectTrendRow({required this.label, required this.series});
+
+  final String label;
+  final List<double> series;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final latest = series.isEmpty ? 0.0 : series.last;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: theme.textTheme.bodyMedium),
+              Text('${(latest * 100).round()}%', style: theme.textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 36,
+            child: CustomPaint(
+              size: const Size(double.infinity, 36),
+              painter: _TrendPainter(series: series, color: theme.colorScheme.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 折れ線グラフの描画。series は古い順の正答率（0.0〜1.0）。
+class _TrendPainter extends CustomPainter {
+  _TrendPainter({required this.series, required this.color});
+
+  final List<double> series;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (series.length < 2) return;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path();
+    final dx = size.width / (series.length - 1);
+    for (var i = 0; i < series.length; i++) {
+      final x = dx * i;
+      final y = size.height * (1 - series[i].clamp(0.0, 1.0));
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrendPainter oldDelegate) =>
+      oldDelegate.series != series || oldDelegate.color != color;
 }
 
 /// データがある分野を、正答率が低い順に（名前, 統計）で返す
