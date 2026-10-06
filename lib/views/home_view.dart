@@ -6,6 +6,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/exam_repository.dart';
+import '../data/mock_history_store.dart';
 import '../widgets/oshi_card.dart';
 
 /// デイリーミッションの目標がある夜（18時以降）に、まだ達成していなければ
@@ -67,6 +68,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final dailyGoal = ref.watch(dailyGoalProvider);
     final showReminder = shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
     final examDate = ref.watch(examDateProvider);
+    final mockHistory = ref.watch(mockHistoryProvider);
+    final showMockReminder = shouldShowMockIntervalReminder(mockHistory, DateTime.now());
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -105,6 +108,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       style: theme.textTheme.bodyMedium
                           ?.copyWith(color: theme.colorScheme.onErrorContainer),
                     ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (showMockReminder) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.quiz_outlined, color: theme.colorScheme.secondary),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text('前回の模擬試験から日が経っています。模擬タブで力試しをしてみましょう'),
                   ),
                 ],
               ),

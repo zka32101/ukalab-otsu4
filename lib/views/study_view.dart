@@ -21,6 +21,7 @@ import 'mock_wrong_review_view.dart';
 import 'practice_session_view.dart';
 import 'question_search_view.dart';
 import 'storage_puzzle_view.dart';
+import 'study_tools_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
 import 'weak_review_view.dart';
@@ -91,6 +92,18 @@ class _StudyViewState extends ConsumerState<StudyView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.apps_outlined),
+            title: const Text('学習ツール一覧'),
+            subtitle: const Text('用語集・検索・メモ・復習カレンダー等をまとめて見渡せます'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const StudyToolsView()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         if (dailyGoal.target != null) ...[
           Card(
             child: Padding(
