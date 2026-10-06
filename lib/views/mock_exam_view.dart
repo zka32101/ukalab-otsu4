@@ -10,6 +10,7 @@ import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 import 'mock_review_view.dart';
@@ -148,6 +149,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       ref.read(dailyGoalProvider.notifier).recordAnswer();
       if (!correct) wrong.add(q);
     }
+    ref.read(subjectStatsHistoryProvider.notifier).recordSnapshot(ref.read(subjectStatsProvider));
     setState(() {
       _result = result;
       _wrongQuestions = wrong;

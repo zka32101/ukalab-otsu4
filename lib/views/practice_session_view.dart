@@ -6,13 +6,16 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
+import '../data/recent_questions.dart';
 import '../data/srs_store.dart';
+import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 
 /// 一問一答の演習（`Question` のプール）共通部分。[pool] が空なら
 /// [emptyMessage] を表示する。[StudyView]（全体プール）と、苦手問題だけの
-/// 復習（`WeakReviewView`）の両方で使う。
+/// 復習（`WeakReviewView`）の両方で使う。直近出題した問題（アプリ起動中のみ
+/// 記憶。`lib/data/recent_questions.dart`）は、プールが十分にあれば避ける。
 class PracticeSessionView extends ConsumerStatefulWidget {
   const PracticeSessionView({
     super.key,
@@ -37,23 +40,29 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
   @override
   void initState() {
     super.initState();
-    _restart(seed: 0);
+    _restart(seed: DateTime.now().millisecondsSinceEpoch);
   }
 
   void _restart({required int seed}) {
-    final qs = widget.pool;
+    final minSize = widget.pool.length < 10 ? widget.pool.length : 10;
+    final recentIds = ref.read(recentQuestionsProvider).toSet();
+    final qs = excludeRecent(widget.pool, recentIds, (q) => q.qid, minPoolSize: minSize);
     setState(() {
       _session = qs.isEmpty
           ? null
           : PracticeSession(
               pool: qs,
-              size: qs.length < 10 ? qs.length : 10,
+              size: minSize,
               mode: widget.mode,
               seed: seed,
             );
       _selected = null;
       _answered = false;
     });
+    final session = _session;
+    if (session != null) {
+      ref.read(recentQuestionsProvider.notifier).recordShown(session.questions.map((q) => q.qid));
+    }
   }
 
   void _select(int i) {
@@ -66,7 +75,13 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
     ref.read(dailyGoalProvider.notifier).recordAnswer();
-    ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: subjectId, correct: record.correct);
+    ref
+        .read(subjectStatsProvider.notifier)
+        .recordAnswer(subjectId: subjectId, correct: record.correct)
+        .then((_) {
+      if (!mounted) return;
+      ref.read(subjectStatsHistoryProvider.notifier).recordSnapshot(ref.read(subjectStatsProvider));
+    });
   }
 
   void _next() => setState(() {

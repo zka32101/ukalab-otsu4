@@ -8,6 +8,7 @@ import 'data/daily_goal_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/progress_store.dart';
 import 'data/srs_store.dart';
+import 'data/subject_stats_history_store.dart';
 import 'data/subject_stats_store.dart';
 import 'data/theme_store.dart';
 
@@ -48,6 +49,10 @@ void main() async {
   final subjectStatsService = SubjectStatsService();
   await subjectStatsService.load();
 
+  // 分野別正答率の推移（日次スナップショット）。端末内に保存する。
+  final subjectStatsHistoryService = SubjectStatsHistoryService();
+  await subjectStatsHistoryService.load();
+
   // テーマ設定（ライト／ダーク／端末に合わせる）。端末内に保存する。
   final themeService = ThemeService();
   await themeService.load();
@@ -63,6 +68,7 @@ void main() async {
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
+        subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),
       ],
       child: const Otsu4App(),
