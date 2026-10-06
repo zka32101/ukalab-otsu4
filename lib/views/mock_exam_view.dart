@@ -43,6 +43,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
   Object? _error;
   Timer? _timer;
   int? _remainingSec;
+  bool _paceAlertShown = false;
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       _index = 0;
       _result = null;
       _remainingSec = level.timeLimitSec;
+      _paceAlertShown = false;
     });
     if (level.timeLimitSec != null) {
       _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
@@ -285,6 +287,15 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       );
       paceText = behind ? 'ペースがやや遅れています' : 'ペースは順調です';
       paceColor = behind ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary;
+      if (behind && !_paceAlertShown) {
+        _paceAlertShown = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ペースがやや遅れています。残り時間に注意しましょう')),
+          );
+        });
+      }
     }
     return ListView(
       padding: const EdgeInsets.all(16),
