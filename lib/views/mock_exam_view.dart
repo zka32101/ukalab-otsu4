@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +16,8 @@ import 'mock_review_view.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
 /// 出題は `pickMockExamQuestions` で科目別の配分（法令15／物理化学10／
-/// 性質消火10）どおりに選ぶ。制限時間のタイマー表示は未実装。
+/// 性質消火10）どおりに選ぶ。制限時間（`LevelConfig.timeLimitSec`）は
+/// 残り時間のカウントダウン表示付きで、0になると自動的に採点する。
 class MockExamView extends ConsumerStatefulWidget {
   const MockExamView({super.key});
 
@@ -33,11 +36,19 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
   MockExamResult? _result;
   List<Question> _wrongQuestions = [];
   Object? _error;
+  Timer? _timer;
+  int? _remainingSec;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -57,6 +68,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
 
   void _start() {
     final level = _exam!.levels.first;
+    _timer?.cancel();
     setState(() {
       _picked = pickMockExamQuestions(
         pool: _questions!,
@@ -66,7 +78,29 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       _answers.clear();
       _index = 0;
       _result = null;
+      _remainingSec = level.timeLimitSec;
     });
+    if (level.timeLimitSec != null) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    }
+  }
+
+  void _tick() {
+    final remaining = _remainingSec;
+    if (remaining == null) return;
+    if (remaining <= 1) {
+      _timer?.cancel();
+      setState(() => _remainingSec = 0);
+      _finish();
+      return;
+    }
+    setState(() => _remainingSec = remaining - 1);
+  }
+
+  String _formatRemaining(int sec) {
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
   }
 
   /// 科目別の配分（あれば）を満たす問題数が揃っているか。
@@ -90,6 +124,13 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       setState(() => _index++);
       return;
     }
+    _timer?.cancel();
+    _finish();
+  }
+
+  /// 採点して結果を確定する。最後の問題に答えたとき・制限時間が
+  /// 0になったときの両方から呼ぶ。
+  void _finish() {
     final result = scoreMockExam(
       questions: _picked!,
       answers: _answers,
@@ -156,6 +197,14 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
               passedText: result.passed ? '合格ライン到達' : '科目の足切りに注意',
               onRetry: _start,
             ),
+            if (result.bySubject.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _SubjectResultCard(
+                exam: exam,
+                bySubject: result.bySubject,
+                shortfalls: result.subjectShortfalls,
+              ),
+            ],
             if (_wrongQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
               OutlinedButton(
@@ -200,9 +249,30 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
 
     final q = picked[_index];
     final selected = _answers[q.qid];
+    final remaining = _remainingSec;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (remaining != null) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(
+                Icons.timer_outlined,
+                size: 18,
+                color: remaining <= 60 ? Theme.of(context).colorScheme.error : null,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '残り ${_formatRemaining(remaining)}',
+                style: TextStyle(
+                  color: remaining <= 60 ? Theme.of(context).colorScheme.error : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
         QuestionCard(text: q.prompt, index: _index + 1, total: picked.length),
         const SizedBox(height: 12),
         for (var i = 0; i < q.choices.length; i++)
@@ -221,6 +291,77 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
           child: Text(_index + 1 < picked.length ? '次の問題' : '採点する'),
         ),
       ],
+    );
+  }
+}
+
+/// 模試結果の科目別内訳（得点・得点率・足切り判定）。
+class _SubjectResultCard extends StatelessWidget {
+  const _SubjectResultCard({
+    required this.exam,
+    required this.bySubject,
+    required this.shortfalls,
+  });
+
+  final ExamConfig exam;
+  final Map<String, ScoreLine> bySubject;
+  final Map<String, int> shortfalls;
+
+  String _subjectName(String subjectId) =>
+      exam.subjects.firstWhere((s) => s.subjectId == subjectId, orElse: () => SubjectConfig(
+            subjectId: subjectId,
+            name: subjectId,
+            order: 0,
+          )).name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+    final ids = [for (final s in subjects) if (bySubject.containsKey(s.subjectId)) s.subjectId];
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('科目別の結果', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 12),
+            for (final id in ids)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_subjectName(id), style: theme.textTheme.bodyMedium),
+                    Row(
+                      children: [
+                        if (shortfalls.containsKey(id)) ...[
+                          Icon(Icons.warning_amber_outlined, size: 16, color: theme.colorScheme.error),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          '${bySubject[id]!.score}/${bySubject[id]!.max}'
+                          '（${bySubject[id]!.pct.round()}%）',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: shortfalls.containsKey(id) ? theme.colorScheme.error : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            if (shortfalls.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '赤字の科目は足切り（最低得点率）に届いていません。',
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
