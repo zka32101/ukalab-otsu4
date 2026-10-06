@@ -11,6 +11,7 @@ import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'achievements_view.dart';
+import 'srs_calendar_view.dart';
 import 'weak_review_view.dart';
 
 /// 学習記録。正式な出題範囲（`Question`）の網羅率・正答率はまだ無い
@@ -110,15 +111,26 @@ class RecordView extends ConsumerWidget {
                   _StatRow(label: '間違えて記録中の問題', value: '${srs.length}問'),
                   _StatRow(label: '復習待ち', value: '$dueCount問'),
                   _StatRow(label: '定着した問題', value: '$masteredCount問'),
-                  if (dueCount > 0) ...[
-                    const SizedBox(height: 12),
-                    FilledButton.tonal(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const WeakReviewView()),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (dueCount > 0) ...[
+                        FilledButton.tonal(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const WeakReviewView()),
+                          ),
+                          child: const Text('復習する'),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      OutlinedButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SrsCalendarView()),
+                        ),
+                        child: const Text('復習カレンダー'),
                       ),
-                      child: const Text('復習する'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
               ),
             ),
