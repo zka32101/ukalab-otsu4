@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/glossary.dart';
 import '../data/glossary_favorite_store.dart';
+import '../data/recent_glossary_terms_store.dart';
+import 'recent_glossary_terms_view.dart';
 
 /// 分野フィルタの選択肢（表示名）。nullは「すべて」。
 const _subjectFilterLabels = <String?, String>{
@@ -43,6 +45,9 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
     _index = found >= 0 ? found : 0;
     // 検索・解説文中のタップから来た場合は、用語名ではなく定義を直接見せる。
     _showDefinition = found >= 0;
+    if (_showDefinition) {
+      ref.read(recentGlossaryTermsProvider.notifier).record(widget.initialTerm!);
+    }
   }
 
   void _setSubjectFilter(String? subjectId) {
@@ -111,9 +116,17 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
       ],
     );
 
+    final historyAction = IconButton(
+      icon: const Icon(Icons.history_outlined),
+      tooltip: '最近見た用語',
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const RecentGlossaryTermsView()),
+      ),
+    );
+
     if (terms.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('用語集')),
+        appBar: AppBar(title: const Text('用語集'), actions: [historyAction]),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -135,7 +148,7 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
     final isFavorite = favorites.contains(term.term);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('用語集')),
+      appBar: AppBar(title: const Text('用語集'), actions: [historyAction]),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -151,7 +164,13 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
               child: Stack(
                 children: [
                   GestureDetector(
-                    onTap: () => setState(() => _showDefinition = !_showDefinition),
+                    onTap: () {
+                      final nextShowDefinition = !_showDefinition;
+                      setState(() => _showDefinition = nextShowDefinition);
+                      if (nextShowDefinition) {
+                        ref.read(recentGlossaryTermsProvider.notifier).record(term.term);
+                      }
+                    },
                     child: Card(
                       child: Center(
                         child: Padding(
