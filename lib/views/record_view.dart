@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/achievements.dart';
+import '../data/daily_goal_history_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
@@ -29,6 +30,7 @@ class RecordView extends ConsumerWidget {
     final mockHistory = ref.watch(mockHistoryProvider);
     final subjectStats = ref.watch(subjectStatsProvider);
     final subjectStatsHistory = ref.watch(subjectStatsHistoryProvider);
+    final dailyGoalHistory = ref.watch(dailyGoalHistoryProvider);
     final exam = ref.watch(examConfigProvider).valueOrNull;
 
     if (progress.answered == 0 && mockHistory.isEmpty) {
@@ -93,6 +95,27 @@ class RecordView extends ConsumerWidget {
                       ],
                     ),
                   ],
+                ],
+              ),
+            ),
+          ),
+        ],
+        if (dailyGoalHistory.length > 1) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('デイリーミッションの達成履歴', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    '直近${dailyGoalHistory.length}日分の記録です',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  _DailyGoalHistoryChart(history: dailyGoalHistory),
                 ],
               ),
             ),
@@ -283,6 +306,75 @@ class _MockHistoryRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// デイリーミッションの達成履歴。古い順に、その日の解答数を目標達成の有無で
+/// 色分けした横棒で表示する（復習カレンダーと同じ横棒の表現を使う）。
+class _DailyGoalHistoryChart extends StatelessWidget {
+  const _DailyGoalHistoryChart({required this.history});
+
+  final List<DailyGoalHistoryEntry> history;
+
+  static const _weekdayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final maxCount = history.map((e) => e.count).fold<int>(0, (a, b) => a > b ? a : b);
+    return Column(
+      children: [
+        for (final entry in history)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 56,
+                  child: Text(
+                    '${entry.date.month}/${entry.date.day}'
+                    '（${_weekdayLabels[entry.date.weekday - 1]}）',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Stack(
+                      children: [
+                        Container(
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        if (maxCount > 0 && entry.count > 0)
+                          Container(
+                            height: 14,
+                            width: constraints.maxWidth * (entry.count / maxCount).clamp(0.08, 1.0),
+                            decoration: BoxDecoration(
+                              color: entry.achieved ? theme.colorScheme.primary : theme.colorScheme.outline,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 36,
+                  child: Text(
+                    '${entry.count}問',
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
+import 'data/daily_goal_history_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
+import 'data/glossary_favorite_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
@@ -53,6 +55,10 @@ void main() async {
   final dailyGoalService = DailyGoalService();
   await dailyGoalService.load();
 
+  // デイリーミッションの達成履歴（日次スナップショット）。端末内に保存する。
+  final dailyGoalHistoryService = DailyGoalHistoryService();
+  await dailyGoalHistoryService.load();
+
   // 分野別の解答数・正解数。端末内に保存する。
   final subjectStatsService = SubjectStatsService();
   await subjectStatsService.load();
@@ -77,6 +83,10 @@ void main() async {
   final answeredQuestionsService = AnsweredQuestionsService();
   await answeredQuestionsService.load();
 
+  // お気に入りに登録した用語集の用語。端末内に保存する。
+  final glossaryFavoriteService = GlossaryFavoriteService();
+  await glossaryFavoriteService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -88,12 +98,14 @@ void main() async {
         mockWrongServiceProvider.overrideWithValue(mockWrongService),
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
+        dailyGoalHistoryServiceProvider.overrideWithValue(dailyGoalHistoryService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
         subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),
         questionMemoServiceProvider.overrideWithValue(questionMemoService),
         examDateServiceProvider.overrideWithValue(examDateService),
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
+        glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
       ],
       child: const Otsu4App(),
     ),

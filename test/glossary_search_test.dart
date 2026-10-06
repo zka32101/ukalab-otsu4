@@ -42,6 +42,41 @@ void main() {
     });
   });
 
+  group('filterGlossaryTerms', () {
+    test('subjectIdがnullならすべての用語が対象', () {
+      final terms = filterGlossaryTerms(subjectId: null, favoritesOnly: false, favoriteTerms: {});
+      expect(terms, glossaryTerms);
+    });
+
+    test('subjectIdを指定すると、その分野だけに絞り込む', () {
+      final terms = filterGlossaryTerms(subjectId: 'law', favoritesOnly: false, favoriteTerms: {});
+      expect(terms.every((t) => t.subjectId == 'law'), isTrue);
+    });
+
+    test('favoritesOnlyがtrueなら、favoriteTermsに含まれる用語だけに絞り込む', () {
+      final terms = filterGlossaryTerms(
+        subjectId: null,
+        favoritesOnly: true,
+        favoriteTerms: {'引火点', '指定数量'},
+      );
+      expect(terms.map((t) => t.term).toSet(), {'引火点', '指定数量'});
+    });
+
+    test('分野・お気に入りの両方を同時に絞り込める', () {
+      final terms = filterGlossaryTerms(
+        subjectId: 'law',
+        favoritesOnly: true,
+        favoriteTerms: {'引火点', '指定数量'},
+      );
+      expect(terms.map((t) => t.term).toSet(), {'指定数量'});
+    });
+
+    test('お気に入りが空ならfavoritesOnlyで空を返す', () {
+      final terms = filterGlossaryTerms(subjectId: null, favoritesOnly: true, favoriteTerms: {});
+      expect(terms, isEmpty);
+    });
+  });
+
   group('termReferencesIn', () {
     test('本文中に出現する用語集の用語をTermReferenceとして返す', () {
       final refs = termReferencesIn('引火点は可燃性蒸気を発生する最低温度。指定数量も重要。');
