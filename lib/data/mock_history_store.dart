@@ -140,3 +140,23 @@ bool shouldShowMockIntervalReminder(
   final lastDay = DateTime(last.year, last.month, last.day);
   return today.difference(lastDay).inDays >= days;
 }
+
+/// 前回の模試から [days] 日後を、次回の模試の目安日として返す（日付のみ）。
+/// [history] が空（模試を一度も受けていない）なら null。
+DateTime? nextRecommendedMockDate(List<MockHistoryEntry> history, {int days = 7}) {
+  if (history.isEmpty) return null;
+  final last = history.last.at;
+  final lastDay = DateTime(last.year, last.month, last.day);
+  return lastDay.add(Duration(days: days));
+}
+
+/// ホームに表示する、次回の模試の目安の表示文言。
+String nextMockDateText(DateTime recommended, DateTime now) {
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(recommended.year, recommended.month, recommended.day);
+  final diff = day.difference(today).inDays;
+  final dateLabel = '${day.month}/${day.day}';
+  if (diff > 0) return '次回の模試の目安は$dateLabel（あと$diff日）です';
+  if (diff == 0) return '次回の模試の目安は今日（$dateLabel）です';
+  return '次回の模試の目安（$dateLabel）を過ぎています';
+}

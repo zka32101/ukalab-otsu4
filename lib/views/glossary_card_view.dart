@@ -33,6 +33,8 @@ class GlossaryCardView extends ConsumerStatefulWidget {
 class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   String? _subjectFilter;
   bool _favoritesOnly = false;
+  bool _shuffle = false;
+  List<GlossaryTerm>? _shuffledCache;
   late int _index;
   late bool _showDefinition;
 
@@ -66,6 +68,29 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
     });
   }
 
+  void _toggleShuffle() {
+    setState(() {
+      _shuffle = !_shuffle;
+      _shuffledCache = null;
+      _index = 0;
+      _showDefinition = false;
+    });
+  }
+
+  /// [filtered] をシャッフルモード時はランダムな順序で返す。フィルタの変更で
+  /// 対象の用語が変わらない限り、同じ並び順を保つ（タップごとに並びが
+  /// 変わってしまうのを防ぐ）。
+  List<GlossaryTerm> _displayTerms(List<GlossaryTerm> filtered) {
+    if (!_shuffle) return filtered;
+    final cache = _shuffledCache;
+    if (cache != null && cache.length == filtered.length && cache.toSet().containsAll(filtered)) {
+      return cache;
+    }
+    final shuffled = shuffledGlossaryTerms(filtered);
+    _shuffledCache = shuffled;
+    return shuffled;
+  }
+
   void _next(int length) {
     setState(() {
       _index = (_index + 1) % length;
@@ -84,11 +109,12 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final favorites = ref.watch(glossaryFavoriteProvider);
-    final terms = filterGlossaryTerms(
+    final filtered = filterGlossaryTerms(
       subjectId: _subjectFilter,
       favoritesOnly: _favoritesOnly,
       favoriteTerms: favorites,
     );
+    final terms = _displayTerms(filtered);
 
     final filterRow = Column(
       children: [
@@ -105,13 +131,22 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
           ],
         ),
         const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilterChip(
-            label: const Text('お気に入りのみ'),
-            selected: _favoritesOnly,
-            onSelected: (_) => _toggleFavoritesOnly(),
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            FilterChip(
+              label: const Text('お気に入りのみ'),
+              selected: _favoritesOnly,
+              onSelected: (_) => _toggleFavoritesOnly(),
+            ),
+            FilterChip(
+              label: const Text('ランダム順'),
+              avatar: const Icon(Icons.shuffle, size: 18),
+              selected: _shuffle,
+              onSelected: (_) => _toggleShuffle(),
+            ),
+          ],
         ),
       ],
     );

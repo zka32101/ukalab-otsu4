@@ -35,4 +35,37 @@ void main() {
       expect(shouldShowMockIntervalReminder(history, DateTime(2026, 10, 6), days: 4), isFalse);
     });
   });
+
+  group('nextRecommendedMockDate', () {
+    test('履歴が無ければnull', () {
+      expect(nextRecommendedMockDate(const []), isNull);
+    });
+
+    test('前回の模試から指定日数後を返す', () {
+      final history = [_entry(DateTime(2026, 10, 1))];
+      expect(nextRecommendedMockDate(history), DateTime(2026, 10, 8));
+    });
+
+    test('直近の模試（履歴の最後）を基準にする', () {
+      final history = [_entry(DateTime(2026, 9, 1)), _entry(DateTime(2026, 10, 1))];
+      expect(nextRecommendedMockDate(history, days: 3), DateTime(2026, 10, 4));
+    });
+  });
+
+  group('nextMockDateText', () {
+    test('目安の日が未来なら残り日数を表示する', () {
+      final text = nextMockDateText(DateTime(2026, 10, 10), DateTime(2026, 10, 6));
+      expect(text, '次回の模試の目安は10/10（あと4日）です');
+    });
+
+    test('目安の日が今日なら「今日」と表示する', () {
+      final text = nextMockDateText(DateTime(2026, 10, 6), DateTime(2026, 10, 6));
+      expect(text, '次回の模試の目安は今日（10/6）です');
+    });
+
+    test('目安の日を過ぎていれば、その旨を表示する', () {
+      final text = nextMockDateText(DateTime(2026, 10, 1), DateTime(2026, 10, 6));
+      expect(text, '次回の模試の目安（10/1）を過ぎています');
+    });
+  });
 }

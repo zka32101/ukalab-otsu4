@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otsu4/data/glossary.dart';
 
@@ -74,6 +76,22 @@ void main() {
     test('お気に入りが空ならfavoritesOnlyで空を返す', () {
       final terms = filterGlossaryTerms(subjectId: null, favoritesOnly: true, favoriteTerms: {});
       expect(terms, isEmpty);
+    });
+  });
+
+  group('shuffledGlossaryTerms', () {
+    test('元の用語と同じ要素を、同じ件数だけ返す（順序が入れ替わる）', () {
+      final terms = glossaryTermsBySubject('law');
+      final shuffled = shuffledGlossaryTerms(terms, random: Random(42));
+      expect(shuffled.length, terms.length);
+      expect(shuffled.toSet(), terms.toSet());
+    });
+
+    test('元のリストを変更しない', () {
+      final terms = glossaryTermsBySubject('law');
+      final before = [...terms];
+      shuffledGlossaryTerms(terms, random: Random(1));
+      expect(terms, before);
     });
   });
 
