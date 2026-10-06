@@ -13,6 +13,7 @@ import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
 import 'data/question_memo_store.dart';
+import 'data/reminder_settings_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_history_store.dart';
 import 'data/subject_stats_store.dart';
@@ -87,6 +88,10 @@ void main() async {
   final glossaryFavoriteService = GlossaryFavoriteService();
   await glossaryFavoriteService.load();
 
+  // アプリ内リマインダー（学習・模試）の個別オン/オフ設定。端末内に保存する。
+  final reminderSettingsService = ReminderSettingsService();
+  await reminderSettingsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -106,6 +111,7 @@ void main() async {
         examDateServiceProvider.overrideWithValue(examDateService),
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
+        reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
       ],
       child: const Otsu4App(),
     ),

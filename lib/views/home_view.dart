@@ -7,6 +7,7 @@ import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
+import '../data/reminder_settings_store.dart';
 import '../widgets/oshi_card.dart';
 
 /// デイリーミッションの目標がある夜（18時以降）に、まだ達成していなければ
@@ -66,10 +67,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final level = exam.levels.first;
     final theme = Theme.of(context);
     final dailyGoal = ref.watch(dailyGoalProvider);
-    final showReminder = shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
+    final reminderSettings = ref.watch(reminderSettingsProvider);
+    final showReminder = reminderSettings.studyReminderEnabled &&
+        shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
     final examDate = ref.watch(examDateProvider);
     final mockHistory = ref.watch(mockHistoryProvider);
-    final showMockReminder = shouldShowMockIntervalReminder(mockHistory, DateTime.now());
+    final showMockReminder = reminderSettings.mockReminderEnabled &&
+        shouldShowMockIntervalReminder(mockHistory, DateTime.now());
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [

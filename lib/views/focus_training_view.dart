@@ -6,11 +6,18 @@ import '../data/question_repository.dart';
 import '../data/subject_stats_store.dart';
 import 'practice_session_view.dart';
 
-/// 集中特訓（苦手分野の優先出題）。解答数が十分あり正答率が低い分野
-/// （`weakSubjectIds`。`lib/data/subject_stats_store.dart`）の問題だけを
-/// まとめて演習する。
+/// 集中特訓（苦手分野の優先出題）。[subjectId] を指定しなければ、解答数が
+/// 十分あり正答率が低い分野（`weakSubjectIds`。`lib/data/subject_stats_store.dart`）
+/// の問題だけをまとめて演習する。[subjectId] を指定すると、弱点マップの
+/// タップ等から、しきい値にかかわらずその分野だけを直接演習できる。
 class FocusTrainingView extends ConsumerStatefulWidget {
-  const FocusTrainingView({super.key});
+  const FocusTrainingView({super.key, this.subjectId, this.subjectName});
+
+  /// 指定すると、この分野だけを演習する（`weakSubjectIds` の判定は使わない）。
+  final String? subjectId;
+
+  /// [subjectId] 指定時にタイトル・空状態の文言で使う分野名。
+  final String? subjectName;
 
   @override
   ConsumerState<FocusTrainingView> createState() => _FocusTrainingViewState();
@@ -29,6 +36,11 @@ class _FocusTrainingViewState extends ConsumerState<FocusTrainingView> {
   Future<void> _load() async {
     final all = await _repo.load();
     if (!mounted) return;
+    final subjectId = widget.subjectId;
+    if (subjectId != null) {
+      setState(() => _questions = [for (final q in all) if (q.subjectId == subjectId) q]);
+      return;
+    }
     final weakIds = weakSubjectIds(ref.read(subjectStatsProvider)).toSet();
     setState(() => _questions = [for (final q in all) if (weakIds.contains(q.subjectId)) q]);
   }
@@ -36,15 +48,17 @@ class _FocusTrainingViewState extends ConsumerState<FocusTrainingView> {
   @override
   Widget build(BuildContext context) {
     final qs = _questions;
+    final subjectName = widget.subjectName;
     return Scaffold(
-      appBar: AppBar(title: const Text('集中特訓')),
+      appBar: AppBar(title: Text(subjectName == null ? '集中特訓' : '$subjectNameの演習')),
       body: qs == null
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16),
               child: PracticeSessionView(
                 pool: qs,
-                emptyMessage: '苦手な分野はまだ特定できていません。',
+                emptyMessage:
+                    subjectName == null ? '苦手な分野はまだ特定できていません。' : 'この分野の問題データはまだありません。',
               ),
             ),
     );
