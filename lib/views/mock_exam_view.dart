@@ -9,6 +9,7 @@ import '../data/answered_questions_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
+import '../data/mock_pace.dart';
 import '../data/mock_wrong_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
@@ -256,6 +257,28 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     final q = picked[_index];
     final selected = _answers[q.qid];
     final remaining = _remainingSec;
+    final level = exam.levels.first;
+    final subjectCounts = level.subjectQuestionCounts;
+    String? paceText;
+    Color? paceColor;
+    if (remaining != null && level.timeLimitSec != null && subjectCounts != null) {
+      final budget = subjectPaceBudgetSec(
+        subjectQuestionCounts: subjectCounts,
+        totalTimeSec: level.timeLimitSec!,
+      );
+      final cumulativeBudget = cumulativeBudgetSecAt(
+        picked: picked,
+        index: _index,
+        subjectQuestionCounts: subjectCounts,
+        subjectBudgetSec: budget,
+      );
+      final behind = isBehindPace(
+        elapsedSec: level.timeLimitSec! - remaining,
+        cumulativeBudgetSec: cumulativeBudget,
+      );
+      paceText = behind ? 'ペースがやや遅れています' : 'ペースは順調です';
+      paceColor = behind ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary;
+    }
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -277,6 +300,17 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
               ),
             ],
           ),
+          if (paceText != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(Icons.speed_outlined, size: 16, color: paceColor),
+                const SizedBox(width: 4),
+                Text(paceText, style: TextStyle(fontSize: 12, color: paceColor)),
+              ],
+            ),
+          ],
           const SizedBox(height: 8),
         ],
         QuestionCard(text: q.prompt, index: _index + 1, total: picked.length),

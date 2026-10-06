@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/theme_store.dart';
+import 'source_credits_view.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
 const String appDisclaimer =
@@ -128,9 +129,21 @@ class SettingsView extends ConsumerWidget {
         const SizedBox(height: 24),
         Text('このアプリについて', style: theme.textTheme.titleSmall),
         const Padding(
-          padding: EdgeInsets.fromLTRB(0, 8, 0, 24),
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
           child: Text(appDisclaimer, style: TextStyle(fontSize: 12, height: 1.6)),
         ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.gavel_outlined),
+            title: const Text('問題データの出典（法令）'),
+            subtitle: const Text('法令問題が基づいている条文の一覧を確認できます'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SourceCreditsView()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
       ],
     );
   }
