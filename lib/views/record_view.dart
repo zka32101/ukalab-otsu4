@@ -56,6 +56,19 @@ class RecordView extends ConsumerWidget {
                     value: '${(progress.accuracy * 100).round()}%',
                   ),
                   _StatRow(label: '連続学習日数', value: '${progress.streakDays}日'),
+                  if (latestStreakMilestone(progress.streakDays) != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.emoji_events_outlined, size: 18, color: theme.colorScheme.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${latestStreakMilestone(progress.streakDays)}日連続達成！',
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -175,6 +188,19 @@ class _MockHistoryRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 連続学習日数のマイルストーン（節目）。
+const List<int> streakMilestones = [3, 7, 14, 30, 60, 100, 200, 365];
+
+/// 現在の連続学習日数が到達している、最も大きいマイルストーン。
+/// どれにも達していなければ null。
+int? latestStreakMilestone(int streakDays) {
+  int? latest;
+  for (final d in streakMilestones) {
+    if (streakDays >= d) latest = d;
+  }
+  return latest;
 }
 
 /// データがある分野だけ、`ExamConfig` の並び順で（名前, 統計）を返す。
