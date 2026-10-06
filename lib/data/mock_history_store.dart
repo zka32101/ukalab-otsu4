@@ -125,3 +125,18 @@ PassPrediction predictPassTrend(List<MockHistoryEntry> history, {required double
   if (avgPct >= passPct - 10) return PassPrediction.closeToTarget;
   return PassPrediction.needsWork;
 }
+
+/// 前回の模試からの経過日数が [days] 以上であれば、受験間隔のリマインダーを
+/// 表示するべきかどうか。模試をまだ受けていなければ表示しない（未経験者を
+/// 急かさない）。[history] は古い順（最後の要素が直近）。
+bool shouldShowMockIntervalReminder(
+  List<MockHistoryEntry> history,
+  DateTime now, {
+  int days = 7,
+}) {
+  if (history.isEmpty) return false;
+  final last = history.last.at;
+  final today = DateTime(now.year, now.month, now.day);
+  final lastDay = DateTime(last.year, last.month, last.day);
+  return today.difference(lastDay).inDays >= days;
+}
