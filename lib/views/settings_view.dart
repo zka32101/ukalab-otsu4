@@ -1,8 +1,10 @@
+import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
+import '../data/progress_store.dart';
 import '../data/theme_store.dart';
 import 'source_credits_view.dart';
 
@@ -26,6 +28,7 @@ class SettingsView extends ConsumerWidget {
     final target = ref.watch(dailyGoalProvider).target;
     final themeMode = ref.watch(themeModeProvider);
     final examDate = ref.watch(examDateProvider);
+    final progress = ref.watch(progressProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -57,6 +60,32 @@ class SettingsView extends ConsumerWidget {
               onSelected: (_) => ref.read(themeModeProvider.notifier).setMode(ThemeMode.dark),
             ),
           ],
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                MascotWidget(
+                  stage: MasteryModel.standard.stageOf(
+                    MasteryInput(coverage: progress.coverage, accuracy: progress.accuracy),
+                  ),
+                  outfit: ref.watch(equippedOutfitProvider),
+                  expression: MascotExpression.normal,
+                  display: MascotDisplay.normal,
+                  size: 56,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '今のテーマでの推しの見た目のプレビューです。テーマを切り替えると見た目が変わります。',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 24),
         Text('デイリーミッション', style: theme.textTheme.titleSmall),
