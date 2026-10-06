@@ -3,8 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../widgets/oshi_card.dart';
+
+/// デイリーミッションの目標がある夜（18時以降）に、まだ達成していなければ
+/// 学習リマインダーを表示する時刻かどうか。OSのプッシュ通知は新規ネイティブ
+/// 依存の追加・プラットフォーム設定が必要でこのクラウド環境では検証できない
+/// ため、アプリを開いたときに表示するアプリ内リマインダーとして実装する
+/// （ユーザー判断。README参照）。
+bool shouldShowStudyReminder({required DailyGoal goal, required DateTime now}) =>
+    goal.target != null && !goal.achieved && now.hour >= 18;
 
 /// ホーム。試験の概要と、学ぶ・模擬への導線。
 ///
@@ -54,9 +63,33 @@ class _HomeViewState extends ConsumerState<HomeView> {
     }
     final level = exam.levels.first;
     final theme = Theme.of(context);
+    final dailyGoal = ref.watch(dailyGoalProvider);
+    final showReminder = shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (showReminder) ...[
+          Card(
+            color: theme.colorScheme.errorContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.nightlight_outlined, color: theme.colorScheme.onErrorContainer),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '今日はまだ目標（${dailyGoal.target}問）に届いていません。学ぶタブから続けましょう',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onErrorContainer),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         const OshiCard(),
         const SizedBox(height: 16),
         Text(exam.name, style: theme.textTheme.headlineSmall),

@@ -135,6 +135,13 @@ class RecordView extends ConsumerWidget {
                   Text('模擬試験の結果', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
                   for (final entry in mockHistory.reversed.take(5)) _MockHistoryRow(entry: entry),
+                  if (mockHistory.length > 1 && exam != null) ...[
+                    const SizedBox(height: 8),
+                    _PassPredictionRow(
+                      history: mockHistory,
+                      passPct: exam.levels.first.passRule.totalPct,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -258,6 +265,45 @@ class _MockHistoryRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 模試の合格ライン到達見込み1行。直近の傾向に応じたアイコン・メッセージを表示する。
+class _PassPredictionRow extends StatelessWidget {
+  const _PassPredictionRow({required this.history, required this.passPct});
+
+  final List<MockHistoryEntry> history;
+  final double passPct;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final prediction = predictPassTrend(history, passPct: passPct);
+    final (icon, text, color) = switch (prediction) {
+      PassPrediction.onTrack => (
+          Icons.check_circle_outline,
+          '直近の平均が合格ラインに達しています。この調子で続けましょう',
+          theme.colorScheme.primary,
+        ),
+      PassPrediction.closeToTarget => (
+          Icons.trending_up,
+          'もう少しで合格ラインに届きそうです',
+          theme.colorScheme.secondary,
+        ),
+      PassPrediction.needsWork => (
+          Icons.priority_high,
+          'まだ合格ラインまで距離があります。苦手分野の復習がおすすめです',
+          theme.colorScheme.error,
+        ),
+    };
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: theme.textTheme.bodySmall?.copyWith(color: color))),
+      ],
     );
   }
 }
