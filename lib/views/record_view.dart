@@ -135,6 +135,12 @@ class RecordView extends ConsumerWidget {
                   Text('模擬試験の結果', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
                   for (final entry in mockHistory.reversed.take(5)) _MockHistoryRow(entry: entry),
+                  if (mockHistory.length > 1) ...[
+                    const SizedBox(height: 12),
+                    _MockScoreTrendChart(
+                      series: [for (final e in mockHistory) e.pct / 100],
+                    ),
+                  ],
                   if (mockHistory.length > 1 && exam != null) ...[
                     const SizedBox(height: 8),
                     _PassPredictionRow(
@@ -265,6 +271,32 @@ class _MockHistoryRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 模擬試験の得点率の推移。古い順の得点率（0.0〜1.0）を折れ線グラフで表示する。
+class _MockScoreTrendChart extends StatelessWidget {
+  const _MockScoreTrendChart({required this.series});
+
+  final List<double> series;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('得点率の推移', style: theme.textTheme.bodySmall),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 48,
+          child: CustomPaint(
+            size: const Size(double.infinity, 48),
+            painter: _TrendPainter(series: series, color: theme.colorScheme.primary),
+          ),
+        ),
+      ],
     );
   }
 }

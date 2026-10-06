@@ -1,7 +1,56 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otsu4/data/question_memo_store.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
+
+Question _q({required String qid, String prompt = '問題文'}) => Question(
+      qid: qid,
+      examId: 'hazmat4',
+      subjectId: 'law',
+      topicId: 'topic',
+      prompt: prompt,
+      explanation: '解説文',
+      source: QuestionSource.original,
+      sourceRef: 'test',
+      contentVer: '2026.10.0',
+    );
 
 void main() {
+  group('filterMemoedQuestions', () {
+    final pool = [
+      _q(qid: 'q1', prompt: '引火点とは何か'),
+      _q(qid: 'q2', prompt: '指定数量の倍数'),
+      _q(qid: 'q3', prompt: 'メモの無い問題'),
+    ];
+
+    test('メモが書かれている問題だけを返す（空キーワード）', () {
+      final memos = {'q1': '覚え方メモ', 'q2': '商の和メモ'};
+      final result = filterMemoedQuestions(pool, memos, '');
+      expect(result.map((q) => q.qid), ['q1', 'q2']);
+    });
+
+    test('キーワードが問題文に含まれるものだけに絞り込む', () {
+      final memos = {'q1': '覚え方メモ', 'q2': '商の和メモ'};
+      final result = filterMemoedQuestions(pool, memos, '引火点');
+      expect(result.map((q) => q.qid), ['q1']);
+    });
+
+    test('キーワードがメモ本文に含まれるものだけに絞り込む', () {
+      final memos = {'q1': '覚え方メモ', 'q2': '商の和メモ'};
+      final result = filterMemoedQuestions(pool, memos, '商の和');
+      expect(result.map((q) => q.qid), ['q2']);
+    });
+
+    test('メモが無い問題は含まれない', () {
+      final memos = {'q1': '覚え方メモ'};
+      final result = filterMemoedQuestions(pool, memos, '');
+      expect(result.map((q) => q.qid), ['q1']);
+    });
+
+    test('メモが1件も無ければ空を返す', () {
+      expect(filterMemoedQuestions(pool, {}, ''), isEmpty);
+    });
+  });
+
   group('QuestionMemoService.setMemo', () {
     test('メモを保存できる', () async {
       final service = QuestionMemoService(store: _FakeStore());

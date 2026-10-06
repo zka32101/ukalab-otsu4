@@ -26,3 +26,7 @@ class QuestionRepository {
     return questions;
   }
 }
+
+/// [subjectId] が null ならそのまま返し、指定があればその分野だけに絞り込む。
+List<Question> filterBySubject(List<Question> pool, String? subjectId) =>
+    subjectId == null ? pool : [for (final q in pool) if (q.subjectId == subjectId) q];
