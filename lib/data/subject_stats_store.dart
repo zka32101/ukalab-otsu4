@@ -91,3 +91,19 @@ class SubjectStatsNotifier extends Notifier<Map<String, SubjectStat>> {
 
 final subjectStatsProvider =
     NotifierProvider<SubjectStatsNotifier, Map<String, SubjectStat>>(SubjectStatsNotifier.new);
+
+/// 「苦手分野」とみなす最低解答数。これ未満の分野は判定の対象にしない
+/// （数問だけ間違えて苦手と判定されるのを避ける）。
+const weakSubjectMinAnswered = 5;
+
+/// 「苦手分野」とみなす正答率のしきい値（これ未満）。
+const weakSubjectAccuracyThreshold = 0.6;
+
+/// 解答数が十分あり、正答率がしきい値未満の分野のsubjectId。
+/// 「集中特訓」（苦手分野の優先出題）で使う。
+List<String> weakSubjectIds(Map<String, SubjectStat> stats) => [
+      for (final e in stats.entries)
+        if (e.value.answered >= weakSubjectMinAnswered &&
+            e.value.accuracy < weakSubjectAccuracyThreshold)
+          e.key,
+    ];
