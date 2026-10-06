@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/daily_goal_store.dart';
+import '../data/exam_date_store.dart';
 import '../data/exam_repository.dart';
 import '../widgets/oshi_card.dart';
 
@@ -65,9 +66,30 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final theme = Theme.of(context);
     final dailyGoal = ref.watch(dailyGoalProvider);
     final showReminder = shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
+    final examDate = ref.watch(examDateProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (examDate != null) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.event_outlined, color: theme.colorScheme.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      examCountdownText(daysUntilExam(examDate, DateTime.now())),
+                      style: theme.textTheme.titleSmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         if (showReminder) ...[
           Card(
             color: theme.colorScheme.errorContainer,

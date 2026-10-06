@@ -6,15 +6,30 @@ import '../data/glossary.dart';
 /// 「次へ」で次の用語に進む。`lib/data/glossary.dart` の既存の確認済み
 /// データに基づく定義を使い、新たな一次資料の収集は行っていない。
 class GlossaryCardView extends StatefulWidget {
-  const GlossaryCardView({super.key});
+  const GlossaryCardView({super.key, this.initialTerm});
+
+  /// 開いた直後に表示する用語（検索・解説文中のタップから遷移した場合）。
+  /// 一致しなければ最初の用語から表示する。
+  final String? initialTerm;
 
   @override
   State<GlossaryCardView> createState() => _GlossaryCardViewState();
 }
 
 class _GlossaryCardViewState extends State<GlossaryCardView> {
-  int _index = 0;
-  bool _showDefinition = false;
+  late int _index;
+  late bool _showDefinition;
+
+  @override
+  void initState() {
+    super.initState();
+    final found = widget.initialTerm == null
+        ? -1
+        : glossaryTerms.indexWhere((t) => t.term == widget.initialTerm);
+    _index = found >= 0 ? found : 0;
+    // 検索・解説文中のタップから来た場合は、用語名ではなく定義を直接見せる。
+    _showDefinition = found >= 0;
+  }
 
   void _next() {
     setState(() {

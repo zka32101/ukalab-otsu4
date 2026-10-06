@@ -6,12 +6,14 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
+import '../data/glossary.dart';
 import '../data/question_memo_store.dart';
 import '../data/recent_questions.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
+import 'glossary_card_view.dart';
 
 /// 一問一答の演習（`Question` のプール）共通部分。[pool] が空なら
 /// [emptyMessage] を表示する。[StudyView]（全体プール）と、苦手問題だけの
@@ -150,7 +152,22 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
           ),
         if (_answered) ...[
           const SizedBox(height: 8),
-          ExplanationPanel(body: q.explanation, sourceRef: q.sourceRef),
+          Builder(builder: (context) {
+            final terms = termReferencesIn(q.explanation);
+            return ExplanationPanel(
+              body: q.explanation,
+              sourceRef: q.sourceRef,
+              bodyWidget: terms.isEmpty
+                  ? null
+                  : TappableTermText(
+                      text: q.explanation,
+                      terms: terms,
+                      onTermTap: (termId) => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => GlossaryCardView(initialTerm: termId)),
+                      ),
+                    ),
+            );
+          }),
           const SizedBox(height: 12),
           _MemoField(key: ValueKey(q.qid), qid: q.qid),
           const SizedBox(height: 16),
