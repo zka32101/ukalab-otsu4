@@ -41,6 +41,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
   PracticeSession? _session;
   int? _selected;
   bool _answered = false;
+  int _combo = 0;
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
             );
       _selected = null;
       _answered = false;
+      _combo = 0;
     });
     final session = _session;
     if (session != null) {
@@ -76,6 +78,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     setState(() {
       _selected = i;
       _answered = true;
+      _combo = record.correct ? _combo + 1 : 0;
     });
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
@@ -150,6 +153,23 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
             ),
           ],
         ),
+        if (_combo >= 2) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.local_fire_department_outlined,
+                  size: 16, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 4),
+              Text(
+                '$_combo問連続正解中',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         for (var i = 0; i < q.choices.length; i++)
           Padding(

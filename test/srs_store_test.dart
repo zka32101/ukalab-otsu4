@@ -38,6 +38,28 @@ void main() {
       expect(reloaded.dueQids(), ['q1']);
     });
   });
+
+  group('srsBoxDistribution', () {
+    test('項目が無ければ、すべての箱が0件', () {
+      final dist = srsBoxDistribution([]);
+      expect(dist.keys.toSet(), {for (var b = 0; b <= Srs.maxBox; b++) b});
+      expect(dist.values.every((v) => v == 0), isTrue);
+    });
+
+    test('箱ごとに件数を数える', () {
+      final items = [
+        SrsItem(qid: 'a', box: 0, dueAt: DateTime(2026, 10, 1)),
+        SrsItem(qid: 'b', box: 0, dueAt: DateTime(2026, 10, 1)),
+        SrsItem(qid: 'c', box: 2, dueAt: DateTime(2026, 10, 1)),
+        SrsItem(qid: 'd', box: Srs.maxBox, dueAt: DateTime(2026, 10, 1)),
+      ];
+      final dist = srsBoxDistribution(items);
+      expect(dist[0], 2);
+      expect(dist[1], 0);
+      expect(dist[2], 1);
+      expect(dist[Srs.maxBox], 1);
+    });
+  });
 }
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。

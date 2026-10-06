@@ -144,6 +144,10 @@ class RecordView extends ConsumerWidget {
                   _StatRow(label: '復習待ち', value: '$dueCount問'),
                   _StatRow(label: '定着した問題', value: '$masteredCount問'),
                   const SizedBox(height: 12),
+                  Text('箱（Box）別の分布', style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 8),
+                  _SrsBoxDistributionChart(distribution: srsBoxDistribution(srs.values)),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       if (dueCount > 0) ...[
@@ -695,6 +699,74 @@ class _SubjectStatRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 苦手問題の復習の、箱（Box 0〜`Srs.maxBox`）別の問題数の横棒グラフ。
+/// 箱が大きいほど復習間隔が長く定着が進んでいることを示す
+/// （`lib/data/srs_store.dart` の `srsBoxDistribution`）。
+class _SrsBoxDistributionChart extends StatelessWidget {
+  const _SrsBoxDistributionChart({required this.distribution});
+
+  final Map<int, int> distribution;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final maxCount = distribution.values.isEmpty
+        ? 0
+        : distribution.values.reduce((a, b) => a > b ? a : b);
+    final boxes = distribution.keys.toList()..sort();
+    return Column(
+      children: [
+        for (final box in boxes)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 48,
+                  child: Text('箱$box', style: theme.textTheme.bodySmall),
+                ),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Stack(
+                      children: [
+                        Container(
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        if (maxCount > 0 && (distribution[box] ?? 0) > 0)
+                          Container(
+                            height: 10,
+                            width: constraints.maxWidth *
+                                ((distribution[box] ?? 0) / maxCount).clamp(0.08, 1.0),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    '${distribution[box] ?? 0}問',
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
