@@ -5,6 +5,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/answered_questions_store.dart';
 import '../data/bookmark_store.dart';
+import '../data/daily_goal_history_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
 import '../data/glossary.dart';
@@ -78,7 +79,15 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     });
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
-    ref.read(dailyGoalProvider.notifier).recordAnswer();
+    ref.read(dailyGoalProvider.notifier).recordAnswer().then((_) {
+      if (!mounted) return;
+      final goal = ref.read(dailyGoalProvider);
+      ref.read(dailyGoalHistoryProvider.notifier).recordSnapshot(
+            date: goal.todayDate ?? DateTime.now(),
+            count: goal.todayCount,
+            achieved: goal.achieved,
+          );
+    });
     ref.read(answeredQuestionsProvider.notifier).record(record.qid);
     ref
         .read(subjectStatsProvider.notifier)

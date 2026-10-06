@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/glossary.dart';
+import '../data/glossary_favorite_store.dart';
 
 /// 分野フィルタの選択肢（表示名）。nullは「すべて」。
 const _subjectFilterLabels = <String?, String>{
@@ -11,10 +13,11 @@ const _subjectFilterLabels = <String?, String>{
 };
 
 /// 乙4の頻出用語の暗記カード。タップで表（用語）・裏（定義）を切り替え、
-/// 「次へ」で次の用語に進む。分野（法令・物理化学・性質消火）で絞り込める。
+/// 「次へ」で次の用語に進む。分野（法令・物理化学・性質消火）やお気に入り
+/// （`lib/data/glossary_favorite_store.dart`）で絞り込める。
 /// `lib/data/glossary.dart` の既存の確認済みデータに基づく定義を使い、
 /// 新たな一次資料の収集は行っていない。
-class GlossaryCardView extends StatefulWidget {
+class GlossaryCardView extends ConsumerStatefulWidget {
   const GlossaryCardView({super.key, this.initialTerm});
 
   /// 開いた直後に表示する用語（検索・解説文中のタップから遷移した場合）。
@@ -22,46 +25,52 @@ class GlossaryCardView extends StatefulWidget {
   final String? initialTerm;
 
   @override
-  State<GlossaryCardView> createState() => _GlossaryCardViewState();
+  ConsumerState<GlossaryCardView> createState() => _GlossaryCardViewState();
 }
 
-class _GlossaryCardViewState extends State<GlossaryCardView> {
+class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   String? _subjectFilter;
-  late List<GlossaryTerm> _terms;
+  bool _favoritesOnly = false;
   late int _index;
   late bool _showDefinition;
 
   @override
   void initState() {
     super.initState();
-    _terms = glossaryTerms;
     final found = widget.initialTerm == null
         ? -1
-        : _terms.indexWhere((t) => t.term == widget.initialTerm);
+        : glossaryTerms.indexWhere((t) => t.term == widget.initialTerm);
     _index = found >= 0 ? found : 0;
     // 検索・解説文中のタップから来た場合は、用語名ではなく定義を直接見せる。
     _showDefinition = found >= 0;
   }
 
-  void _setFilter(String? subjectId) {
+  void _setSubjectFilter(String? subjectId) {
     setState(() {
       _subjectFilter = subjectId;
-      _terms = subjectId == null ? glossaryTerms : glossaryTermsBySubject(subjectId);
       _index = 0;
       _showDefinition = false;
     });
   }
 
-  void _next() {
+  void _toggleFavoritesOnly() {
     setState(() {
-      _index = (_index + 1) % _terms.length;
+      _favoritesOnly = !_favoritesOnly;
+      _index = 0;
       _showDefinition = false;
     });
   }
 
-  void _prev() {
+  void _next(int length) {
     setState(() {
-      _index = (_index - 1 + _terms.length) % _terms.length;
+      _index = (_index + 1) % length;
+      _showDefinition = false;
+    });
+  }
+
+  void _prev(int length) {
+    setState(() {
+      _index = (_index - 1 + length) % length;
       _showDefinition = false;
     });
   }
@@ -69,65 +78,123 @@ class _GlossaryCardViewState extends State<GlossaryCardView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final term = _terms[_index];
+    final favorites = ref.watch(glossaryFavoriteProvider);
+    final terms = filterGlossaryTerms(
+      subjectId: _subjectFilter,
+      favoritesOnly: _favoritesOnly,
+      favoriteTerms: favorites,
+    );
+
+    final filterRow = Column(
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            for (final entry in _subjectFilterLabels.entries)
+              ChoiceChip(
+                label: Text(entry.value),
+                selected: _subjectFilter == entry.key,
+                onSelected: (_) => _setSubjectFilter(entry.key),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilterChip(
+            label: const Text('お気に入りのみ'),
+            selected: _favoritesOnly,
+            onSelected: (_) => _toggleFavoritesOnly(),
+          ),
+        ),
+      ],
+    );
+
+    if (terms.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('用語集')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              filterRow,
+              const SizedBox(height: 24),
+              const Expanded(
+                child: Center(child: Text('該当する用語がありません。')),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final index = _index.clamp(0, terms.length - 1);
+    final term = terms[index];
+    final isFavorite = favorites.contains(term.term);
+
     return Scaffold(
       appBar: AppBar(title: const Text('用語集')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (final entry in _subjectFilterLabels.entries)
-                  ChoiceChip(
-                    label: Text(entry.value),
-                    selected: _subjectFilter == entry.key,
-                    onSelected: (_) => _setFilter(entry.key),
-                  ),
-              ],
-            ),
+            filterRow,
             const SizedBox(height: 12),
             Text(
-              '${_index + 1} / ${_terms.length}',
+              '${index + 1} / ${terms.length}',
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _showDefinition = !_showDefinition),
-                child: Card(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: _showDefinition
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  term.definition,
-                                  style: theme.textTheme.titleMedium,
+              child: Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => _showDefinition = !_showDefinition),
+                    child: Card(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: _showDefinition
+                              ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      term.definition,
+                                      style: theme.textTheme.titleMedium,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    if (term.note != null) ...[
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        term.note!,
+                                        style: theme.textTheme.bodySmall,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ],
+                                )
+                              : Text(
+                                  term.term,
+                                  style: theme.textTheme.headlineSmall,
                                   textAlign: TextAlign.center,
                                 ),
-                                if (term.note != null) ...[
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    term.note!,
-                                    style: theme.textTheme.bodySmall,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ],
-                            )
-                          : Text(
-                              term.term,
-                              style: theme.textTheme.headlineSmall,
-                              textAlign: TextAlign.center,
-                            ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: IconButton(
+                      icon: Icon(isFavorite ? Icons.star : Icons.star_border),
+                      color: isFavorite ? theme.colorScheme.primary : null,
+                      tooltip: isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
+                      onPressed: () => ref.read(glossaryFavoriteProvider.notifier).toggle(term.term),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
@@ -139,11 +206,17 @@ class _GlossaryCardViewState extends State<GlossaryCardView> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(onPressed: _prev, child: const Text('前へ')),
+                  child: OutlinedButton(
+                    onPressed: () => _prev(terms.length),
+                    child: const Text('前へ'),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton(onPressed: _next, child: const Text('次へ')),
+                  child: FilledButton(
+                    onPressed: () => _next(terms.length),
+                    child: const Text('次へ'),
+                  ),
                 ),
               ],
             ),

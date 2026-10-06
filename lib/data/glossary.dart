@@ -112,6 +112,19 @@ const glossaryTerms = <GlossaryTerm>[
 List<GlossaryTerm> glossaryTermsBySubject(String subjectId) =>
     [for (final t in glossaryTerms) if (t.subjectId == subjectId) t];
 
+/// 分野・お気に入りの両方の条件で用語集を絞り込む。[subjectId] が null なら
+/// 分野で絞り込まない。[favoritesOnly] がtrueなら、[favoriteTerms] に
+/// 含まれる用語だけに絞り込む。
+List<GlossaryTerm> filterGlossaryTerms({
+  String? subjectId,
+  required bool favoritesOnly,
+  required Set<String> favoriteTerms,
+}) {
+  final bySubject = subjectId == null ? glossaryTerms : glossaryTermsBySubject(subjectId);
+  if (!favoritesOnly) return bySubject;
+  return [for (final t in bySubject) if (favoriteTerms.contains(t.term)) t];
+}
+
 /// [keyword] が用語または定義に含まれる用語を返す（大文字小文字は区別しない）。
 /// 空のキーワードでは何も返さない（検索前の一覧表示を避けるため）。
 List<GlossaryTerm> searchGlossaryTerms(String keyword) {

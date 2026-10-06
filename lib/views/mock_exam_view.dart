@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/answered_questions_store.dart';
+import '../data/daily_goal_history_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
@@ -154,6 +155,12 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       if (!correct) wrong.add(q);
     }
     ref.read(subjectStatsHistoryProvider.notifier).recordSnapshot(ref.read(subjectStatsProvider));
+    final goal = ref.read(dailyGoalProvider);
+    ref.read(dailyGoalHistoryProvider.notifier).recordSnapshot(
+          date: goal.todayDate ?? DateTime.now(),
+          count: goal.todayCount,
+          achieved: goal.achieved,
+        );
     ref.read(mockWrongProvider.notifier).setWrong([for (final q in wrong) q.qid]);
     setState(() {
       _result = result;
