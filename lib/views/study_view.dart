@@ -7,6 +7,7 @@ import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_wrong_store.dart';
+import '../data/question_memo_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
@@ -15,6 +16,7 @@ import 'extinguisher_match_view.dart';
 import 'field_day_view.dart';
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';
+import 'memo_list_view.dart';
 import 'mock_wrong_review_view.dart';
 import 'practice_session_view.dart';
 import 'question_search_view.dart';
@@ -81,9 +83,10 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final goalStreak = effectiveAchievedStreak(dailyGoal, DateTime.now());
     final answeredQids = ref.watch(answeredQuestionsProvider);
     final coverage = subjectCoverage(qs, answeredQids);
+    final memoCount = ref.watch(questionMemoProvider).length;
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
-    final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
+    final filteredQs = filterBySubject(qs, filter);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -198,6 +201,20 @@ class _StudyViewState extends ConsumerState<StudyView> {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const BookmarkListView()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (memoCount > 0) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.sticky_note_2_outlined),
+              title: Text('自分用メモの一覧（$memoCount件）'),
+              subtitle: const Text('書き残したメモをまとめて見返せます'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MemoListView()),
               ),
             ),
           ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 /// 問題ごとの自分用メモ（qid -> メモ本文）の端末内保存。
 class QuestionMemoStore {
@@ -70,3 +71,20 @@ class QuestionMemoNotifier extends Notifier<Map<String, String>> {
 
 final questionMemoProvider =
     NotifierProvider<QuestionMemoNotifier, Map<String, String>>(QuestionMemoNotifier.new);
+
+/// メモが書かれている問題（[memos] にqidがあるもの）のうち、[keyword] が
+/// 問題文またはメモ本文に含まれるものを返す。空のキーワードならメモがある
+/// 全問題を返す。
+List<Question> filterMemoedQuestions(
+  List<Question> pool,
+  Map<String, String> memos,
+  String keyword,
+) {
+  final memoed = [for (final q in pool) if (memos.containsKey(q.qid)) q];
+  final kw = keyword.trim();
+  if (kw.isEmpty) return memoed;
+  return [
+    for (final q in memoed)
+      if (q.prompt.contains(kw) || (memos[q.qid] ?? '').contains(kw)) q,
+  ];
+}

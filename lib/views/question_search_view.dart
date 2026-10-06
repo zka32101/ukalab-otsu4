@@ -124,7 +124,7 @@ class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
                                       leading: const Icon(Icons.quiz_outlined),
                                       title: Text(q.prompt, maxLines: 2, overflow: TextOverflow.ellipsis),
                                       onTap: () => Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (_) => _QuestionDetailView(question: q)),
+                                        MaterialPageRoute(builder: (_) => QuestionDetailView(question: q)),
                                       ),
                                     ),
                                 ],
@@ -138,10 +138,10 @@ class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
   }
 }
 
-/// 検索結果から開く、1問だけの読み取り専用の詳細表示。正解を直接表示する
-/// （一問一答のように選んで答える演習ではない）。
-class _QuestionDetailView extends StatelessWidget {
-  const _QuestionDetailView({required this.question});
+/// 検索結果・メモ一覧から開く、1問だけの読み取り専用の詳細表示。正解を
+/// 直接表示する（一問一答のように選んで答える演習ではない）。
+class QuestionDetailView extends StatelessWidget {
+  const QuestionDetailView({super.key, required this.question});
 
   final Question question;
 
