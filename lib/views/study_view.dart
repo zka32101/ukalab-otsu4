@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/answered_questions_store.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
@@ -77,6 +78,9 @@ class _StudyViewState extends ConsumerState<StudyView> {
     final weakQuestionCount = qs.where((q) => weakIds.contains(q.subjectId)).length;
     final mockWrongQids = ref.watch(mockWrongProvider).toSet();
     final mockWrongCount = qs.where((q) => mockWrongQids.contains(q.qid)).length;
+    final goalStreak = effectiveAchievedStreak(dailyGoal, DateTime.now());
+    final answeredQids = ref.watch(answeredQuestionsProvider);
+    final coverage = subjectCoverage(qs, answeredQids);
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
     final filteredQs = filter == null ? qs : qs.where((q) => q.subjectId == filter).toList();
@@ -116,6 +120,24 @@ class _StudyViewState extends ConsumerState<StudyView> {
                           '${dailyGoal.todayCount} / ${dailyGoal.target}問',
                           style: theme.textTheme.bodySmall,
                         ),
+                        if (goalStreak > 0) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.local_fire_department_outlined,
+                                size: 16,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$goalStreak日連続達成',
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: theme.colorScheme.primary),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -205,6 +227,48 @@ class _StudyViewState extends ConsumerState<StudyView> {
           ),
         ),
         const SizedBox(height: 12),
+        if (subjects.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('分野別の出題網羅率', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 12),
+                  for (final s in subjects)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(s.name, style: theme.textTheme.bodySmall),
+                              Text(
+                                '${((coverage[s.subjectId] ?? 0) * 100).round()}%',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: coverage[s.subjectId] ?? 0,
+                              minHeight: 6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (subjects.length > 1) ...[
           Wrap(
             spacing: 8,

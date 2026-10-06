@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/answered_questions_store.dart';
 import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
@@ -78,6 +79,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
     recordExerciseAnswer(ref, correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
     ref.read(dailyGoalProvider.notifier).recordAnswer();
+    ref.read(answeredQuestionsProvider.notifier).record(record.qid);
     ref
         .read(subjectStatsProvider.notifier)
         .recordAnswer(subjectId: subjectId, correct: record.correct)

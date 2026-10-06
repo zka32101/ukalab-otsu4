@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/answered_questions_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
@@ -148,6 +149,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
       ref.read(srsProvider.notifier).review(qid: q.qid, correct: correct);
       ref.read(subjectStatsProvider.notifier).recordAnswer(subjectId: q.subjectId, correct: correct);
       ref.read(dailyGoalProvider.notifier).recordAnswer();
+      ref.read(answeredQuestionsProvider.notifier).record(q.qid);
       if (!correct) wrong.add(q);
     }
     ref.read(subjectStatsHistoryProvider.notifier).recordSnapshot(ref.read(subjectStatsProvider));

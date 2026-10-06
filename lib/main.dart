@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
@@ -72,6 +73,10 @@ void main() async {
   final examDateService = ExamDateService();
   await examDateService.load();
 
+  // これまでに解答した問題のqid（分野別の出題網羅率で使う）。端末内に保存する。
+  final answeredQuestionsService = AnsweredQuestionsService();
+  await answeredQuestionsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -88,6 +93,7 @@ void main() async {
         themeServiceProvider.overrideWithValue(themeService),
         questionMemoServiceProvider.overrideWithValue(questionMemoService),
         examDateServiceProvider.overrideWithValue(examDateService),
+        answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
       ],
       child: const Otsu4App(),
     ),
