@@ -6,6 +6,7 @@ import 'app.dart';
 import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
 import 'data/combo_store.dart';
+import 'data/daily_answer_stats_store.dart';
 import 'data/daily_goal_history_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
@@ -102,6 +103,10 @@ void main() async {
   final comboService = ComboService();
   await comboService.load();
 
+  // 日別の解答数・正解数（ホームの今週の学習サマリーで使う）。端末内に保存する。
+  final dailyAnswerStatsService = DailyAnswerStatsService();
+  await dailyAnswerStatsService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -124,6 +129,7 @@ void main() async {
         reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
         comboServiceProvider.overrideWithValue(comboService),
+        dailyAnswerStatsServiceProvider.overrideWithValue(dailyAnswerStatsService),
       ],
       child: const Otsu4App(),
     ),

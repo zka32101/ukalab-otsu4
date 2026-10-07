@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otsu4/data/data_backup.dart';
+import 'package:otsu4/data/daily_answer_stats_store.dart';
 import 'package:otsu4/data/daily_goal_history_store.dart';
 import 'package:otsu4/data/daily_goal_store.dart';
 import 'package:otsu4/data/mock_history_store.dart';
@@ -47,6 +48,9 @@ LearningDataBackup _sampleBackup() => LearningDataBackup(
       questionMemo: {'q1': '覚え方メモ'},
       recentGlossaryTerms: ['引火点', '指定数量'],
       bestCombo: 8,
+      dailyAnswerStats: [
+        DailyAnswerStatsEntry(date: DateTime(2026, 10, 5), answered: 20, correct: 15),
+      ],
     );
 
 void main() {
@@ -70,6 +74,7 @@ void main() {
       expect(restored.questionMemo['q1'], '覚え方メモ');
       expect(restored.recentGlossaryTerms, ['引火点', '指定数量']);
       expect(restored.bestCombo, 8);
+      expect(restored.dailyAnswerStats.single.answered, 20);
     });
 
     test('JSON文字列にエンコード・デコードしても往復する', () {
@@ -90,6 +95,13 @@ void main() {
       final json = _sampleBackup().toJson();
       expect(json['version'], learningDataBackupVersion);
       expect(json['exportedAt'], isA<String>());
+    });
+
+    test('dailyAnswerStatsが無い旧いJSONも空リストとして読み込める', () {
+      final json = _sampleBackup().toJson();
+      json.remove('dailyAnswerStats');
+      final restored = LearningDataBackup.fromJson(json);
+      expect(restored.dailyAnswerStats, isEmpty);
     });
   });
 }

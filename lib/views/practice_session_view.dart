@@ -6,6 +6,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 import '../data/answered_questions_store.dart';
 import '../data/bookmark_store.dart';
 import '../data/combo_store.dart';
+import '../data/daily_answer_stats_store.dart';
 import '../data/daily_goal_history_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
@@ -85,6 +86,7 @@ class _PracticeSessionViewState extends ConsumerState<PracticeSessionView> {
       ref.read(comboProvider.notifier).recordCombo(_combo);
     }
     recordExerciseAnswer(ref, correct: record.correct);
+    ref.read(dailyAnswerStatsProvider.notifier).recordAnswer(correct: record.correct);
     ref.read(srsProvider.notifier).review(qid: record.qid, correct: record.correct);
     ref.read(dailyGoalProvider.notifier).recordAnswer().then((_) {
       if (!mounted) return;

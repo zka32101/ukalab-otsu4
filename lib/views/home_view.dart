@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
+import '../data/daily_answer_stats_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/exam_repository.dart';
@@ -76,6 +77,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
         shouldShowMockIntervalReminder(mockHistory, DateTime.now());
     final nextMockDate =
         reminderSettings.mockReminderEnabled ? nextRecommendedMockDate(mockHistory) : null;
+    final dailyAnswerStats = ref.watch(dailyAnswerStatsProvider);
+    final weekly = weeklyAnswerSummary(dailyAnswerStats);
+    final weeklyAnswered = weekly.fold<int>(0, (sum, e) => sum + e.answered);
+    final weeklyCorrect = weekly.fold<int>(0, (sum, e) => sum + e.correct);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -150,6 +155,27 @@ class _HomeViewState extends ConsumerState<HomeView> {
         ],
         const OshiCard(),
         const SizedBox(height: 16),
+        if (weeklyAnswered > 0) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('今週の学習サマリー', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    '直近7日間: $weeklyAnswered問 ・ 正答率 ${(weeklyCorrect / weeklyAnswered * 100).round()}%',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  _WeeklyAnswerChart(entries: weekly),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(exam.name, style: theme.textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text(
@@ -174,6 +200,49 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// 直近7日間（今日を含む）の解答数のミニ横棒グラフ（日ごとに縦の棒）。
+/// [entries] は `weeklyAnswerSummary` が返す、古い順の7件。
+class _WeeklyAnswerChart extends StatelessWidget {
+  const _WeeklyAnswerChart({required this.entries});
+
+  final List<DailyAnswerStatsEntry> entries;
+
+  static const _weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final maxAnswered = entries.fold<int>(1, (m, e) => e.answered > m ? e.answered : m);
+    const maxBarHeight = 48.0;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final e in entries)
+          Expanded(
+            child: Column(
+              children: [
+                Text('${e.answered}', style: theme.textTheme.labelSmall),
+                const SizedBox(height: 2),
+                Container(
+                  height: e.answered == 0 ? 2 : maxBarHeight * e.answered / maxAnswered,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: e.answered == 0
+                        ? theme.colorScheme.surfaceContainerHighest
+                        : theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(_weekdayLabels[e.date.weekday % 7], style: theme.textTheme.labelSmall),
+              ],
+            ),
+          ),
       ],
     );
   }
