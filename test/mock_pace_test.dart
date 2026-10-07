@@ -69,6 +69,27 @@ void main() {
     });
   });
 
+  group('subjectProgressCount', () {
+    final picked = [
+      _q(qid: 'l1', subjectId: 'law'),
+      _q(qid: 'l2', subjectId: 'law'),
+      _q(qid: 'p1', subjectId: 'physics_chem'),
+      _q(qid: 'p2', subjectId: 'physics_chem'),
+    ];
+
+    test('指定した科目の、指定indexまでの登場件数を数える', () {
+      expect(subjectProgressCount(picked: picked, uptoIndex: 0, subjectId: 'law'), 1);
+      expect(subjectProgressCount(picked: picked, uptoIndex: 1, subjectId: 'law'), 2);
+      expect(subjectProgressCount(picked: picked, uptoIndex: 2, subjectId: 'law'), 2);
+      expect(subjectProgressCount(picked: picked, uptoIndex: 2, subjectId: 'physics_chem'), 1);
+      expect(subjectProgressCount(picked: picked, uptoIndex: 3, subjectId: 'physics_chem'), 2);
+    });
+
+    test('まだ登場していない科目は0', () {
+      expect(subjectProgressCount(picked: picked, uptoIndex: 0, subjectId: 'physics_chem'), 0);
+    });
+  });
+
   group('isBehindPace', () {
     test('経過時間が目安を超えていれば遅れている', () {
       expect(isBehindPace(elapsedSec: 101, cumulativeBudgetSec: 100), isTrue);

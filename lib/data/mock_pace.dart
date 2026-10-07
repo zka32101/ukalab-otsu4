@@ -35,3 +35,18 @@ int cumulativeBudgetSecAt({
 /// 経過時間が目安の累計時間を超えていれば、ペースが遅れているとみなす。
 bool isBehindPace({required int elapsedSec, required int cumulativeBudgetSec}) =>
     elapsedSec > cumulativeBudgetSec;
+
+/// [picked] のうち [subjectId] に属する問題で、[uptoIndex]（0始まり、含む）
+/// までに登場した件数。模試画面上部の科目別ペース表示で、今どの科目の
+/// 何問目あたりかを示すために使う。
+int subjectProgressCount({
+  required List<Question> picked,
+  required int uptoIndex,
+  required String subjectId,
+}) {
+  var n = 0;
+  for (var i = 0; i <= uptoIndex && i < picked.length; i++) {
+    if (picked[i].subjectId == subjectId) n++;
+  }
+  return n;
+}
