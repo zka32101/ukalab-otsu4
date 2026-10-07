@@ -32,7 +32,7 @@ class SrsCalendarView extends ConsumerWidget {
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _days,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, i) {
                 final date = today.add(Duration(days: i));
                 final count = counts[date] ?? 0;

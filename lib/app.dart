@@ -21,7 +21,7 @@ class Otsu4App extends ConsumerWidget {
       theme: UkalabTheme.light(field: UkalabField.tech, cert: UkalabCert.hazmat4),
       darkTheme: UkalabTheme.dark(field: UkalabField.tech, cert: UkalabCert.hazmat4),
       themeMode: themeMode,
-      home: const UkalabShell(
+      home: UkalabShell(
         pages: [
           HomeView(),
           StudyView(),

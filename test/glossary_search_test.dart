@@ -10,7 +10,9 @@ void main() {
     });
 
     test('定義の文中にあるキーワードでも一致する', () {
-      expect(searchGlossaryTerms('商の和').map((t) => t.term), contains('指定数量'));
+      // 「商の和」の定義文中に「指定数量」が含まれるため、「指定数量」で検索すると
+      // 用語名が一致する「指定数量」自体に加えて「商の和」もヒットする。
+      expect(searchGlossaryTerms('指定数量').map((t) => t.term), containsAll(['指定数量', '商の和']));
     });
 
     test('大文字小文字は区別しない', () {

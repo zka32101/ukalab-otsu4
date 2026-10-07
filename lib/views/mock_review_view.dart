@@ -20,7 +20,7 @@ class MockReviewView extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: questions.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 16),
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (context, i) {
           final q = questions[i];
           final selected = answers[q.qid];

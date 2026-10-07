@@ -174,6 +174,13 @@ class DailyGoalService {
     await _store.write(_goal);
     return _goal;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[goal] で上書きする。
+  Future<DailyGoal> restore(DailyGoal goal) async {
+    _goal = goal;
+    await _store.write(_goal);
+    return _goal;
+  }
 }
 
 final dailyGoalServiceProvider = Provider<DailyGoalService>(
@@ -196,6 +203,10 @@ class DailyGoalNotifier extends Notifier<DailyGoal> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(DailyGoal goal) async {
+    state = await _s.restore(goal);
   }
 }
 

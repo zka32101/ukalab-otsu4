@@ -82,7 +82,7 @@ class _MemoListViewState extends ConsumerState<MemoListView> {
                             )
                           : ListView.separated(
                               itemCount: filtered.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 8),
+                              separatorBuilder: (_, __) => const SizedBox(height: 8),
                               itemBuilder: (context, i) {
                                 final q = filtered[i];
                                 return Card(

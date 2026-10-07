@@ -63,6 +63,13 @@ class SrsService {
     await _store.write(_items);
     return _items;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[items] で上書きする。
+  Future<Map<String, SrsItem>> restore(Map<String, SrsItem> items) async {
+    _items = items;
+    await _store.write(_items);
+    return _items;
+  }
 }
 
 final srsServiceProvider = Provider<SrsService>(
@@ -81,6 +88,10 @@ class SrsNotifier extends Notifier<Map<String, SrsItem>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(Map<String, SrsItem> items) async {
+    state = await _s.restore(items);
   }
 }
 

@@ -59,6 +59,13 @@ class QuestionMemoService {
     await _store.write(_memos);
     return _memos;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[memos] で上書きする。
+  Future<Map<String, String>> restore(Map<String, String> memos) async {
+    _memos = memos;
+    await _store.write(_memos);
+    return _memos;
+  }
 }
 
 final questionMemoServiceProvider = Provider<QuestionMemoService>(
@@ -77,6 +84,10 @@ class QuestionMemoNotifier extends Notifier<Map<String, String>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(Map<String, String> memos) async {
+    state = await _s.restore(memos);
   }
 }
 

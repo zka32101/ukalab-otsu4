@@ -1,8 +1,10 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/daily_goal_store.dart';
+import '../data/data_backup.dart';
 import '../data/data_reset.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
@@ -187,11 +189,31 @@ class SettingsView extends ConsumerWidget {
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
           child: Text(
             '学習記録（解答数・正答率・模試結果・デイリーミッション・苦手問題の復習・'
-            '自分用メモ等）を端末から削除し、初期状態に戻します。テーマ・リマインダー'
-            '設定・試験日・ブックマーク・用語集のお気に入りは削除されません。',
+            '自分用メモ等）は、テーマ・リマインダー設定・試験日・ブックマーク・'
+            '用語集のお気に入りを除いて、書き出し・読み込み・リセットができます。',
             style: TextStyle(fontSize: 12, height: 1.6),
           ),
         ),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.ios_share_outlined),
+                label: const Text('書き出す'),
+                onPressed: () => _exportBackup(context, ref),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.download_outlined),
+                label: const Text('読み込む'),
+                onPressed: () => _showImportDialog(context, ref),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
           icon: const Icon(Icons.delete_outline),
@@ -242,5 +264,65 @@ class SettingsView extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('学習記録をリセットしました')),
     );
+  }
+
+  Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
+    final jsonText = exportLearningDataJson(ref);
+    await Clipboard.setData(ClipboardData(text: jsonText));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('学習記録をクリップボードにコピーしました')),
+    );
+  }
+
+  Future<void> _showImportDialog(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final jsonText = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('学習記録を読み込む'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '書き出した学習記録のJSONテキストを貼り付けてください。'
+              '現在の学習記録は上書きされます。',
+              style: TextStyle(fontSize: 12, height: 1.6),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '{ "version": 1, ... }',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('読み込む'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (jsonText == null || jsonText.trim().isEmpty) return;
+    try {
+      await importLearningDataJson(ref, jsonText);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('学習記録を読み込みました')),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('読み込みに失敗しました。正しいバックアップのテキストか確認してください')),
+      );
+    }
   }
 }

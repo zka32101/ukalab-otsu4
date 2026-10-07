@@ -55,6 +55,13 @@ class AnsweredQuestionsService {
     await _store.write(_qids);
     return _qids;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[qids] で上書きする。
+  Future<Set<String>> restore(Set<String> qids) async {
+    _qids = qids;
+    await _store.write(_qids);
+    return _qids;
+  }
 }
 
 final answeredQuestionsServiceProvider = Provider<AnsweredQuestionsService>(
@@ -73,6 +80,10 @@ class AnsweredQuestionsNotifier extends Notifier<Set<String>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(Set<String> qids) async {
+    state = await _s.restore(qids);
   }
 }
 
