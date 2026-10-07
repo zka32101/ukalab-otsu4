@@ -24,5 +24,17 @@ void main() {
       final goal = const DailyGoal(target: 10, todayCount: 3);
       expect(shouldShowStudyReminder(goal: goal, now: DateTime(2026, 10, 6, 17)), isFalse);
     });
+
+    test('reminderHourを指定すると、その時刻を基準に判定する', () {
+      final goal = const DailyGoal(target: 10, todayCount: 3);
+      expect(
+        shouldShowStudyReminder(goal: goal, now: DateTime(2026, 10, 6, 20), reminderHour: 21),
+        isFalse,
+      );
+      expect(
+        shouldShowStudyReminder(goal: goal, now: DateTime(2026, 10, 6, 21), reminderHour: 21),
+        isTrue,
+      );
+    });
   });
 }

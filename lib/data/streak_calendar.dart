@@ -14,3 +14,22 @@ List<DailyGoalHistoryEntry?> streakCalendarDays(
     for (var i = days - 1; i >= 0; i--) byDate[today.subtract(Duration(days: i))],
   ];
 }
+
+/// [monthAnchor] と同じ年月の、1日から月末までの学習記録を日付順に返す
+/// （学習カレンダーの月表示用）。記録が無い日は null になる。
+List<DailyGoalHistoryEntry?> monthCalendarDays(
+  List<DailyGoalHistoryEntry> history,
+  DateTime monthAnchor,
+) {
+  final byDate = {for (final e in history) e.date: e};
+  final firstDay = DateTime(monthAnchor.year, monthAnchor.month, 1);
+  final daysInMonth = DateTime(monthAnchor.year, monthAnchor.month + 1, 0).day;
+  return [
+    for (var d = 0; d < daysInMonth; d++) byDate[firstDay.add(Duration(days: d))],
+  ];
+}
+
+/// [monthAnchor] から [offsetMonths] ヵ月分ずらした月の1日を返す
+/// （前月・翌月への移動に使う）。
+DateTime addMonths(DateTime monthAnchor, int offsetMonths) =>
+    DateTime(monthAnchor.year, monthAnchor.month + offsetMonths, 1);

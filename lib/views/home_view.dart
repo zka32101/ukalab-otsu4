@@ -11,13 +11,13 @@ import '../data/mock_history_store.dart';
 import '../data/reminder_settings_store.dart';
 import '../widgets/oshi_card.dart';
 
-/// デイリーミッションの目標がある夜（18時以降）に、まだ達成していなければ
-/// 学習リマインダーを表示する時刻かどうか。OSのプッシュ通知は新規ネイティブ
-/// 依存の追加・プラットフォーム設定が必要でこのクラウド環境では検証できない
-/// ため、アプリを開いたときに表示するアプリ内リマインダーとして実装する
-/// （ユーザー判断。README参照）。
-bool shouldShowStudyReminder({required DailyGoal goal, required DateTime now}) =>
-    goal.target != null && !goal.achieved && now.hour >= 18;
+/// デイリーミッションの目標がある夜（[reminderHour]時以降、既定18時）に、
+/// まだ達成していなければ学習リマインダーを表示する時刻かどうか。OSの
+/// プッシュ通知は新規ネイティブ依存の追加・プラットフォーム設定が必要で
+/// このクラウド環境では検証できないため、アプリを開いたときに表示する
+/// アプリ内リマインダーとして実装する（ユーザー判断。README参照）。
+bool shouldShowStudyReminder({required DailyGoal goal, required DateTime now, int reminderHour = 18}) =>
+    goal.target != null && !goal.achieved && now.hour >= reminderHour;
 
 /// ホーム。試験の概要と、学ぶ・模擬への導線。
 ///
@@ -70,7 +70,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final dailyGoal = ref.watch(dailyGoalProvider);
     final reminderSettings = ref.watch(reminderSettingsProvider);
     final showReminder = reminderSettings.studyReminderEnabled &&
-        shouldShowStudyReminder(goal: dailyGoal, now: DateTime.now());
+        shouldShowStudyReminder(
+          goal: dailyGoal,
+          now: DateTime.now(),
+          reminderHour: reminderSettings.studyReminderHour,
+        );
     final examDate = ref.watch(examDateProvider);
     final mockHistory = ref.watch(mockHistoryProvider);
     final showMockReminder = reminderSettings.mockReminderEnabled &&
