@@ -31,7 +31,7 @@ MascotSituation _situationFor(MascotDayState day, DateTime now) {
 MascotStage _stageFor(ProgressSnapshot p) =>
     MasteryModel.standard.stageOf(MasteryInput(coverage: p.coverage, accuracy: p.accuracy));
 
-enum _OshiAction { wardrobe, passReport }
+enum _OshiAction { wardrobe, passReport, choose }
 
 /// ホームの「推し」カード。画期的な機能A〜E・一問一答で学習が進むと成長し、
 /// 状況に合ったひとことを話す。タップでひとことが変わる。
@@ -82,16 +82,31 @@ class _OshiCardState extends ConsumerState<OshiCard> {
     switch (value as _OshiAction) {
       case _OshiAction.wardrobe:
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => WardrobeScreen(cert: UkalabCert.hazmat4, stage: stage),
+          builder: (_) => WardrobeScreen(
+            cert: UkalabCert.hazmat4,
+            stage: stage,
+            pack: ref.read(selectedCharacterPackProvider),
+          ),
+        ));
+      case _OshiAction.choose:
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => const CharacterSelectScreen(),
         ));
       case _OshiAction.passReport:
-        showPassReportDialog(context, ref, cert: UkalabCert.hazmat4, stage: stage);
+        showPassReportDialog(
+          context,
+          ref,
+          cert: UkalabCert.hazmat4,
+          stage: stage,
+          pack: ref.read(selectedCharacterPackProvider),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pack = ref.watch(selectedCharacterPackProvider);
     final progress = ref.watch(progressProvider);
     final coin = ref.watch(coinProvider);
     final menu = PopupMenuButton<Object>(
@@ -99,6 +114,7 @@ class _OshiCardState extends ConsumerState<OshiCard> {
       icon: const Icon(Icons.more_vert),
       onSelected: _onMenu,
       itemBuilder: (_) => const [
+        PopupMenuItem(value: _OshiAction.choose, child: Text('推しを選ぶ')),
         PopupMenuItem(value: _OshiAction.wardrobe, child: Text('着替え・ショップ')),
         PopupMenuItem(value: _OshiAction.passReport, child: Text('試験の結果を報告')),
         PopupMenuDivider(),
@@ -138,6 +154,7 @@ class _OshiCardState extends ConsumerState<OshiCard> {
         child: Row(
           children: [
             MascotWidget(
+              pack: pack,
               stage: stage,
               outfit: ref.watch(equippedOutfitProvider),
               expression: day.expression,
@@ -151,7 +168,8 @@ class _OshiCardState extends ConsumerState<OshiCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('あなたの推し  Lv${stage.index + 1}', style: theme.textTheme.titleSmall),
+                  Text('${pack.isBuiltIn ? 'あなたの推し' : pack.name}  Lv${stage.index + 1}',
+                      style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
                   Text(
                     small ? line : '推しをタップすると、ひとこと話します',
