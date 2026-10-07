@@ -5,7 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// アプリ内リマインダー（学習・模試）を個別に表示するかどうかの設定。
 class ReminderSettings {
-  const ReminderSettings({this.studyReminderEnabled = true, this.mockReminderEnabled = true});
+  const ReminderSettings({
+    this.studyReminderEnabled = true,
+    this.mockReminderEnabled = true,
+    this.studyReminderHour = 18,
+  });
 
   /// デイリーミッション未達成時の学習リマインダー（ホーム）を表示するか。
   final bool studyReminderEnabled;
@@ -13,20 +17,30 @@ class ReminderSettings {
   /// 模擬試験の受験間隔リマインダー（ホーム）を表示するか。
   final bool mockReminderEnabled;
 
-  ReminderSettings copyWith({bool? studyReminderEnabled, bool? mockReminderEnabled}) =>
+  /// 学習リマインダーを表示し始める時刻（0〜23時）。既定は18時。
+  final int studyReminderHour;
+
+  ReminderSettings copyWith({
+    bool? studyReminderEnabled,
+    bool? mockReminderEnabled,
+    int? studyReminderHour,
+  }) =>
       ReminderSettings(
         studyReminderEnabled: studyReminderEnabled ?? this.studyReminderEnabled,
         mockReminderEnabled: mockReminderEnabled ?? this.mockReminderEnabled,
+        studyReminderHour: studyReminderHour ?? this.studyReminderHour,
       );
 
   Map<String, dynamic> toJson() => {
         'studyReminderEnabled': studyReminderEnabled,
         'mockReminderEnabled': mockReminderEnabled,
+        'studyReminderHour': studyReminderHour,
       };
 
   static ReminderSettings fromJson(Map<String, dynamic> json) => ReminderSettings(
         studyReminderEnabled: json['studyReminderEnabled'] as bool? ?? true,
         mockReminderEnabled: json['mockReminderEnabled'] as bool? ?? true,
+        studyReminderHour: json['studyReminderHour'] as int? ?? 18,
       );
 }
 
@@ -76,6 +90,12 @@ class ReminderSettingsService {
     await _store.write(_settings);
     return _settings;
   }
+
+  Future<ReminderSettings> setStudyReminderHour(int hour) async {
+    _settings = _settings.copyWith(studyReminderHour: hour);
+    await _store.write(_settings);
+    return _settings;
+  }
 }
 
 final reminderSettingsServiceProvider = Provider<ReminderSettingsService>(
@@ -94,6 +114,10 @@ class ReminderSettingsNotifier extends Notifier<ReminderSettings> {
 
   Future<void> setMockReminderEnabled(bool enabled) async {
     state = await _s.setMockReminderEnabled(enabled);
+  }
+
+  Future<void> setStudyReminderHour(int hour) async {
+    state = await _s.setStudyReminderHour(hour);
   }
 }
 

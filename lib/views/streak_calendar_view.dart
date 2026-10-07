@@ -5,29 +5,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/daily_goal_history_store.dart';
 import '../data/streak_calendar.dart';
 
-/// 連続学習日数のカレンダー表示。直近28日分を週7列のグリッドで見える化し、
-/// 目標を達成した日・解答はしたが未達成の日・記録が無い日を色分けする
+/// 連続学習日数のカレンダー表示。月単位でページ送りして、目標を達成した日・
+/// 解答はしたが未達成の日・記録が無い日を色分けして見える化する
 /// （`lib/data/streak_calendar.dart`）。記録タブの「連続学習日数」から開く。
-class StreakCalendarView extends ConsumerWidget {
+/// 記録の保存件数には上限（直近30日分）があるため、それより前の月は
+/// 「記録なし」の表示になる。
+class StreakCalendarView extends ConsumerStatefulWidget {
   const StreakCalendarView({super.key});
 
-  static const _days = 28;
+  @override
+  ConsumerState<StreakCalendarView> createState() => _StreakCalendarViewState();
+}
+
+class _StreakCalendarViewState extends ConsumerState<StreakCalendarView> {
   static const _weekdayLabels = ['月', '火', '水', '木', '金', '土', '日'];
 
+  int _monthOffset = 0;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final history = ref.watch(dailyGoalHistoryProvider);
     final now = DateTime.now();
-    final calendarDays = streakCalendarDays(history, now, days: _days);
-    final today = DateTime(now.year, now.month, now.day);
-    final startDate = today.subtract(const Duration(days: _days - 1));
-    final leadingEmptyCount = startDate.weekday - 1;
+    final displayedMonth = addMonths(DateTime(now.year, now.month, 1), _monthOffset);
+    final monthDays = monthCalendarDays(history, displayedMonth);
+    final leadingEmptyCount = displayedMonth.weekday - 1;
+    final canGoNext = _monthOffset < 0;
 
     final cells = <Widget>[
       for (var i = 0; i < leadingEmptyCount; i++) const SizedBox.shrink(),
-      for (var i = 0; i < calendarDays.length; i++)
-        _StreakDayCell(date: startDate.add(Duration(days: i)), entry: calendarDays[i]),
+      for (var i = 0; i < monthDays.length; i++)
+        _StreakDayCell(date: displayedMonth.add(Duration(days: i)), entry: monthDays[i]),
     ];
 
     return Scaffold(
@@ -40,8 +48,23 @@ class StreakCalendarView extends ConsumerWidget {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('直近${_days}日間の記録です', style: theme.textTheme.bodySmall),
-                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      tooltip: '前の月',
+                      onPressed: () => setState(() => _monthOffset -= 1),
+                    ),
+                    Text('${displayedMonth.year}年${displayedMonth.month}月', style: theme.textTheme.titleSmall),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      tooltip: '次の月',
+                      onPressed: canGoNext ? () => setState(() => _monthOffset += 1) : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     for (final label in _weekdayLabels)
@@ -70,6 +93,11 @@ class StreakCalendarView extends ConsumerWidget {
                     _Legend(color: theme.colorScheme.primaryContainer, label: '解答あり'),
                     _Legend(color: theme.colorScheme.surfaceContainerHighest, label: '記録なし'),
                   ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '記録の保存件数には上限（直近30日分）があり、それより前の月は「記録なし」と表示されます。',
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             ),

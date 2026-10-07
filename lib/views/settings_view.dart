@@ -172,10 +172,24 @@ class SettingsView extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('学習リマインダー'),
-          subtitle: const Text('夜（18時以降）に今日の目標が未達成なら知らせます'),
+          subtitle: Text('${reminderSettings.studyReminderHour}時以降に今日の目標が未達成なら知らせます'),
           value: reminderSettings.studyReminderEnabled,
           onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setStudyReminderEnabled(v),
         ),
+        if (reminderSettings.studyReminderEnabled)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('学習リマインダーの時刻'),
+            trailing: DropdownButton<int>(
+              value: reminderSettings.studyReminderHour,
+              items: [
+                for (var h = 0; h < 24; h++) DropdownMenuItem(value: h, child: Text('$h時')),
+              ],
+              onChanged: (h) {
+                if (h != null) ref.read(reminderSettingsProvider.notifier).setStudyReminderHour(h);
+              },
+            ),
+          ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('模試リマインダー'),
