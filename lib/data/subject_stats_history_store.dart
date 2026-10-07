@@ -88,6 +88,13 @@ class SubjectStatsHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<List<SubjectStatsHistoryEntry>> reset() async {
+    _history = [];
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final subjectStatsHistoryServiceProvider = Provider<SubjectStatsHistoryService>(
@@ -102,6 +109,10 @@ class SubjectStatsHistoryNotifier extends Notifier<List<SubjectStatsHistoryEntry
 
   Future<void> recordSnapshot(Map<String, SubjectStat> stats) async {
     state = await _s.recordSnapshot(stats);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

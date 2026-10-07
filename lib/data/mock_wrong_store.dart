@@ -48,6 +48,13 @@ class MockWrongService {
     await _store.write(_qids);
     return _qids;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<List<String>> reset() async {
+    _qids = [];
+    await _store.write(_qids);
+    return _qids;
+  }
 }
 
 final mockWrongServiceProvider = Provider<MockWrongService>(
@@ -62,6 +69,10 @@ class MockWrongNotifier extends Notifier<List<String>> {
 
   Future<void> setWrong(List<String> qids) async {
     state = await _s.setWrong(qids);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

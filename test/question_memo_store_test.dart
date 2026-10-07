@@ -88,6 +88,13 @@ void main() {
       await reloaded.load();
       expect(reloaded.memos['q1'], 'メモ本文');
     });
+
+    test('resetでメモが空になる', () async {
+      final service = QuestionMemoService(store: _FakeStore());
+      await service.setMemo(qid: 'q1', memo: 'メモ本文');
+      await service.reset();
+      expect(service.memos, isEmpty);
+    });
   });
 }
 

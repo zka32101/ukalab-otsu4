@@ -86,6 +86,13 @@ class DailyGoalHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<List<DailyGoalHistoryEntry>> reset() async {
+    _history = [];
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final dailyGoalHistoryServiceProvider = Provider<DailyGoalHistoryService>(
@@ -100,6 +107,10 @@ class DailyGoalHistoryNotifier extends Notifier<List<DailyGoalHistoryEntry>> {
 
   Future<void> recordSnapshot({required DateTime date, required int count, required bool achieved}) async {
     state = await _s.recordSnapshot(date: date, count: count, achieved: achieved);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

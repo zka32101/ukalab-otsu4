@@ -51,6 +51,13 @@ void main() {
       expect(reloaded.history.length, 1);
       expect(reloaded.history.first.count, 5);
     });
+
+    test('resetで履歴が空になる', () async {
+      final service = DailyGoalHistoryService(store: _FakeStore());
+      await service.recordSnapshot(date: DateTime(2026, 10, 6), count: 5, achieved: true);
+      await service.reset();
+      expect(service.history, isEmpty);
+    });
   });
 }
 

@@ -37,6 +37,14 @@ void main() {
       await reloaded.load();
       expect(reloaded.dueQids(), ['q1']);
     });
+
+    test('resetで記録が空になる', () async {
+      final now = DateTime(2026, 10, 5, 9);
+      final service = SrsService(store: _FakeSrsStore(), clock: () => now);
+      await service.review(qid: 'q1', correct: false);
+      await service.reset();
+      expect(service.dueQids(), isEmpty);
+    });
   });
 
   group('srsBoxDistribution', () {

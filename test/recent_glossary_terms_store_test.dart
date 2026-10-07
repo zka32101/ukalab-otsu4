@@ -44,6 +44,13 @@ void main() {
       await reloaded.load();
       expect(reloaded.terms, ['引火点']);
     });
+
+    test('resetで記録が空になる', () async {
+      final service = RecentGlossaryTermsService(store: _FakeStore());
+      await service.record('引火点');
+      await service.reset();
+      expect(service.terms, isEmpty);
+    });
   });
 }
 

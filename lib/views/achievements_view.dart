@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/achievements.dart';
+import '../data/combo_store.dart';
+import '../data/daily_goal_store.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
+import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
 
 /// 実績バッジの一覧。連続学習日数・解答数・模試合格・分野マスターの
@@ -16,11 +19,18 @@ class AchievementsView extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final mockHistory = ref.watch(mockHistoryProvider);
     final subjectStats = ref.watch(subjectStatsProvider);
+    final srs = ref.watch(srsProvider);
+    final masteredCount = srs.values.where((i) => i.box == Srs.maxBox).length;
+    final bestCombo = ref.watch(comboProvider);
+    final achievedStreak = effectiveAchievedStreak(ref.watch(dailyGoalProvider), DateTime.now());
     final achievements = buildAchievements(
       answered: progress.answered,
       streakDays: progress.streakDays,
       mockHistory: mockHistory,
       subjectStats: subjectStats,
+      bestCombo: bestCombo,
+      masteredCount: masteredCount,
+      achievedStreak: achievedStreak,
     );
     final unlockedCount = achievements.where((a) => a.unlocked).length;
 

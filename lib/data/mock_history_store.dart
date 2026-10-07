@@ -84,6 +84,13 @@ class MockHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<List<MockHistoryEntry>> reset() async {
+    _history = [];
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final mockHistoryServiceProvider = Provider<MockHistoryService>(
@@ -98,6 +105,10 @@ class MockHistoryNotifier extends Notifier<List<MockHistoryEntry>> {
 
   Future<void> add(MockHistoryEntry entry) async {
     state = await _s.add(entry);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

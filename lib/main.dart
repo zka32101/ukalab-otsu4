@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
+import 'data/combo_store.dart';
 import 'data/daily_goal_history_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
@@ -97,6 +98,10 @@ void main() async {
   final recentGlossaryTermsService = RecentGlossaryTermsService();
   await recentGlossaryTermsService.load();
 
+  // 一問一答の連続正解数（コンボ）の自己最高記録。端末内に保存する。
+  final comboService = ComboService();
+  await comboService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -118,6 +123,7 @@ void main() async {
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
         reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
+        comboServiceProvider.overrideWithValue(comboService),
       ],
       child: const Otsu4App(),
     ),
