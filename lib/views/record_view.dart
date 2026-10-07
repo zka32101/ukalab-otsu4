@@ -15,6 +15,7 @@ import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'achievements_view.dart';
 import 'focus_training_view.dart';
+import 'mock_report_view.dart';
 import 'srs_calendar_view.dart';
 import 'streak_calendar_view.dart';
 import 'weak_review_view.dart';
@@ -189,20 +190,27 @@ class RecordView extends ConsumerWidget {
                 children: [
                   Text('模擬試験の結果', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final entry in mockHistory.reversed.take(5)) _MockHistoryRow(entry: entry),
+                  for (final entry in mockHistory.reversed.take(5)) MockHistoryRow(entry: entry),
                   if (mockHistory.length > 1) ...[
                     const SizedBox(height: 12),
-                    _MockScoreTrendChart(
+                    MockScoreTrendChart(
                       series: [for (final e in mockHistory) e.pct / 100],
                     ),
                   ],
                   if (mockHistory.length > 1 && exam != null) ...[
                     const SizedBox(height: 8),
-                    _PassPredictionRow(
+                    PassPredictionRow(
                       history: mockHistory,
                       passPct: exam.levels.first.passRule.totalPct,
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MockReportView()),
+                    ),
+                    child: const Text('成績レポートを見る'),
+                  ),
                 ],
               ),
             ),
@@ -218,8 +226,8 @@ class RecordView extends ConsumerWidget {
                 children: [
                   Text('分野別の正答率', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final s in _orderedSubjects(exam, subjectStats))
-                    _SubjectStatRow(label: s.$1, stat: s.$2),
+                  for (final s in orderedSubjects(exam, subjectStats))
+                    SubjectStatRow(label: s.$1, stat: s.$2),
                 ],
               ),
             ),
@@ -295,8 +303,8 @@ class RecordView extends ConsumerWidget {
 }
 
 /// 模擬試験の結果1回分の行。日時・得点率・合否を表示する。
-class _MockHistoryRow extends StatelessWidget {
-  const _MockHistoryRow({required this.entry});
+class MockHistoryRow extends StatelessWidget {
+  const MockHistoryRow({required this.entry});
 
   final MockHistoryEntry entry;
 
@@ -408,8 +416,8 @@ class _DailyGoalHistoryChart extends StatelessWidget {
 }
 
 /// 模擬試験の得点率の推移。古い順の得点率（0.0〜1.0）を折れ線グラフで表示する。
-class _MockScoreTrendChart extends StatelessWidget {
-  const _MockScoreTrendChart({required this.series});
+class MockScoreTrendChart extends StatelessWidget {
+  const MockScoreTrendChart({required this.series});
 
   final List<double> series;
 
@@ -425,7 +433,7 @@ class _MockScoreTrendChart extends StatelessWidget {
           height: 48,
           child: CustomPaint(
             size: const Size(double.infinity, 48),
-            painter: _TrendPainter(series: series, color: theme.colorScheme.primary),
+            painter: TrendPainter(series: series, color: theme.colorScheme.primary),
           ),
         ),
       ],
@@ -434,8 +442,8 @@ class _MockScoreTrendChart extends StatelessWidget {
 }
 
 /// 模試の合格ライン到達見込み1行。直近の傾向に応じたアイコン・メッセージを表示する。
-class _PassPredictionRow extends StatelessWidget {
-  const _PassPredictionRow({required this.history, required this.passPct});
+class PassPredictionRow extends StatelessWidget {
+  const PassPredictionRow({required this.history, required this.passPct});
 
   final List<MockHistoryEntry> history;
   final double passPct;
@@ -487,7 +495,7 @@ int? latestStreakMilestone(int streakDays) {
 
 /// データがある分野だけ、`ExamConfig` の並び順で（名前, 統計）を返す。
 /// `exam` が未取得（読み込み中）なら subjectId をそのまま名前にする。
-List<(String, SubjectStat)> _orderedSubjects(ExamConfig? exam, Map<String, SubjectStat> stats) {
+List<(String, SubjectStat)> orderedSubjects(ExamConfig? exam, Map<String, SubjectStat> stats) {
   if (exam == null) {
     return [for (final e in stats.entries) (e.key, e.value)];
   }
@@ -539,7 +547,7 @@ class _SubjectTrendRow extends StatelessWidget {
             height: 36,
             child: CustomPaint(
               size: const Size(double.infinity, 36),
-              painter: _TrendPainter(series: series, color: theme.colorScheme.primary),
+              painter: TrendPainter(series: series, color: theme.colorScheme.primary),
             ),
           ),
         ],
@@ -549,8 +557,8 @@ class _SubjectTrendRow extends StatelessWidget {
 }
 
 /// 折れ線グラフの描画。series は古い順の正答率（0.0〜1.0）。
-class _TrendPainter extends CustomPainter {
-  _TrendPainter({required this.series, required this.color});
+class TrendPainter extends CustomPainter {
+  TrendPainter({required this.series, required this.color});
 
   final List<double> series;
   final Color color;
@@ -579,7 +587,7 @@ class _TrendPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TrendPainter oldDelegate) =>
+  bool shouldRepaint(covariant TrendPainter oldDelegate) =>
       oldDelegate.series != series || oldDelegate.color != color;
 }
 
@@ -588,7 +596,7 @@ class _TrendPainter extends CustomPainter {
 List<(String, SubjectStat)> sortedByWeakness(ExamConfig? exam, Map<String, SubjectStat> stats) {
   final named = exam == null
       ? [for (final e in stats.entries) (e.key, e.value)]
-      : _orderedSubjects(exam, stats);
+      : orderedSubjects(exam, stats);
   return [...named]..sort((a, b) => a.$2.accuracy.compareTo(b.$2.accuracy));
 }
 
@@ -678,8 +686,8 @@ class _WeakMapBar extends StatelessWidget {
 }
 
 /// 分野別の正答率1行。解答数・正答率バーを表示する。
-class _SubjectStatRow extends StatelessWidget {
-  const _SubjectStatRow({required this.label, required this.stat});
+class SubjectStatRow extends StatelessWidget {
+  const SubjectStatRow({required this.label, required this.stat});
 
   final String label;
   final SubjectStat stat;

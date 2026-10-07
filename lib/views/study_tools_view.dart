@@ -4,6 +4,7 @@ import 'bookmark_list_view.dart';
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';
 import 'memo_list_view.dart';
+import 'mock_report_view.dart';
 import 'mock_wrong_review_view.dart';
 import 'question_search_view.dart';
 import 'recent_glossary_terms_view.dart';
@@ -54,6 +55,14 @@ class StudyToolsView extends StatelessWidget {
             description: '直近の模擬試験で間違えた問題をまとめて復習します',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const MockWrongReviewView()),
+            ),
+          ),
+          _ToolTile(
+            icon: Icons.summarize_outlined,
+            title: '成績レポート',
+            description: '模擬試験の受験履歴・得点率の推移・合格予測をまとめて確認します',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MockReportView()),
             ),
           ),
           _ToolTile(

@@ -91,6 +91,13 @@ class MockHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[history] で上書きする。
+  Future<List<MockHistoryEntry>> restore(List<MockHistoryEntry> history) async {
+    _history = history;
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final mockHistoryServiceProvider = Provider<MockHistoryService>(
@@ -109,6 +116,10 @@ class MockHistoryNotifier extends Notifier<List<MockHistoryEntry>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(List<MockHistoryEntry> history) async {
+    state = await _s.restore(history);
   }
 }
 

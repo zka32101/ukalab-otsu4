@@ -42,7 +42,7 @@ class _SourceCreditsViewState extends State<SourceCreditsView> {
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: refs.length,
-                  separatorBuilder: (_, _) => const Divider(),
+                  separatorBuilder: (_, __) => const Divider(),
                   itemBuilder: (context, i) => ListTile(
                     leading: const Icon(Icons.gavel_outlined),
                     title: Text(refs[i]),

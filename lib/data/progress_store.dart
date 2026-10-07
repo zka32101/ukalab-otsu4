@@ -118,6 +118,13 @@ class ProgressService {
     await _store.write(_snapshot);
     return _snapshot;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[snapshot] で上書きする。
+  Future<ProgressSnapshot> restore(ProgressSnapshot snapshot) async {
+    _snapshot = snapshot;
+    await _store.write(_snapshot);
+    return _snapshot;
+  }
 }
 
 /// アプリ側で `main()` で読み込んだインスタンスに上書きして使う。
@@ -137,6 +144,10 @@ class ProgressNotifier extends Notifier<ProgressSnapshot> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(ProgressSnapshot snapshot) async {
+    state = await _s.restore(snapshot);
   }
 }
 

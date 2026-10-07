@@ -79,6 +79,13 @@ class SubjectStatsService {
     await _store.write(_stats);
     return _stats;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[stats] で上書きする。
+  Future<Map<String, SubjectStat>> restore(Map<String, SubjectStat> stats) async {
+    _stats = stats;
+    await _store.write(_stats);
+    return _stats;
+  }
 }
 
 final subjectStatsServiceProvider = Provider<SubjectStatsService>(
@@ -97,6 +104,10 @@ class SubjectStatsNotifier extends Notifier<Map<String, SubjectStat>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(Map<String, SubjectStat> stats) async {
+    state = await _s.restore(stats);
   }
 }
 

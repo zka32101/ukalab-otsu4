@@ -95,6 +95,13 @@ class SubjectStatsHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[history] で上書きする。
+  Future<List<SubjectStatsHistoryEntry>> restore(List<SubjectStatsHistoryEntry> history) async {
+    _history = history;
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final subjectStatsHistoryServiceProvider = Provider<SubjectStatsHistoryService>(
@@ -113,6 +120,10 @@ class SubjectStatsHistoryNotifier extends Notifier<List<SubjectStatsHistoryEntry
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(List<SubjectStatsHistoryEntry> history) async {
+    state = await _s.restore(history);
   }
 }
 

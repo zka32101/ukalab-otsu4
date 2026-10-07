@@ -46,17 +46,17 @@ void main() {
 
   group('effectiveAchievedStreak', () {
     test('lastAchievedDateが今日なら、そのままの値', () {
-      const g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 6));
+      final g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 6));
       expect(effectiveAchievedStreak(g, DateTime(2026, 10, 6, 20)), 5);
     });
 
     test('lastAchievedDateが昨日なら、そのままの値（途切れていない）', () {
-      const g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 5));
+      final g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 5));
       expect(effectiveAchievedStreak(g, DateTime(2026, 10, 6)), 5);
     });
 
     test('lastAchievedDateが2日以上前なら途切れているとみなし0', () {
-      const g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 1));
+      final g = DailyGoal(achievedStreak: 5, lastAchievedDate: DateTime(2026, 10, 1));
       expect(effectiveAchievedStreak(g, DateTime(2026, 10, 6)), 0);
     });
 

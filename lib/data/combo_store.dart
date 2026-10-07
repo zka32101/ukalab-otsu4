@@ -45,6 +45,13 @@ class ComboService {
     await _store.write(_bestCombo);
     return _bestCombo;
   }
+
+  /// バックアップの読み込み時に呼ぶ。自己最高の判定を介さず [bestCombo] で上書きする。
+  Future<int> restore(int bestCombo) async {
+    _bestCombo = bestCombo;
+    await _store.write(_bestCombo);
+    return _bestCombo;
+  }
 }
 
 final comboServiceProvider = Provider<ComboService>(
@@ -63,6 +70,10 @@ class ComboNotifier extends Notifier<int> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(int bestCombo) async {
+    state = await _s.restore(bestCombo);
   }
 }
 

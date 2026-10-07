@@ -93,6 +93,13 @@ class DailyGoalHistoryService {
     await _store.write(_history);
     return _history;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[history] で上書きする。
+  Future<List<DailyGoalHistoryEntry>> restore(List<DailyGoalHistoryEntry> history) async {
+    _history = history;
+    await _store.write(_history);
+    return _history;
+  }
 }
 
 final dailyGoalHistoryServiceProvider = Provider<DailyGoalHistoryService>(
@@ -111,6 +118,10 @@ class DailyGoalHistoryNotifier extends Notifier<List<DailyGoalHistoryEntry>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(List<DailyGoalHistoryEntry> history) async {
+    state = await _s.restore(history);
   }
 }
 

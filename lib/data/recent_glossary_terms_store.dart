@@ -63,6 +63,13 @@ class RecentGlossaryTermsService {
     await _store.write(_terms);
     return _terms;
   }
+
+  /// バックアップの読み込み時に呼ぶ。[terms] で上書きする。
+  Future<List<String>> restore(List<String> terms) async {
+    _terms = terms;
+    await _store.write(_terms);
+    return _terms;
+  }
 }
 
 final recentGlossaryTermsServiceProvider = Provider<RecentGlossaryTermsService>(
@@ -81,6 +88,10 @@ class RecentGlossaryTermsNotifier extends Notifier<List<String>> {
 
   Future<void> reset() async {
     state = await _s.reset();
+  }
+
+  Future<void> restore(List<String> terms) async {
+    state = await _s.restore(terms);
   }
 }
 
