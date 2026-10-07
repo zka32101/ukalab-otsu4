@@ -9,6 +9,7 @@ import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
+import '../widgets/achievement_share_card.dart';
 
 /// 実績バッジの一覧。連続学習日数・解答数・模試合格・分野マスターの
 /// 達成状況を一覧表示する（`lib/data/achievements.dart`）。
@@ -76,6 +77,39 @@ class _AchievementTile extends StatelessWidget {
               Text('達成済みです。', style: Theme.of(context).textTheme.bodySmall),
             ],
           ],
+        ),
+        actions: [
+          if (a.unlocked)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showShareCard(context);
+              },
+              child: const Text('達成カードを見る'),
+            ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('閉じる')),
+        ],
+      ),
+    );
+  }
+
+  void _showShareCard(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AchievementShareCard(achievement: achievement, date: DateTime.now()),
+              const SizedBox(height: 12),
+              Text(
+                'スクリーンショットで共有できます。カードに名前などの個人情報は入りません。',
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('閉じる')),

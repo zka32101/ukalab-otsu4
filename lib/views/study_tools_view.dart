@@ -91,6 +91,16 @@ class StudyToolsView extends StatelessWidget {
             ),
           ),
           _ToolTile(
+            icon: Icons.star_outline,
+            title: 'お気に入り単語帳',
+            description: 'お気に入り登録した用語だけを、ランダム順の暗記カードで復習できます',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const GlossaryCardView(initialFavoritesOnly: true, initialShuffle: true),
+              ),
+            ),
+          ),
+          _ToolTile(
             icon: Icons.search_outlined,
             title: '重要語句で探す',
             description: 'キーワードから、関連する用語集・問題をまとめて探せます',

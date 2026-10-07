@@ -20,11 +20,23 @@ const _subjectFilterLabels = <String?, String>{
 /// `lib/data/glossary.dart` の既存の確認済みデータに基づく定義を使い、
 /// 新たな一次資料の収集は行っていない。
 class GlossaryCardView extends ConsumerStatefulWidget {
-  const GlossaryCardView({super.key, this.initialTerm});
+  const GlossaryCardView({
+    super.key,
+    this.initialTerm,
+    this.initialFavoritesOnly = false,
+    this.initialShuffle = false,
+  });
 
   /// 開いた直後に表示する用語（検索・解説文中のタップから遷移した場合）。
   /// 一致しなければ最初の用語から表示する（フィルタは「すべて」で開く）。
   final String? initialTerm;
+
+  /// 開いた直後から「お気に入りのみ」を有効にするか（お気に入り単語帳の
+  /// 入り口から開いた場合）。
+  final bool initialFavoritesOnly;
+
+  /// 開いた直後から「ランダム順」を有効にするか。
+  final bool initialShuffle;
 
   @override
   ConsumerState<GlossaryCardView> createState() => _GlossaryCardViewState();
@@ -32,8 +44,8 @@ class GlossaryCardView extends ConsumerStatefulWidget {
 
 class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   String? _subjectFilter;
-  bool _favoritesOnly = false;
-  bool _shuffle = false;
+  late bool _favoritesOnly;
+  late bool _shuffle;
   List<GlossaryTerm>? _shuffledCache;
   late int _index;
   late bool _showDefinition;
@@ -41,6 +53,8 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   @override
   void initState() {
     super.initState();
+    _favoritesOnly = widget.initialFavoritesOnly;
+    _shuffle = widget.initialShuffle;
     final found = widget.initialTerm == null
         ? -1
         : glossaryTerms.indexWhere((t) => t.term == widget.initialTerm);
