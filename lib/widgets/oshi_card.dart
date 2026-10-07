@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/oshi_lines.dart';
 import '../data/progress_store.dart';
+import '../views/character_preview_view.dart';
 
 const _kDisplayKey = 'ukalab_otsu4_oshi_display';
 
@@ -90,7 +91,7 @@ class _OshiCardState extends ConsumerState<OshiCard> {
         ));
       case _OshiAction.choose:
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => const CharacterSelectScreen(),
+          builder: (_) => const CharacterPreviewView(),
         ));
       case _OshiAction.passReport:
         showPassReportDialog(

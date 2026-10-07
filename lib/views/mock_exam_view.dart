@@ -272,8 +272,9 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     final subjectCounts = level.subjectQuestionCounts;
     String? paceText;
     Color? paceColor;
+    Map<String, int>? subjectBudget;
     if (remaining != null && level.timeLimitSec != null && subjectCounts != null) {
-      final budget = subjectPaceBudgetSec(
+      subjectBudget = subjectPaceBudgetSec(
         subjectQuestionCounts: subjectCounts,
         totalTimeSec: level.timeLimitSec!,
       );
@@ -281,7 +282,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
         picked: picked,
         index: _index,
         subjectQuestionCounts: subjectCounts,
-        subjectBudgetSec: budget,
+        subjectBudgetSec: subjectBudget,
       );
       final behind = isBehindPace(
         elapsedSec: level.timeLimitSec! - remaining,
@@ -329,6 +330,17 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
                 const SizedBox(width: 4),
                 Text(paceText, style: TextStyle(fontSize: 12, color: paceColor)),
               ],
+            ),
+          ],
+          if (subjectCounts != null && subjectBudget != null) ...[
+            const SizedBox(height: 8),
+            _SubjectPaceSummary(
+              exam: exam,
+              subjectQuestionCounts: subjectCounts,
+              subjectBudgetSec: subjectBudget,
+              picked: picked,
+              index: _index,
+              currentSubjectId: q.subjectId,
             ),
           ],
           const SizedBox(height: 8),
@@ -452,6 +464,59 @@ class _SubjectResultCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 模試の問題画面上部に常時表示する、科目別のペース配分。今どの科目の
+/// 何問目あたりかと、科目ごとの目安配分時間（分）を一覧できる。現在の科目を
+/// 強調表示する。
+class _SubjectPaceSummary extends StatelessWidget {
+  const _SubjectPaceSummary({
+    required this.exam,
+    required this.subjectQuestionCounts,
+    required this.subjectBudgetSec,
+    required this.picked,
+    required this.index,
+    required this.currentSubjectId,
+  });
+
+  final ExamConfig exam;
+  final Map<String, int> subjectQuestionCounts;
+  final Map<String, int> subjectBudgetSec;
+  final List<Question> picked;
+  final int index;
+  final String currentSubjectId;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+    final ids = [for (final s in subjects) if (subjectQuestionCounts.containsKey(s.subjectId)) s];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      children: [
+        for (final s in ids)
+          Builder(builder: (context) {
+            final isCurrent = s.subjectId == currentSubjectId;
+            final total = subjectQuestionCounts[s.subjectId] ?? 0;
+            final done = subjectProgressCount(
+              picked: picked,
+              uptoIndex: index,
+              subjectId: s.subjectId,
+            );
+            final budgetMin = ((subjectBudgetSec[s.subjectId] ?? 0) / 60).round();
+            final color = isCurrent ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+            return Text(
+              '${isCurrent ? '▶ ' : ''}${s.name} $done/$total問・目安$budgetMin分',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: color,
+                fontWeight: isCurrent ? FontWeight.bold : null,
+              ),
+            );
+          }),
+      ],
     );
   }
 }
