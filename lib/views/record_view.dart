@@ -17,6 +17,7 @@ import 'achievements_view.dart';
 import 'focus_training_view.dart';
 import 'mock_report_view.dart';
 import 'srs_calendar_view.dart';
+import 'srs_item_list_view.dart';
 import 'streak_calendar_view.dart';
 import 'weak_review_view.dart';
 
@@ -156,22 +157,28 @@ class RecordView extends ConsumerWidget {
                   const SizedBox(height: 8),
                   _SrsBoxDistributionChart(distribution: srsBoxDistribution(srs.values)),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      if (dueCount > 0) ...[
+                      if (dueCount > 0)
                         FilledButton.tonal(
                           onPressed: () => Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const WeakReviewView()),
                           ),
                           child: const Text('復習する'),
                         ),
-                        const SizedBox(width: 8),
-                      ],
                       OutlinedButton(
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const SrsCalendarView()),
                         ),
                         child: const Text('復習カレンダー'),
+                      ),
+                      OutlinedButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SrsItemListView()),
+                        ),
+                        child: const Text('問題ごとの詳細'),
                       ),
                     ],
                   ),
