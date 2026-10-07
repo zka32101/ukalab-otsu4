@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'bookmark_list_view.dart';
+import 'character_preview_view.dart';
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';
 import 'memo_list_view.dart';
@@ -111,6 +112,14 @@ class StudyToolsView extends StatelessWidget {
             description: '目標達成日・解答した日を、直近28日間のカレンダーで見える化します',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const StreakCalendarView()),
+            ),
+          ),
+          _ToolTile(
+            icon: Icons.face_retouching_natural_outlined,
+            title: '推しの衣装プレビュー',
+            description: 'いま装備中の衣装を着た状態で、5人のキャラクターを比較できます',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CharacterPreviewView()),
             ),
           ),
         ],

@@ -7,10 +7,13 @@ import '../data/progress_store.dart';
 MascotStage _stageFor(ProgressSnapshot p) =>
     MasteryModel.standard.stageOf(MasteryInput(coverage: p.coverage, accuracy: p.accuracy));
 
-/// 推しを選ぶ画面（着せ替えプレビュー付き）。`app_common_kit` の
-/// `CharacterSelectScreen` は小さな顔アイコンのみで、乙4の衣装（レベル・
-/// 所持している衣装）を着た姿は見えない。この画面では、いま装備中の衣装を
-/// 着た状態で各キャラクターを並べて比較してから選べる。
+/// 推しの衣装プレビュー画面。ホームの推しカード（`app_common_kit` の
+/// `UkalabOshiCard`）のメニュー「推しを選ぶ」は同じく `app_common_kit` の
+/// `CharacterSelectScreen`（小さな顔アイコンのみ）に固定されており、乙4側
+/// からは差し替えられない。学習ツール一覧のこの画面では、いま装備中の衣装を
+/// 着た状態で5人のキャラクターを並べて比較でき、タップでそのまま選べる
+/// （選択状態は共通の `selectedCharacterPackProvider` を使うため、ホームの
+/// 推しカードにも反映される）。
 class CharacterPreviewView extends ConsumerWidget {
   const CharacterPreviewView({super.key});
 
