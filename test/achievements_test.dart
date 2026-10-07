@@ -157,5 +157,68 @@ void main() {
         '現在の最高正答率: 70%（10問以上解答した分野のうち）',
       );
     });
+
+    test('自己最高コンボが節目に達するとその節目が解除される', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+        bestCombo: 10,
+      );
+      expect(achievements.firstWhere((a) => a.id == 'combo_5').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'combo_10').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'combo_20').unlocked, isFalse);
+    });
+
+    test('定着問題数が節目に達するとその節目が解除される', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+        masteredCount: 30,
+      );
+      expect(achievements.firstWhere((a) => a.id == 'mastered_10').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'mastered_30').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'mastered_50').unlocked, isFalse);
+    });
+
+    test('デイリーミッションの連続達成日数が節目に達するとその節目が解除される', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+        achievedStreak: 7,
+      );
+      expect(achievements.firstWhere((a) => a.id == 'achieved_streak_3').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'achieved_streak_7').unlocked, isTrue);
+      expect(achievements.firstWhere((a) => a.id == 'achieved_streak_14').unlocked, isFalse);
+    });
+
+    test('未解除のコンボ・定着・連続達成バッジは現在値をprogressTextに表示する', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+        bestCombo: 2,
+        masteredCount: 4,
+        achievedStreak: 1,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'combo_5').progressText,
+        '自己最高の連続正解数: 2問 / 5問',
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mastered_10').progressText,
+        '現在の定着問題数: 4問 / 10問',
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'achieved_streak_3').progressText,
+        '現在の連続達成日数: 1日 / 3日',
+      );
+    });
   });
 }

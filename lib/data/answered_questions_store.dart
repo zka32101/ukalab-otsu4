@@ -48,6 +48,13 @@ class AnsweredQuestionsService {
     await _store.write(_qids);
     return _qids;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<Set<String>> reset() async {
+    _qids = {};
+    await _store.write(_qids);
+    return _qids;
+  }
 }
 
 final answeredQuestionsServiceProvider = Provider<AnsweredQuestionsService>(
@@ -62,6 +69,10 @@ class AnsweredQuestionsNotifier extends Notifier<Set<String>> {
 
   Future<void> record(String qid) async {
     state = await _s.record(qid);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

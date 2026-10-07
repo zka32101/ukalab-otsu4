@@ -39,6 +39,13 @@ void main() {
       await reloaded.load();
       expect(reloaded.qids, {'q1', 'q2'});
     });
+
+    test('resetで記録が空になる', () async {
+      final service = AnsweredQuestionsService(store: _FakeStore());
+      await service.record('q1');
+      await service.reset();
+      expect(service.qids, isEmpty);
+    });
   });
 
   group('subjectCoverage', () {

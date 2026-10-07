@@ -35,6 +35,13 @@ void main() {
       expect(reloaded.history, hasLength(1));
       expect(reloaded.history.single.score, 20);
     });
+
+    test('resetで履歴が空になる', () async {
+      final service = MockHistoryService(store: _FakeMockHistoryStore());
+      await service.add(MockHistoryEntry(at: DateTime(2026, 10, 5), score: 20, max: 35, passed: false));
+      await service.reset();
+      expect(service.history, isEmpty);
+    });
   });
 }
 

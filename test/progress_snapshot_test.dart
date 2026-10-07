@@ -77,6 +77,14 @@ void main() {
       final snapshot = await service.recordAnswer(correct: true);
       expect(snapshot.streakDays, 1);
     });
+
+    test('resetで初期状態に戻る', () async {
+      final service = ProgressService(store: _FakeProgressStore());
+      await service.recordAnswer(correct: true);
+      final snapshot = await service.reset();
+      expect(snapshot.answered, 0);
+      expect(service.snapshot.answered, 0);
+    });
   });
 }
 

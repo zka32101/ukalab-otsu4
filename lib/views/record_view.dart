@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/achievements.dart';
+import '../data/combo_store.dart';
 import '../data/daily_goal_history_store.dart';
+import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
@@ -45,11 +47,16 @@ class RecordView extends ConsumerWidget {
     final srs = ref.watch(srsProvider);
     final dueCount = ref.watch(dueWeakQidsProvider).length;
     final masteredCount = srs.values.where((i) => i.box == Srs.maxBox).length;
+    final bestCombo = ref.watch(comboProvider);
+    final achievedStreak = effectiveAchievedStreak(ref.watch(dailyGoalProvider), DateTime.now());
     final achievements = buildAchievements(
       answered: progress.answered,
       streakDays: progress.streakDays,
       mockHistory: mockHistory,
       subjectStats: subjectStats,
+      bestCombo: bestCombo,
+      masteredCount: masteredCount,
+      achievedStreak: achievedStreak,
     );
     final unlockedCount = achievements.where((a) => a.unlocked).length;
 

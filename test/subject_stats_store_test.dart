@@ -32,6 +32,13 @@ void main() {
       expect(reloaded.stats['law']!.answered, 1);
       expect(reloaded.stats['law']!.correct, 1);
     });
+
+    test('resetで統計が空になる', () async {
+      final service = SubjectStatsService(store: _FakeSubjectStatsStore());
+      await service.recordAnswer(subjectId: 'law', correct: true);
+      await service.reset();
+      expect(service.stats, isEmpty);
+    });
   });
 }
 

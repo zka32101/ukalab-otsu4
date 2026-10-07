@@ -111,6 +111,13 @@ class ProgressService {
     await _store.write(_snapshot);
     return _snapshot;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<ProgressSnapshot> reset() async {
+    _snapshot = const ProgressSnapshot();
+    await _store.write(_snapshot);
+    return _snapshot;
+  }
 }
 
 /// アプリ側で `main()` で読み込んだインスタンスに上書きして使う。
@@ -126,6 +133,10 @@ class ProgressNotifier extends Notifier<ProgressSnapshot> {
 
   Future<void> recordAnswer({required bool correct}) async {
     state = await _s.recordAnswer(correct: correct);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

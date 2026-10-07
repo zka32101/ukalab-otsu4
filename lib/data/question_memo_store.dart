@@ -52,6 +52,13 @@ class QuestionMemoService {
     await _store.write(_memos);
     return _memos;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<Map<String, String>> reset() async {
+    _memos = {};
+    await _store.write(_memos);
+    return _memos;
+  }
 }
 
 final questionMemoServiceProvider = Provider<QuestionMemoService>(
@@ -66,6 +73,10 @@ class QuestionMemoNotifier extends Notifier<Map<String, String>> {
 
   Future<void> setMemo({required String qid, required String memo}) async {
     state = await _s.setMemo(qid: qid, memo: memo);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

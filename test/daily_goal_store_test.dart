@@ -50,6 +50,16 @@ void main() {
       expect(reloaded.goal.target, 20);
       expect(reloaded.goal.todayCount, 1);
     });
+
+    test('resetで目標設定を含め初期状態に戻る', () async {
+      final service = DailyGoalService(store: _FakeDailyGoalStore());
+      await service.setTarget(20);
+      await service.recordAnswer();
+      final goal = await service.reset();
+      expect(goal.target, isNull);
+      expect(goal.todayCount, 0);
+      expect(service.goal.target, isNull);
+    });
   });
 }
 

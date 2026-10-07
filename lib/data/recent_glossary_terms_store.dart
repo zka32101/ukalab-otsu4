@@ -56,6 +56,13 @@ class RecentGlossaryTermsService {
     await _store.write(_terms);
     return _terms;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<List<String>> reset() async {
+    _terms = [];
+    await _store.write(_terms);
+    return _terms;
+  }
 }
 
 final recentGlossaryTermsServiceProvider = Provider<RecentGlossaryTermsService>(
@@ -70,6 +77,10 @@ class RecentGlossaryTermsNotifier extends Notifier<List<String>> {
 
   Future<void> record(String term) async {
     state = await _s.record(term);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

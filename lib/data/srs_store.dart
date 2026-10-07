@@ -56,6 +56,13 @@ class SrsService {
   /// 復習時期が来ている問題のqid（期限の古い順）。
   List<String> dueQids({int? limit}) =>
       Srs.due(_items.values, _clock(), limit: limit).map((i) => i.qid).toList();
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<Map<String, SrsItem>> reset() async {
+    _items = {};
+    await _store.write(_items);
+    return _items;
+  }
 }
 
 final srsServiceProvider = Provider<SrsService>(
@@ -70,6 +77,10 @@ class SrsNotifier extends Notifier<Map<String, SrsItem>> {
 
   Future<void> review({required String qid, required bool correct}) async {
     state = await _s.review(qid: qid, correct: correct);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

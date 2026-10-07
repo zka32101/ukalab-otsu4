@@ -32,6 +32,13 @@ void main() {
       await reloaded.load();
       expect(reloaded.qids, ['q1', 'q2']);
     });
+
+    test('resetで空になる', () async {
+      final service = MockWrongService(store: _FakeStore());
+      await service.setWrong(['q1']);
+      await service.reset();
+      expect(service.qids, isEmpty);
+    });
   });
 }
 

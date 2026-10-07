@@ -167,6 +167,13 @@ class DailyGoalService {
     await _store.write(_goal);
     return _goal;
   }
+
+  /// 学習記録のリセット時に呼ぶ。目標設定を含め初期状態に戻す。
+  Future<DailyGoal> reset() async {
+    _goal = const DailyGoal();
+    await _store.write(_goal);
+    return _goal;
+  }
 }
 
 final dailyGoalServiceProvider = Provider<DailyGoalService>(
@@ -185,6 +192,10 @@ class DailyGoalNotifier extends Notifier<DailyGoal> {
 
   Future<void> recordAnswer() async {
     state = await _s.recordAnswer();
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

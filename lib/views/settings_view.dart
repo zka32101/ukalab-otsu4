@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/daily_goal_store.dart';
+import '../data/data_reset.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
 import '../data/reminder_settings_store.dart';
@@ -181,6 +182,23 @@ class SettingsView extends ConsumerWidget {
           onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setMockReminderEnabled(v),
         ),
         const SizedBox(height: 24),
+        Text('データの管理', style: theme.textTheme.titleSmall),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Text(
+            '学習記録（解答数・正答率・模試結果・デイリーミッション・苦手問題の復習・'
+            '自分用メモ等）を端末から削除し、初期状態に戻します。テーマ・リマインダー'
+            '設定・試験日・ブックマーク・用語集のお気に入りは削除されません。',
+            style: TextStyle(fontSize: 12, height: 1.6),
+          ),
+        ),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
+          icon: const Icon(Icons.delete_outline),
+          label: const Text('学習記録をリセット'),
+          onPressed: () => _confirmReset(context, ref),
+        ),
+        const SizedBox(height: 24),
         Text('このアプリについて', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -199,6 +217,30 @@ class SettingsView extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
       ],
+    );
+  }
+
+  Future<void> _confirmReset(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('学習記録をリセットしますか？'),
+        content: const Text('解答数・正答率・模試結果・デイリーミッション・苦手問題の復習等の学習記録が'
+            '削除され、元に戻せません。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('リセットする', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await resetAllLearningData(ref);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('学習記録をリセットしました')),
     );
   }
 }

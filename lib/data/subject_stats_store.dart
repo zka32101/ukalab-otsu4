@@ -72,6 +72,13 @@ class SubjectStatsService {
     await _store.write(_stats);
     return _stats;
   }
+
+  /// 学習記録のリセット時に呼ぶ。初期状態に戻す。
+  Future<Map<String, SubjectStat>> reset() async {
+    _stats = {};
+    await _store.write(_stats);
+    return _stats;
+  }
 }
 
 final subjectStatsServiceProvider = Provider<SubjectStatsService>(
@@ -86,6 +93,10 @@ class SubjectStatsNotifier extends Notifier<Map<String, SubjectStat>> {
 
   Future<void> recordAnswer({required String subjectId, required bool correct}) async {
     state = await _s.recordAnswer(subjectId: subjectId, correct: correct);
+  }
+
+  Future<void> reset() async {
+    state = await _s.reset();
   }
 }
 

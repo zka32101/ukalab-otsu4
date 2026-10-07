@@ -35,12 +35,24 @@ const List<int> _answeredMilestones = [50, 100, 300, 500];
 const _masterMinAnswered = 10;
 const _masterAccuracyThreshold = 0.9;
 
+/// 一問一答の連続正解数（コンボ）のマイルストーン。
+const List<int> _comboMilestones = [5, 10, 20];
+
+/// 苦手問題の復習で定着（箱5）に達した問題数のマイルストーン。
+const List<int> _masteredMilestones = [10, 30, 50];
+
+/// デイリーミッションの連続達成日数のマイルストーン。
+const List<int> _achievedStreakMilestones = [3, 7, 14];
+
 /// 進捗・模試履歴・分野別統計から、実績バッジの一覧（達成状況付き）を作る。
 List<Achievement> buildAchievements({
   required int answered,
   required int streakDays,
   required List<MockHistoryEntry> mockHistory,
   required Map<String, SubjectStat> subjectStats,
+  int bestCombo = 0,
+  int masteredCount = 0,
+  int achievedStreak = 0,
 }) {
   final bestMasterCandidate = _bestMasterCandidate(subjectStats);
   final achievements = <Achievement>[
@@ -84,6 +96,33 @@ List<Achievement> buildAchievements({
               ? '10問以上解答した分野がまだありません'
               : '現在の最高正答率: ${(bestMasterCandidate * 100).round()}%（10問以上解答した分野のうち）'),
     ),
+    for (final n in _comboMilestones)
+      Achievement(
+        id: 'combo_$n',
+        title: '$n問連続正解',
+        description: '一問一答で$n問連続して正解した',
+        icon: Icons.local_fire_department_outlined,
+        unlocked: bestCombo >= n,
+        progressText: bestCombo >= n ? null : '自己最高の連続正解数: $bestCombo問 / $n問',
+      ),
+    for (final n in _masteredMilestones)
+      Achievement(
+        id: 'mastered_$n',
+        title: '定着問題$n問',
+        description: '苦手問題の復習で、$n問を定着（箱5）まで育てた',
+        icon: Icons.auto_awesome_outlined,
+        unlocked: masteredCount >= n,
+        progressText: masteredCount >= n ? null : '現在の定着問題数: $masteredCount問 / $n問',
+      ),
+    for (final n in _achievedStreakMilestones)
+      Achievement(
+        id: 'achieved_streak_$n',
+        title: '目標達成$n日連続',
+        description: 'デイリーミッションの目標を$n日連続で達成した',
+        icon: Icons.flag_outlined,
+        unlocked: achievedStreak >= n,
+        progressText: achievedStreak >= n ? null : '現在の連続達成日数: $achievedStreak日 / $n日',
+      ),
   ];
   return achievements;
 }

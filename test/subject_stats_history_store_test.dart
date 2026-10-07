@@ -55,6 +55,13 @@ void main() {
       expect(reloaded.history, hasLength(1));
       expect(reloaded.history.single.accuracyBySubject['law'], 0.5);
     });
+
+    test('resetで履歴が空になる', () async {
+      final service = SubjectStatsHistoryService(store: _FakeStore());
+      await service.recordSnapshot({'law': const SubjectStat(answered: 2, correct: 1)});
+      await service.reset();
+      expect(service.history, isEmpty);
+    });
   });
 }
 
