@@ -80,3 +80,13 @@ final dueWeakQidsProvider = Provider<List<String>>((ref) {
   final items = ref.watch(srsProvider);
   return Srs.due(items.values, DateTime.now()).map((i) => i.qid).toList();
 });
+
+/// 箱（0〜`Srs.maxBox`）ごとの問題数。苦手問題の復習の定着度分布表示に使う。
+/// 箱が大きいほど復習間隔が長く、定着が進んでいることを示す。
+Map<int, int> srsBoxDistribution(Iterable<SrsItem> items) {
+  final dist = {for (var box = 0; box <= Srs.maxBox; box++) box: 0};
+  for (final item in items) {
+    dist[item.box] = (dist[item.box] ?? 0) + 1;
+  }
+  return dist;
+}
