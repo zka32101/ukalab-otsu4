@@ -5,6 +5,7 @@ import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/bookmark_store.dart';
 import '../data/glossary.dart';
+import '../data/glossary_favorite_store.dart';
 import '../data/question_repository.dart';
 import '../data/question_search.dart';
 import 'choice_labels.dart';
@@ -51,6 +52,7 @@ class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
     final theme = Theme.of(context);
     final all = _all;
     final bookmarked = ref.watch(bookmarkProvider);
+    final favoriteTerms = ref.watch(glossaryFavoriteProvider);
     final matchedTerms = searchGlossaryTerms(_keyword);
     final searchPool = all == null ? const <Question>[] : filterByBookmark(
           all,
@@ -100,16 +102,14 @@ class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
                               children: [
                                 if (matchedTerms.isNotEmpty) ...[
                                   Text('用語集（${matchedTerms.length}件）', style: theme.textTheme.titleSmall),
+                                  const SizedBox(height: 8),
                                   for (final t in matchedTerms)
-                                    ListTile(
-                                      leading: const Icon(Icons.menu_book_outlined),
-                                      title: Text(t.term),
-                                      subtitle: Text(
-                                        t.definition,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      onTap: () => Navigator.of(context).push(
+                                    _GlossaryResultCard(
+                                      term: t,
+                                      isFavorite: favoriteTerms.contains(t.term),
+                                      onToggleFavorite: () =>
+                                          ref.read(glossaryFavoriteProvider.notifier).toggle(t.term),
+                                      onOpenCard: () => Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (_) => GlossaryCardView(initialTerm: t.term),
                                         ),
@@ -181,6 +181,61 @@ class QuestionDetailView extends StatelessWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 重要語句検索の用語集セクション1件。タップして暗記カードを開かなくても、
+/// 用語名・定義・補足をカード内にそのまま表示する。
+class _GlossaryResultCard extends StatelessWidget {
+  const _GlossaryResultCard({
+    required this.term,
+    required this.isFavorite,
+    required this.onToggleFavorite,
+    required this.onOpenCard,
+  });
+
+  final GlossaryTerm term;
+  final bool isFavorite;
+  final VoidCallback onToggleFavorite;
+  final VoidCallback onOpenCard;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: InkWell(
+        onTap: onOpenCard,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.menu_book_outlined, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(term.term, style: theme.textTheme.titleSmall)),
+                  IconButton(
+                    icon: Icon(isFavorite ? Icons.star : Icons.star_border, size: 20),
+                    color: isFavorite ? theme.colorScheme.primary : null,
+                    tooltip: isFavorite ? 'お気に入りを解除' : 'お気に入りに追加',
+                    onPressed: onToggleFavorite,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(term.definition, style: theme.textTheme.bodyMedium),
+              if (term.note != null) ...[
+                const SizedBox(height: 4),
+                Text(term.note!, style: theme.textTheme.bodySmall),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

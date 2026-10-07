@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/oshi_lines.dart';
 import '../data/progress_store.dart';
 
 const _kDisplayKey = 'ukalab_otsu4_oshi_display';
@@ -122,7 +123,13 @@ class _OshiCardState extends ConsumerState<OshiCard> {
         DateTime(now.year, now.month, now.day).difference(progress.lastStudyDate!).inDays == 0;
     final day = MascotDayState(studiedToday: studiedToday, streakDays: progress.streakDays);
     final stage = _stageFor(progress);
-    final line = MascotLines.gentle.pick(_situationFor(day, now), seed: _seed);
+    final situation = _situationFor(day, now);
+    // greeting場面（特別な状況が無いとき）だけ、時間帯に応じたセリフの
+    // バリエーションを使う（`lib/data/oshi_lines.dart`）。それ以外の場面
+    // （学習済み・連続記録・試験日連動等）は共通パッケージのセリフ集を使う。
+    final line = situation == MascotSituation.greeting
+        ? pickTimeOfDayGreeting(now, seed: _seed)
+        : MascotLines.gentle.pick(situation, seed: _seed);
     final small = _display == MascotDisplay.small;
 
     return Card(
