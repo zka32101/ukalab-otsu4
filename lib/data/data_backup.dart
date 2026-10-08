@@ -8,6 +8,7 @@ import 'combo_store.dart';
 import 'daily_answer_stats_store.dart';
 import 'daily_goal_history_store.dart';
 import 'daily_goal_store.dart';
+import 'glossary_mastered_store.dart';
 import 'mock_history_store.dart';
 import 'mock_wrong_store.dart';
 import 'progress_store.dart';
@@ -24,8 +25,8 @@ const learningDataBackupVersion = 1;
 /// 学習記録のバックアップ1件分。`lib/data/data_reset.dart` の
 /// `resetAllLearningData` がリセットする対象と同じ範囲（進捗・解答履歴・
 /// 模試結果・デイリーミッション・分野別統計・苦手問題の復習・自分用メモ・
-/// 最近見た用語・コンボの自己最高記録・日別の解答数・正解数）を書き出し・
-/// 読み込みできる。
+/// 最近見た用語・コンボの自己最高記録・日別の解答数・正解数・用語集の
+/// 「覚えた」フラグ）を書き出し・読み込みできる。
 class LearningDataBackup {
   const LearningDataBackup({
     required this.progress,
@@ -41,6 +42,7 @@ class LearningDataBackup {
     required this.recentGlossaryTerms,
     required this.bestCombo,
     required this.dailyAnswerStats,
+    required this.glossaryMastered,
   });
 
   final ProgressSnapshot progress;
@@ -56,6 +58,7 @@ class LearningDataBackup {
   final List<String> recentGlossaryTerms;
   final int bestCombo;
   final List<DailyAnswerStatsEntry> dailyAnswerStats;
+  final Set<String> glossaryMastered;
 
   Map<String, dynamic> toJson() => {
         'version': learningDataBackupVersion,
@@ -73,6 +76,7 @@ class LearningDataBackup {
         'recentGlossaryTerms': recentGlossaryTerms,
         'bestCombo': bestCombo,
         'dailyAnswerStats': [for (final e in dailyAnswerStats) e.toJson()],
+        'glossaryMastered': glossaryMastered.toList(),
       };
 
   /// [json] から復元する。想定外のバージョン・形式の場合は例外を投げる。
@@ -113,6 +117,9 @@ class LearningDataBackup {
         for (final j in ((json['dailyAnswerStats'] as List?) ?? const []).cast<Map<String, dynamic>>())
           DailyAnswerStatsEntry.fromJson(j),
       ],
+      // この項目を追加する前にバックアップした旧いJSONにも対応するため、
+      // 無ければ空の集合として扱う（versionは変えていない）。
+      glossaryMastered: ((json['glossaryMastered'] as List?) ?? const []).cast<String>().toSet(),
     );
   }
 }
@@ -133,6 +140,7 @@ String exportLearningDataJson(WidgetRef ref) {
     recentGlossaryTerms: ref.read(recentGlossaryTermsProvider),
     bestCombo: ref.read(comboProvider),
     dailyAnswerStats: ref.read(dailyAnswerStatsProvider),
+    glossaryMastered: ref.read(glossaryMasteredProvider),
   );
   return const JsonEncoder.withIndent('  ').convert(backup.toJson());
 }
@@ -155,4 +163,5 @@ Future<void> importLearningDataJson(WidgetRef ref, String jsonText) async {
   await ref.read(recentGlossaryTermsProvider.notifier).restore(backup.recentGlossaryTerms);
   await ref.read(comboProvider.notifier).restore(backup.bestCombo);
   await ref.read(dailyAnswerStatsProvider.notifier).restore(backup.dailyAnswerStats);
+  await ref.read(glossaryMasteredProvider.notifier).restore(backup.glossaryMastered);
 }

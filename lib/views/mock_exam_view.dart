@@ -175,6 +175,8 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
           score: result.total.score,
           max: result.total.max,
           passed: result.passed,
+          subjectScore: {for (final e in result.bySubject.entries) e.key: e.value.score},
+          subjectMax: {for (final e in result.bySubject.entries) e.key: e.value.max},
         ));
     ref.read(coinProvider.notifier).grant(CoinEvent.mockDone());
     if (result.passed) {

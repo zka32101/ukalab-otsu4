@@ -114,17 +114,23 @@ const glossaryTerms = <GlossaryTerm>[
 List<GlossaryTerm> glossaryTermsBySubject(String subjectId) =>
     [for (final t in glossaryTerms) if (t.subjectId == subjectId) t];
 
-/// 分野・お気に入りの両方の条件で用語集を絞り込む。[subjectId] が null なら
-/// 分野で絞り込まない。[favoritesOnly] がtrueなら、[favoriteTerms] に
-/// 含まれる用語だけに絞り込む。
+/// 分野・お気に入り・未習得の条件で用語集を絞り込む。[subjectId] が null
+/// なら分野で絞り込まない。[favoritesOnly] がtrueなら、[favoriteTerms] に
+/// 含まれる用語だけに絞り込む。[unmasteredOnly] がtrueなら、
+/// [masteredTerms]（「覚えた」フラグが付いた用語）に含まれない用語だけに
+/// 絞り込む。
 List<GlossaryTerm> filterGlossaryTerms({
   String? subjectId,
   required bool favoritesOnly,
   required Set<String> favoriteTerms,
+  bool unmasteredOnly = false,
+  Set<String> masteredTerms = const {},
 }) {
   final bySubject = subjectId == null ? glossaryTerms : glossaryTermsBySubject(subjectId);
-  if (!favoritesOnly) return bySubject;
-  return [for (final t in bySubject) if (favoriteTerms.contains(t.term)) t];
+  final byFavorite =
+      favoritesOnly ? [for (final t in bySubject) if (favoriteTerms.contains(t.term)) t] : bySubject;
+  if (!unmasteredOnly) return byFavorite;
+  return [for (final t in byFavorite) if (!masteredTerms.contains(t.term)) t];
 }
 
 /// [keyword] が用語または定義に含まれる用語を返す（大文字小文字は区別しない）。

@@ -424,9 +424,10 @@ class _DailyGoalHistoryChart extends StatelessWidget {
 
 /// 模擬試験の得点率の推移。古い順の得点率（0.0〜1.0）を折れ線グラフで表示する。
 class MockScoreTrendChart extends StatelessWidget {
-  const MockScoreTrendChart({required this.series});
+  const MockScoreTrendChart({required this.series, this.title = '得点率の推移'});
 
   final List<double> series;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +435,7 @@ class MockScoreTrendChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('得点率の推移', style: theme.textTheme.bodySmall),
+        Text(title, style: theme.textTheme.bodySmall),
         const SizedBox(height: 4),
         SizedBox(
           height: 48,

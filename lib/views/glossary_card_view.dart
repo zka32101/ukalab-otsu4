@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/glossary.dart';
 import '../data/glossary_favorite_store.dart';
+import '../data/glossary_mastered_store.dart';
 import '../data/recent_glossary_terms_store.dart';
 import 'recent_glossary_terms_view.dart';
 
@@ -15,8 +16,9 @@ const _subjectFilterLabels = <String?, String>{
 };
 
 /// 乙4の頻出用語の暗記カード。タップで表（用語）・裏（定義）を切り替え、
-/// 「次へ」で次の用語に進む。分野（法令・物理化学・性質消火）やお気に入り
-/// （`lib/data/glossary_favorite_store.dart`）で絞り込める。
+/// 「次へ」で次の用語に進む。分野（法令・物理化学・性質消火）・お気に入り
+/// （`lib/data/glossary_favorite_store.dart`）・未習得（自己申告の「覚えた」
+/// フラグ、`lib/data/glossary_mastered_store.dart`）で絞り込める。
 /// `lib/data/glossary.dart` の既存の確認済みデータに基づく定義を使い、
 /// 新たな一次資料の収集は行っていない。
 class GlossaryCardView extends ConsumerStatefulWidget {
@@ -45,6 +47,7 @@ class GlossaryCardView extends ConsumerStatefulWidget {
 class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   String? _subjectFilter;
   late bool _favoritesOnly;
+  bool _unmasteredOnly = false;
   late bool _shuffle;
   List<GlossaryTerm>? _shuffledCache;
   late int _index;
@@ -77,6 +80,14 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   void _toggleFavoritesOnly() {
     setState(() {
       _favoritesOnly = !_favoritesOnly;
+      _index = 0;
+      _showDefinition = false;
+    });
+  }
+
+  void _toggleUnmasteredOnly() {
+    setState(() {
+      _unmasteredOnly = !_unmasteredOnly;
       _index = 0;
       _showDefinition = false;
     });
@@ -123,10 +134,13 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final favorites = ref.watch(glossaryFavoriteProvider);
+    final mastered = ref.watch(glossaryMasteredProvider);
     final filtered = filterGlossaryTerms(
       subjectId: _subjectFilter,
       favoritesOnly: _favoritesOnly,
       favoriteTerms: favorites,
+      unmasteredOnly: _unmasteredOnly,
+      masteredTerms: mastered,
     );
     final terms = _displayTerms(filtered);
 
@@ -153,6 +167,11 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
               label: const Text('お気に入りのみ'),
               selected: _favoritesOnly,
               onSelected: (_) => _toggleFavoritesOnly(),
+            ),
+            FilterChip(
+              label: const Text('未習得のみ'),
+              selected: _unmasteredOnly,
+              onSelected: (_) => _toggleUnmasteredOnly(),
             ),
             FilterChip(
               label: const Text('ランダム順'),
@@ -195,6 +214,7 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
     final index = _index.clamp(0, terms.length - 1);
     final term = terms[index];
     final isFavorite = favorites.contains(term.term);
+    final isMastered = mastered.contains(term.term);
 
     return Scaffold(
       appBar: AppBar(title: const Text('用語集'), actions: [historyAction]),
@@ -250,6 +270,16 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
                                 ),
                         ),
                       ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: IconButton(
+                      icon: Icon(isMastered ? Icons.check_circle : Icons.check_circle_outline),
+                      color: isMastered ? theme.colorScheme.primary : null,
+                      tooltip: isMastered ? '覚えたを解除' : '覚えた',
+                      onPressed: () => ref.read(glossaryMasteredProvider.notifier).toggle(term.term),
                     ),
                   ),
                   Positioned(

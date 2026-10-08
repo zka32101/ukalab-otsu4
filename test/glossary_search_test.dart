@@ -79,6 +79,29 @@ void main() {
       final terms = filterGlossaryTerms(subjectId: null, favoritesOnly: true, favoriteTerms: {});
       expect(terms, isEmpty);
     });
+
+    test('unmasteredOnlyがtrueなら、masteredTermsに含まれない用語だけに絞り込む', () {
+      final terms = filterGlossaryTerms(
+        subjectId: null,
+        favoritesOnly: false,
+        favoriteTerms: {},
+        unmasteredOnly: true,
+        masteredTerms: {'引火点'},
+      );
+      expect(terms.any((t) => t.term == '引火点'), isFalse);
+      expect(terms.length, glossaryTerms.length - 1);
+    });
+
+    test('お気に入り・未習得の両方を同時に絞り込める', () {
+      final terms = filterGlossaryTerms(
+        subjectId: null,
+        favoritesOnly: true,
+        favoriteTerms: {'引火点', '指定数量'},
+        unmasteredOnly: true,
+        masteredTerms: {'引火点'},
+      );
+      expect(terms.map((t) => t.term).toSet(), {'指定数量'});
+    });
   });
 
   group('shuffledGlossaryTerms', () {

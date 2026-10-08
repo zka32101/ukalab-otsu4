@@ -10,6 +10,8 @@ class MockHistoryEntry {
     required this.score,
     required this.max,
     required this.passed,
+    this.subjectScore,
+    this.subjectMax,
   });
 
   final DateTime at;
@@ -17,14 +19,30 @@ class MockHistoryEntry {
   final int max;
   final bool passed;
 
+  /// 科目（subjectId）ごとの得点・満点。この項目を追加する前に記録した
+  /// 模試結果には無いため null（成績レポートの科目別推移では、その回は
+  /// データが無い回として扱う）。
+  final Map<String, int>? subjectScore;
+  final Map<String, int>? subjectMax;
+
   /// 得点率（%）。満点が0なら0。
   double get pct => max == 0 ? 0 : score * 100 / max;
+
+  /// [subjectId] の得点率（%）。その科目のデータが無ければ null。
+  double? subjectPct(String subjectId) {
+    final s = subjectScore?[subjectId];
+    final m = subjectMax?[subjectId];
+    if (s == null || m == null || m == 0) return null;
+    return s * 100 / m;
+  }
 
   Map<String, dynamic> toJson() => {
         'at': at.toIso8601String(),
         'score': score,
         'max': max,
         'passed': passed,
+        if (subjectScore != null) 'subjectScore': subjectScore,
+        if (subjectMax != null) 'subjectMax': subjectMax,
       };
 
   static MockHistoryEntry fromJson(Map<String, dynamic> json) => MockHistoryEntry(
@@ -32,6 +50,10 @@ class MockHistoryEntry {
         score: json['score'] as int,
         max: json['max'] as int,
         passed: json['passed'] as bool,
+        subjectScore: (json['subjectScore'] as Map<String, dynamic>?)
+            ?.map((k, v) => MapEntry(k, v as int)),
+        subjectMax: (json['subjectMax'] as Map<String, dynamic>?)
+            ?.map((k, v) => MapEntry(k, v as int)),
       );
 }
 
