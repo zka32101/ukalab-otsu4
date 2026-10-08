@@ -123,8 +123,35 @@ List<Achievement> buildAchievements({
         unlocked: achievedStreak >= n,
         progressText: achievedStreak >= n ? null : '現在の連続達成日数: $achievedStreak日 / $n日',
       ),
+    Achievement(
+      id: 'mock_all_subjects_80',
+      title: '全科目80%以上',
+      description: '模擬試験で、科目別データがある全ての科目の得点率80%以上を同じ回で達成した',
+      icon: Icons.workspace_premium_outlined,
+      unlocked: _anyMockAllSubjects80(mockHistory),
+      progressText: _anyMockAllSubjects80(mockHistory)
+          ? null
+          : (mockHistory.any((e) => e.subjectScore != null)
+              ? '科目別データがある模試はまだ全科目80%以上に届いていません'
+              : '科目別データがある模試の受験履歴がまだありません'),
+    ),
   ];
   return achievements;
+}
+
+/// 科目別データがある模試のうち、いずれかの回ですべての科目の得点率が
+/// 80%以上だったかどうか。科目別データが無い回（旧形式の記録等）は対象外。
+bool _anyMockAllSubjects80(List<MockHistoryEntry> mockHistory) {
+  for (final e in mockHistory) {
+    final scores = e.subjectScore;
+    if (scores == null || scores.isEmpty) continue;
+    final allAbove80 = scores.keys.every((subjectId) {
+      final pct = e.subjectPct(subjectId);
+      return pct != null && pct >= 80;
+    });
+    if (allAbove80) return true;
+  }
+  return false;
 }
 
 /// 10問以上解答した分野のうち、最も正答率が高い値。対象の分野が無ければ null。

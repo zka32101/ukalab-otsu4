@@ -220,5 +220,56 @@ void main() {
         '現在の連続達成日数: 1日 / 3日',
       );
     });
+
+    test('全科目80%以上の模試履歴があればmock_all_subjects_80が解除される', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: [
+          MockHistoryEntry(
+            at: DateTime(2026, 1, 1),
+            score: 30,
+            max: 35,
+            passed: true,
+            subjectScore: {'law': 13, 'physics_chem': 9, 'property_extinguish': 8},
+            subjectMax: {'law': 15, 'physics_chem': 10, 'property_extinguish': 10},
+          ),
+        ],
+        subjectStats: const {},
+      );
+      expect(achievements.firstWhere((a) => a.id == 'mock_all_subjects_80').unlocked, isTrue);
+    });
+
+    test('一部の科目が80%未満ならmock_all_subjects_80は解除されない', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: [
+          MockHistoryEntry(
+            at: DateTime(2026, 1, 1),
+            score: 30,
+            max: 35,
+            passed: true,
+            subjectScore: {'law': 13, 'physics_chem': 5, 'property_extinguish': 8},
+            subjectMax: {'law': 15, 'physics_chem': 10, 'property_extinguish': 10},
+          ),
+        ],
+        subjectStats: const {},
+      );
+      expect(achievements.firstWhere((a) => a.id == 'mock_all_subjects_80').unlocked, isFalse);
+    });
+
+    test('科目別データが無い模試履歴ではmock_all_subjects_80のprogressTextは受験履歴なしの文言', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: [MockHistoryEntry(at: DateTime(2026, 1, 1), score: 30, max: 35, passed: true)],
+        subjectStats: const {},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mock_all_subjects_80').progressText,
+        '科目別データがある模試の受験履歴がまだありません',
+      );
+    });
   });
 }

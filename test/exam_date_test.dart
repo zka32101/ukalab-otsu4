@@ -69,6 +69,25 @@ void main() {
       expect(reloaded.date, date);
     });
   });
+
+  group('studyPlanQuestionsPerDay', () {
+    test('残り日数が0以下ならnull（過去・当日）', () {
+      expect(studyPlanQuestionsPerDay(daysLeft: 0, remainingQuestions: 100), isNull);
+      expect(studyPlanQuestionsPerDay(daysLeft: -3, remainingQuestions: 100), isNull);
+    });
+
+    test('未解答が無ければ0', () {
+      expect(studyPlanQuestionsPerDay(daysLeft: 10, remainingQuestions: 0), 0);
+    });
+
+    test('割り切れる場合はそのまま', () {
+      expect(studyPlanQuestionsPerDay(daysLeft: 10, remainingQuestions: 100), 10);
+    });
+
+    test('割り切れない場合は切り上げ', () {
+      expect(studyPlanQuestionsPerDay(daysLeft: 3, remainingQuestions: 10), 4);
+    });
+  });
 }
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。
