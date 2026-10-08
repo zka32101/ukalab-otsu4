@@ -20,6 +20,7 @@ import '../data/subject_stats_store.dart';
 import '../widgets/mock_result_share_card.dart';
 import 'choice_labels.dart';
 import 'mock_review_view.dart';
+import 'mock_study_links_view.dart';
 
 /// 模擬試験。35問・2時間・科目別60%以上で合否判定（ExamConfig準拠）。
 /// 出題は `pickMockExamQuestions` で科目別の配分（法令15／物理化学10／
@@ -260,6 +261,18 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
             OutlinedButton(
               onPressed: () => _showResultShareCard(context, result),
               child: const Text('結果カードを見る'),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MockStudyLinksView(
+                    exam: exam,
+                    shortfallSubjectIds: result.subjectShortfalls.keys.toList(),
+                  ),
+                ),
+              ),
+              child: const Text('学習教材リンク集を見る'),
             ),
             if (_wrongQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
