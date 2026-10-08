@@ -495,6 +495,23 @@ List<(String, SubjectStat)> orderedSubjects(ExamConfig? exam, Map<String, Subjec
   ];
 }
 
+/// データがある分野だけ、`ExamConfig` の並び順で（subjectId, 名前, 統計）を返す
+/// （成績レポートからの苦手分野への直接ジャンプ用。`orderedSubjects` と並び順は
+/// 同じだが、`FocusTrainingView` に渡す subjectId も持つ）。
+List<(String, String, SubjectStat)> orderedSubjectsWithId(
+  ExamConfig? exam,
+  Map<String, SubjectStat> stats,
+) {
+  if (exam == null) {
+    return [for (final e in stats.entries) (e.key, e.key, e.value)];
+  }
+  final subjects = [...exam.subjects]..sort((a, b) => a.order.compareTo(b.order));
+  return [
+    for (final s in subjects)
+      if (stats.containsKey(s.subjectId)) (s.subjectId, s.name, stats[s.subjectId]!),
+  ];
+}
+
 /// データがある分野だけ、`ExamConfig` の並び順で（subjectId, 名前）を返す
 /// （「分野別正答率の推移」用。履歴のキーは subjectId のため）。
 List<(String, String)> _orderedSubjectIdsAndNames(ExamConfig? exam, Map<String, SubjectStat> stats) {
