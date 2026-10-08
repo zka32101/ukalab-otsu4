@@ -197,7 +197,7 @@ class RecordView extends ConsumerWidget {
                 children: [
                   Text('模擬試験の結果', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final entry in mockHistory.reversed.take(5)) MockHistoryRow(entry: entry),
+                  for (final entry in mockHistory.reversed.take(5)) MockHistoryRow(entry: entry, exam: exam),
                   if (mockHistory.length > 1) ...[
                     const SizedBox(height: 12),
                     MockScoreTrendChart(
@@ -284,10 +284,32 @@ class RecordView extends ConsumerWidget {
 }
 
 /// 模擬試験の結果1回分の行。日時・得点率・合否を表示する。
+/// [entry] の科目別データ（`subjectScore`/`subjectMax`）のうち、[exam] の
+/// 科目別合格基準（`passRule.subjectMinPct`）に満たなかった科目の名前を返す。
+/// 科目別データ・しきい値・[exam] のいずれかが無ければ空リスト。
+List<String> shortfallSubjectNames(MockHistoryEntry entry, ExamConfig? exam) {
+  final subjectMinPct = exam?.levels.first.passRule.subjectMinPct;
+  final scores = entry.subjectScore;
+  if (exam == null || subjectMinPct == null || scores == null) return [];
+  return [
+    for (final subjectId in scores.keys)
+      if ((entry.subjectPct(subjectId) ?? 100) < subjectMinPct)
+        exam.subjects
+            .firstWhere(
+              (s) => s.subjectId == subjectId,
+              orElse: () => SubjectConfig(subjectId: subjectId, name: subjectId, order: 0),
+            )
+            .name,
+  ];
+}
+
 class MockHistoryRow extends StatelessWidget {
-  const MockHistoryRow({required this.entry});
+  const MockHistoryRow({required this.entry, this.exam});
 
   final MockHistoryEntry entry;
+
+  /// 渡すと、不合格だった科目（足切り）のバッジを表示する。
+  final ExamConfig? exam;
 
   @override
   Widget build(BuildContext context) {
@@ -295,32 +317,56 @@ class MockHistoryRow extends StatelessWidget {
     final at = entry.at;
     final dateText =
         '${at.year}/${at.month.toString().padLeft(2, '0')}/${at.day.toString().padLeft(2, '0')}';
+    final shortfalls = shortfallSubjectNames(entry, exam);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            entry.passed ? Icons.check_circle : Icons.cancel_outlined,
-            color: entry.passed ? theme.colorScheme.primary : theme.colorScheme.error,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(child: Text(dateText, style: theme.textTheme.bodyMedium)),
-          Expanded(
-            flex: 2,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (entry.pct / 100).clamp(0, 1),
-                minHeight: 8,
+          Row(
+            children: [
+              Icon(
+                entry.passed ? Icons.check_circle : Icons.cancel_outlined,
+                color: entry.passed ? theme.colorScheme.primary : theme.colorScheme.error,
+                size: 20,
               ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(dateText, style: theme.textTheme.bodyMedium)),
+              Expanded(
+                flex: 2,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (entry.pct / 100).clamp(0, 1),
+                    minHeight: 8,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${entry.score}/${entry.max}（${entry.pct.round()}%）',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+          if (shortfalls.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                for (final name in shortfalls)
+                  Chip(
+                    label: Text('$name 足切り', style: theme.textTheme.labelSmall),
+                    backgroundColor: theme.colorScheme.errorContainer,
+                    labelStyle: TextStyle(color: theme.colorScheme.onErrorContainer),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '${entry.score}/${entry.max}（${entry.pct.round()}%）',
-            style: theme.textTheme.bodySmall,
-          ),
+          ],
         ],
       ),
     );
