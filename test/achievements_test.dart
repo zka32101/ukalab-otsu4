@@ -271,5 +271,46 @@ void main() {
         '科目別データがある模試の受験履歴がまだありません',
       );
     });
+
+    test('各バッジに正しいカテゴリが割り当てられている', () {
+      final achievements = buildAchievements(
+        answered: 0,
+        streakDays: 0,
+        mockHistory: const [],
+        subjectStats: const {},
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'streak_7').category,
+        AchievementCategory.streak,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'achieved_streak_3').category,
+        AchievementCategory.streak,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'answered_50').category,
+        AchievementCategory.practice,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'combo_5').category,
+        AchievementCategory.practice,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mastered_10').category,
+        AchievementCategory.practice,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mock_pass').category,
+        AchievementCategory.mock,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'mock_all_subjects_80').category,
+        AchievementCategory.mock,
+      );
+      expect(
+        achievements.firstWhere((a) => a.id == 'subject_master').category,
+        AchievementCategory.subject,
+      );
+    });
   });
 }
