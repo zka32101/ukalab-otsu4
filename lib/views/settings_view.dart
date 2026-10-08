@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/answered_questions_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/data_backup.dart';
 import '../data/data_reset.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
+import '../data/question_repository.dart';
 import '../data/reminder_settings_store.dart';
 import '../data/theme_store.dart';
 import 'source_credits_view.dart';
@@ -160,6 +162,10 @@ class SettingsView extends ConsumerWidget {
             ],
           ],
         ),
+        if (examDate != null) ...[
+          const SizedBox(height: 12),
+          const _StudyPlanCard(),
+        ],
         const SizedBox(height: 24),
         Text('リマインダー', style: theme.textTheme.titleSmall),
         const Padding(
@@ -338,5 +344,68 @@ class SettingsView extends ConsumerWidget {
         const SnackBar(content: Text('読み込みに失敗しました。正しいバックアップのテキストか確認してください')),
       );
     }
+  }
+}
+
+/// 試験日が設定されているときに表示する学習計画カード。全問題数と
+/// これまでに解答済みの問題数（分野を問わない全体の網羅数）から、
+/// 残り日数で割った1日あたりの目安解答数を逆算して示す。
+class _StudyPlanCard extends ConsumerStatefulWidget {
+  const _StudyPlanCard();
+
+  @override
+  ConsumerState<_StudyPlanCard> createState() => _StudyPlanCardState();
+}
+
+class _StudyPlanCardState extends ConsumerState<_StudyPlanCard> {
+  final _repo = const QuestionRepository();
+  int? _totalQuestions;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final all = await _repo.load();
+    if (!mounted) return;
+    setState(() => _totalQuestions = all.length);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final examDate = ref.watch(examDateProvider);
+    final answered = ref.watch(answeredQuestionsProvider);
+    final total = _totalQuestions;
+    if (examDate == null || total == null) return const SizedBox.shrink();
+
+    final daysLeft = daysUntilExam(examDate, DateTime.now());
+    final remaining = (total - answered.length).clamp(0, total);
+    final perDay = studyPlanQuestionsPerDay(daysLeft: daysLeft, remainingQuestions: remaining);
+
+    final String text;
+    if (perDay == null) {
+      text = '試験日を過ぎているため、学習計画は表示できません。';
+    } else if (perDay == 0) {
+      text = '全ての問題に解答済みです。復習を中心に進めましょう。';
+    } else {
+      text = '残り$remaining問（全$total問中）を$daysLeft日で解き終えるには、1日あたり約$perDay問が目安です。';
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('学習計画', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
+            Text(text, style: theme.textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
   }
 }

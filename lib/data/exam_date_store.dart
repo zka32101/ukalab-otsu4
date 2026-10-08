@@ -78,3 +78,12 @@ String examCountdownText(int daysLeft) {
   if (daysLeft == 0) return '本番は今日です';
   return '本番から${-daysLeft}日経過しました';
 }
+
+/// 試験までの残り日数から、1日あたりの目安解答数を逆算する。
+/// [daysLeft] が0以下（当日・試験日未設定・過去）なら null（計画を示せない）。
+/// [remainingQuestions] が0以下なら0（すべて解答済み）。
+int? studyPlanQuestionsPerDay({required int daysLeft, required int remainingQuestions}) {
+  if (daysLeft <= 0) return null;
+  if (remainingQuestions <= 0) return 0;
+  return (remainingQuestions / daysLeft).ceil();
+}
