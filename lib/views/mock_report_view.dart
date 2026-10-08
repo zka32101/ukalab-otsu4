@@ -164,7 +164,7 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
                 children: [
                   Text('受験履歴（全${mockHistory.length}回）', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final entry in mockHistory.reversed) MockHistoryRow(entry: entry),
+                  for (final entry in mockHistory.reversed) MockHistoryRow(entry: entry, exam: exam),
                 ],
               ),
             ),
