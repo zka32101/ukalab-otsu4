@@ -155,4 +155,23 @@ void main() {
       expect(termReferencesIn('まったく関係のない文章'), isEmpty);
     });
   });
+
+  group('glossaryTermOfDay', () {
+    test('termsが空ならnull', () {
+      expect(glossaryTermOfDay(const [], DateTime(2026, 1, 1)), isNull);
+    });
+
+    test('同じ日付なら常に同じ用語を返す', () {
+      final terms = glossaryTermsBySubject('law');
+      final a = glossaryTermOfDay(terms, DateTime(2026, 1, 1, 9));
+      final b = glossaryTermOfDay(terms, DateTime(2026, 1, 1, 23));
+      expect(a, b);
+    });
+
+    test('日付が変わると用語が変わることがある', () {
+      final terms = glossaryTermsBySubject('law');
+      final days = [for (var i = 0; i < 30; i++) glossaryTermOfDay(terms, DateTime(2026, 1, 1 + i))];
+      expect(days.toSet().length, greaterThan(1));
+    });
+  });
 }
