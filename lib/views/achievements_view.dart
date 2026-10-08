@@ -11,13 +11,30 @@ import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
 import '../widgets/achievement_share_card.dart';
 
+/// カテゴリタブの表示名（「すべて」はnull）。
+const _categoryTabs = <AchievementCategory?, String>{
+  null: 'すべて',
+  AchievementCategory.streak: '学習継続',
+  AchievementCategory.practice: '解答数',
+  AchievementCategory.mock: '模試',
+  AchievementCategory.subject: '分野マスター',
+};
+
 /// 実績バッジの一覧。連続学習日数・解答数・模試合格・分野マスターの
-/// 達成状況を一覧表示する（`lib/data/achievements.dart`）。
-class AchievementsView extends ConsumerWidget {
+/// 達成状況を、カテゴリ別タブで切り替えて一覧表示する
+/// （`lib/data/achievements.dart`）。
+class AchievementsView extends ConsumerStatefulWidget {
   const AchievementsView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AchievementsView> createState() => _AchievementsViewState();
+}
+
+class _AchievementsViewState extends ConsumerState<AchievementsView> {
+  AchievementCategory? _selectedCategory;
+
+  @override
+  Widget build(BuildContext context) {
     final progress = ref.watch(progressProvider);
     final mockHistory = ref.watch(mockHistoryProvider);
     final subjectStats = ref.watch(subjectStatsProvider);
@@ -35,6 +52,10 @@ class AchievementsView extends ConsumerWidget {
       achievedStreak: achievedStreak,
     );
     final unlockedCount = achievements.where((a) => a.unlocked).length;
+    final category = _selectedCategory;
+    final filtered = category == null
+        ? achievements
+        : [for (final a in achievements) if (a.category == category) a];
 
     return Scaffold(
       appBar: AppBar(title: const Text('実績')),
@@ -46,7 +67,20 @@ class AchievementsView extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 12),
-          for (final a in achievements) _AchievementTile(achievement: a),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final entry in _categoryTabs.entries)
+                ChoiceChip(
+                  label: Text(entry.value),
+                  selected: _selectedCategory == entry.key,
+                  onSelected: (_) => setState(() => _selectedCategory = entry.key),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final a in filtered) _AchievementTile(achievement: a),
         ],
       ),
     );

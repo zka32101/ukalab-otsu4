@@ -3,6 +3,21 @@ import 'package:flutter/material.dart';
 import 'mock_history_store.dart';
 import 'subject_stats_store.dart';
 
+/// 実績バッジのカテゴリ（一覧画面のタブ分けに使う）。
+enum AchievementCategory {
+  /// 連続学習日数・デイリーミッションの連続達成。
+  streak,
+
+  /// 解答数・コンボ・定着問題数等、演習量に関する実績。
+  practice,
+
+  /// 模擬試験の合格・科目別の高得点。
+  mock,
+
+  /// 分野別の正答率（分野マスター）。
+  subject,
+}
+
 /// 実績バッジ1件（達成条件は `buildAchievements` 側で判定済み）。
 class Achievement {
   const Achievement({
@@ -11,6 +26,7 @@ class Achievement {
     required this.description,
     required this.icon,
     required this.unlocked,
+    required this.category,
     this.progressText,
   });
 
@@ -19,6 +35,7 @@ class Achievement {
   final String description;
   final IconData icon;
   final bool unlocked;
+  final AchievementCategory category;
 
   /// 未解除のバッジをタップしたときに見せる、現在の進捗状況の説明。
   /// 解除済みのバッジ、または進捗を数値で示せないバッジでは null。
@@ -63,6 +80,7 @@ List<Achievement> buildAchievements({
         description: '$d日間、毎日学習を続けた',
         icon: Icons.local_fire_department_outlined,
         unlocked: streakDays >= d,
+        category: AchievementCategory.streak,
         progressText: streakDays >= d ? null : '現在の連続学習日数: $streakDays日 / $d日',
       ),
     for (final n in _answeredMilestones)
@@ -72,6 +90,7 @@ List<Achievement> buildAchievements({
         description: '一問一答・演習で合計$n問に解答した',
         icon: Icons.edit_note_outlined,
         unlocked: answered >= n,
+        category: AchievementCategory.practice,
         progressText: answered >= n ? null : '現在の解答数: $answered問 / $n問',
       ),
     Achievement(
@@ -80,6 +99,7 @@ List<Achievement> buildAchievements({
       description: '模擬試験で合格ラインに到達した',
       icon: Icons.school_outlined,
       unlocked: mockHistory.any((e) => e.passed),
+      category: AchievementCategory.mock,
       progressText: mockHistory.any((e) => e.passed)
           ? null
           : (mockHistory.isEmpty ? '模擬試験の受験履歴がまだありません' : '直近の模試はまだ合格ラインに届いていません'),
@@ -90,6 +110,7 @@ List<Achievement> buildAchievements({
       description: 'いずれかの分野で正答率90%以上（10問以上解答）に到達した',
       icon: Icons.verified_outlined,
       unlocked: bestMasterCandidate != null && bestMasterCandidate >= _masterAccuracyThreshold,
+      category: AchievementCategory.subject,
       progressText: bestMasterCandidate != null && bestMasterCandidate >= _masterAccuracyThreshold
           ? null
           : (bestMasterCandidate == null
@@ -103,6 +124,7 @@ List<Achievement> buildAchievements({
         description: '一問一答で$n問連続して正解した',
         icon: Icons.local_fire_department_outlined,
         unlocked: bestCombo >= n,
+        category: AchievementCategory.practice,
         progressText: bestCombo >= n ? null : '自己最高の連続正解数: $bestCombo問 / $n問',
       ),
     for (final n in _masteredMilestones)
@@ -112,6 +134,7 @@ List<Achievement> buildAchievements({
         description: '苦手問題の復習で、$n問を定着（箱5）まで育てた',
         icon: Icons.auto_awesome_outlined,
         unlocked: masteredCount >= n,
+        category: AchievementCategory.practice,
         progressText: masteredCount >= n ? null : '現在の定着問題数: $masteredCount問 / $n問',
       ),
     for (final n in _achievedStreakMilestones)
@@ -121,6 +144,7 @@ List<Achievement> buildAchievements({
         description: 'デイリーミッションの目標を$n日連続で達成した',
         icon: Icons.flag_outlined,
         unlocked: achievedStreak >= n,
+        category: AchievementCategory.streak,
         progressText: achievedStreak >= n ? null : '現在の連続達成日数: $achievedStreak日 / $n日',
       ),
     Achievement(
@@ -129,6 +153,7 @@ List<Achievement> buildAchievements({
       description: '模擬試験で、科目別データがある全ての科目の得点率80%以上を同じ回で達成した',
       icon: Icons.workspace_premium_outlined,
       unlocked: _anyMockAllSubjects80(mockHistory),
+      category: AchievementCategory.mock,
       progressText: _anyMockAllSubjects80(mockHistory)
           ? null
           : (mockHistory.any((e) => e.subjectScore != null)
