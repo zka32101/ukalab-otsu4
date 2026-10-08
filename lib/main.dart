@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/achievement_unlock_store.dart';
 import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
 import 'data/combo_store.dart';
@@ -112,6 +113,10 @@ void main() async {
   final dailyAnswerStatsService = DailyAnswerStatsService();
   await dailyAnswerStatsService.load();
 
+  // 実績バッジの解除通知済みID（二重通知防止）。端末内に保存する。
+  final achievementUnlockService = AchievementUnlockService();
+  await achievementUnlockService.load();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -136,6 +141,7 @@ void main() async {
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
         comboServiceProvider.overrideWithValue(comboService),
         dailyAnswerStatsServiceProvider.overrideWithValue(dailyAnswerStatsService),
+        achievementUnlockServiceProvider.overrideWithValue(achievementUnlockService),
       ],
       child: const Otsu4App(),
     ),
