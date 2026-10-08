@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/achievement_unlock_store.dart';
+import '../data/achievements_provider.dart';
 import '../data/answered_questions_store.dart';
+import '../data/daily_answer_stats_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/data_backup.dart';
 import '../data/data_reset.dart';
@@ -12,6 +15,7 @@ import '../data/progress_store.dart';
 import '../data/question_repository.dart';
 import '../data/reminder_settings_store.dart';
 import '../data/theme_store.dart';
+import '../data/today_highlight.dart';
 import 'source_credits_view.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
@@ -36,9 +40,19 @@ class SettingsView extends ConsumerWidget {
     final examDate = ref.watch(examDateProvider);
     final progress = ref.watch(progressProvider);
     final reminderSettings = ref.watch(reminderSettingsProvider);
+    final todayHighlight = buildTodayHighlight(
+      dailyAnswerStats: ref.watch(dailyAnswerStatsProvider),
+      achievements: ref.watch(achievementsProvider),
+      unlockedAt: ref.watch(achievementUnlockProvider),
+      now: DateTime.now(),
+    );
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (!todayHighlight.isEmpty) ...[
+          _TodayHighlightCard(highlight: todayHighlight),
+          const SizedBox(height: 24),
+        ],
         Text('テーマ', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -344,6 +358,60 @@ class SettingsView extends ConsumerWidget {
         const SnackBar(content: Text('読み込みに失敗しました。正しいバックアップのテキストか確認してください')),
       );
     }
+  }
+}
+
+/// 「本日の学習ハイライト」カード。今日の解答数・正答率・今日解除した
+/// 実績バッジをまとめて確認できる（`buildTodayHighlight`。
+/// `lib/data/today_highlight.dart`）。何もしていない日は表示しない。
+class _TodayHighlightCard extends StatelessWidget {
+  const _TodayHighlightCard({required this.highlight});
+
+  final TodayHighlight highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.today_outlined, size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 6),
+                Text('本日の学習ハイライト', style: theme.textTheme.titleSmall),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (highlight.answered > 0)
+              Text(
+                '今日は${highlight.answered}問に解答し、正答率${(highlight.accuracy * 100).round()}%でした',
+                style: theme.textTheme.bodyMedium,
+              ),
+            if (highlight.unlockedTitles.isNotEmpty) ...[
+              if (highlight.answered > 0) const SizedBox(height: 8),
+              Text('今日解除した実績バッジ', style: theme.textTheme.bodySmall),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final title in highlight.unlockedTitles)
+                    Chip(
+                      avatar: Icon(Icons.emoji_events_outlined, size: 16, color: theme.colorScheme.primary),
+                      label: Text(title, style: theme.textTheme.labelSmall),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
