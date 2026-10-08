@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/subject_stats_store.dart';
+import 'focus_training_view.dart';
 import 'record_view.dart'
-    show MockHistoryRow, MockScoreTrendChart, PassPredictionRow, SubjectStatRow, orderedSubjects;
+    show MockHistoryRow, MockScoreTrendChart, PassPredictionRow, SubjectStatRow, orderedSubjectsWithId;
 
 /// 模試結果の推移をまとめて見る成績レポート。記録タブでは直近5回までしか
 /// 表示しない模試結果を、受験回数・合格回数・平均/自己最高得点率とともに
@@ -136,12 +137,19 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
                     Text('現在の分野別正答率', style: theme.textTheme.titleSmall),
                     const SizedBox(height: 4),
                     Text(
-                      '直近の模試に限らず、これまでの演習全体の正答率です',
+                      '直近の模試に限らず、これまでの演習全体の正答率です。タップするとその分野を演習できます',
                       style: theme.textTheme.bodySmall,
                     ),
                     const SizedBox(height: 12),
-                    for (final s in orderedSubjects(exam, subjectStats))
-                      SubjectStatRow(label: s.$1, stat: s.$2),
+                    for (final s in orderedSubjectsWithId(exam, subjectStats))
+                      InkWell(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => FocusTrainingView(subjectId: s.$1, subjectName: s.$2),
+                          ),
+                        ),
+                        child: SubjectStatRow(label: s.$2, stat: s.$3),
+                      ),
                   ],
                 ),
               ),
