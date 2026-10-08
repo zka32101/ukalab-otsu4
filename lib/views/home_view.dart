@@ -35,6 +35,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   final _repo = const ExamRepository();
   ExamConfig? _exam;
   Object? _error;
+  bool _showAccuracyTrend = false;
 
   @override
   void initState() {
@@ -166,14 +167,25 @@ class _HomeViewState extends ConsumerState<HomeView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('今週の学習サマリー', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(child: Text('今週の学習サマリー', style: theme.textTheme.titleSmall)),
+                      IconButton(
+                        tooltip: _showAccuracyTrend ? '解答数のグラフに切り替え' : '正答率の推移に切り替え',
+                        icon: Icon(_showAccuracyTrend ? Icons.bar_chart : Icons.show_chart),
+                        onPressed: () => setState(() => _showAccuracyTrend = !_showAccuracyTrend),
+                      ),
+                    ],
+                  ),
                   Text(
                     '直近7日間: $weeklyAnswered問 ・ 正答率 ${(weeklyCorrect / weeklyAnswered * 100).round()}%',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
-                  _WeeklyAnswerChart(entries: weekly),
+                  if (_showAccuracyTrend)
+                    _WeeklyAccuracyTrendChart(entries: weekly)
+                  else
+                    _WeeklyAnswerChart(entries: weekly),
                 ],
               ),
             ),
@@ -250,4 +262,79 @@ class _WeeklyAnswerChart extends StatelessWidget {
       ],
     );
   }
+}
+
+/// 直近7日間（今日を含む）の正答率の推移ミニグラフ（折れ線、解答数が0の日は
+/// グラフから除く）。[entries] は `weeklyAnswerSummary` が返す、古い順の7件。
+/// 解答が無い日が多く2点未満しか描けない場合はメッセージを表示する。
+class _WeeklyAccuracyTrendChart extends StatelessWidget {
+  const _WeeklyAccuracyTrendChart({required this.entries});
+
+  final List<DailyAnswerStatsEntry> entries;
+
+  static const _weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final withData = [for (final e in entries) if (e.answered > 0) e];
+    if (withData.length < 2) {
+      return Text('正答率の推移は、解答した日が2日以上あると表示されます。', style: theme.textTheme.bodySmall);
+    }
+    return SizedBox(
+      height: 64,
+      child: CustomPaint(
+        size: const Size(double.infinity, 48),
+        painter: _AccuracyTrendPainter(
+          series: [for (final e in withData) e.accuracy],
+          color: theme.colorScheme.primary,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 48),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (final e in withData)
+                Text(_weekdayLabels[e.date.weekday % 7], style: theme.textTheme.labelSmall),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 正答率の折れ線を描く（0.0〜1.0のseriesを上=100%・下=0%として描画）。
+class _AccuracyTrendPainter extends CustomPainter {
+  _AccuracyTrendPainter({required this.series, required this.color});
+
+  final List<double> series;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (series.length < 2) return;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path();
+    final dx = size.width / (series.length - 1);
+    for (var i = 0; i < series.length; i++) {
+      final x = dx * i;
+      final y = size.height * (1 - series[i].clamp(0.0, 1.0));
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AccuracyTrendPainter oldDelegate) =>
+      oldDelegate.series != series || oldDelegate.color != color;
 }
