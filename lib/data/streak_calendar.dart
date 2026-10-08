@@ -33,3 +33,24 @@ List<DailyGoalHistoryEntry?> monthCalendarDays(
 /// （前月・翌月への移動に使う）。
 DateTime addMonths(DateTime monthAnchor, int offsetMonths) =>
     DateTime(monthAnchor.year, monthAnchor.month + offsetMonths, 1);
+
+/// 学習カレンダーのヒートマップ表示で使う、その日の解答数に応じた濃さ
+/// （0.0〜1.0）。[maxCount]（表示中の月で最も解答数が多かった日の件数）に
+/// 対する比率で求める。[count] が0以下、又は [maxCount] が0以下なら0
+/// （記録なし・解答数0の日は塗らない）。0より大きい場合は、薄すぎて
+/// 見えなくならないよう最低でも0.25の濃さを保証する。
+double heatmapOpacity(int count, int maxCount) {
+  if (count <= 0 || maxCount <= 0) return 0;
+  final ratio = count / maxCount;
+  return ratio < 0.25 ? 0.25 : ratio;
+}
+
+/// [days] のうち最大の解答数（`DailyGoalHistoryEntry.count`）。記録が無い
+/// 日は無視する。記録が1件も無ければ0。
+int maxCountIn(List<DailyGoalHistoryEntry?> days) {
+  var max = 0;
+  for (final d in days) {
+    if (d != null && d.count > max) max = d.count;
+  }
+  return max;
+}

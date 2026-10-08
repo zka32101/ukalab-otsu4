@@ -21,6 +21,7 @@ class _StreakCalendarViewState extends ConsumerState<StreakCalendarView> {
   static const _weekdayLabels = ['月', '火', '水', '木', '金', '土', '日'];
 
   int _monthOffset = 0;
+  bool _heatmap = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +32,17 @@ class _StreakCalendarViewState extends ConsumerState<StreakCalendarView> {
     final monthDays = monthCalendarDays(history, displayedMonth);
     final leadingEmptyCount = displayedMonth.weekday - 1;
     final canGoNext = _monthOffset < 0;
+    final maxCount = maxCountIn(monthDays);
 
     final cells = <Widget>[
       for (var i = 0; i < leadingEmptyCount; i++) const SizedBox.shrink(),
       for (var i = 0; i < monthDays.length; i++)
-        _StreakDayCell(date: displayedMonth.add(Duration(days: i)), entry: monthDays[i]),
+        _StreakDayCell(
+          date: displayedMonth.add(Duration(days: i)),
+          entry: monthDays[i],
+          heatmap: _heatmap,
+          maxCount: maxCount,
+        ),
     ];
 
     return Scaffold(
@@ -63,6 +70,15 @@ class _StreakCalendarViewState extends ConsumerState<StreakCalendarView> {
                       onPressed: canGoNext ? () => setState(() => _monthOffset += 1) : null,
                     ),
                   ],
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilterChip(
+                    label: const Text('ヒートマップ表示'),
+                    avatar: const Icon(Icons.local_fire_department_outlined, size: 18),
+                    selected: _heatmap,
+                    onSelected: (_) => setState(() => _heatmap = !_heatmap),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -106,20 +122,42 @@ class _StreakCalendarViewState extends ConsumerState<StreakCalendarView> {
 }
 
 class _StreakDayCell extends StatelessWidget {
-  const _StreakDayCell({required this.date, required this.entry});
+  const _StreakDayCell({
+    required this.date,
+    required this.entry,
+    required this.heatmap,
+    required this.maxCount,
+  });
 
   final DateTime date;
   final DailyGoalHistoryEntry? entry;
 
+  /// ヒートマップ表示（解答数の濃淡）を使うか。falseなら従来の
+  /// 達成/未達成/記録なしの3色表示。
+  final bool heatmap;
+
+  /// 表示中の月で最も解答数が多かった日の件数（ヒートマップの濃さの基準）。
+  final int maxCount;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = entry == null
-        ? theme.colorScheme.surfaceContainerHighest
-        : entry!.achieved
-            ? theme.colorScheme.primary
-            : theme.colorScheme.primaryContainer;
-    final textColor = entry != null && entry!.achieved ? theme.colorScheme.onPrimary : null;
+    final Color color;
+    final Color? textColor;
+    if (heatmap) {
+      final opacity = heatmapOpacity(entry?.count ?? 0, maxCount);
+      color = opacity == 0
+          ? theme.colorScheme.surfaceContainerHighest
+          : theme.colorScheme.primary.withValues(alpha: opacity);
+      textColor = null;
+    } else {
+      color = entry == null
+          ? theme.colorScheme.surfaceContainerHighest
+          : entry!.achieved
+              ? theme.colorScheme.primary
+              : theme.colorScheme.primaryContainer;
+      textColor = entry != null && entry!.achieved ? theme.colorScheme.onPrimary : null;
+    }
     return Tooltip(
       message: entry == null ? '${date.month}/${date.day}　記録なし' : '${date.month}/${date.day}　${entry!.count}問',
       child: Container(
