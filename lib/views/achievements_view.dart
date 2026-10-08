@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/achievement_unlock_store.dart';
 import '../data/achievements.dart';
 import '../data/achievements_provider.dart';
 import '../widgets/achievement_share_card.dart';
+
+/// [at] を「YYYY/MM/DD」の表示用文字列にする。
+String _formatUnlockDate(DateTime at) =>
+    '${at.year}/${at.month.toString().padLeft(2, '0')}/${at.day.toString().padLeft(2, '0')}';
 
 /// カテゴリタブの表示名（「すべて」はnull）。
 const _categoryTabs = <AchievementCategory?, String>{
@@ -30,6 +35,7 @@ class _AchievementsViewState extends ConsumerState<AchievementsView> {
   @override
   Widget build(BuildContext context) {
     final achievements = ref.watch(achievementsProvider);
+    final unlockedAt = ref.watch(achievementUnlockProvider);
     final unlockedCount = achievements.where((a) => a.unlocked).length;
     final category = _selectedCategory;
     final filtered = category == null
@@ -59,7 +65,8 @@ class _AchievementsViewState extends ConsumerState<AchievementsView> {
             ],
           ),
           const SizedBox(height: 12),
-          for (final a in filtered) _AchievementTile(achievement: a),
+          for (final a in filtered)
+            _AchievementTile(achievement: a, unlockedAt: unlockedAt[a.id]),
         ],
       ),
     );
@@ -67,12 +74,17 @@ class _AchievementsViewState extends ConsumerState<AchievementsView> {
 }
 
 class _AchievementTile extends StatelessWidget {
-  const _AchievementTile({required this.achievement});
+  const _AchievementTile({required this.achievement, this.unlockedAt});
 
   final Achievement achievement;
 
+  /// 解除を検知した日時（`lib/data/achievement_unlock_store.dart`）。
+  /// 未解除、又はこの機能の追加前に解除済みだった場合は null。
+  final DateTime? unlockedAt;
+
   void _showDetail(BuildContext context) {
     final a = achievement;
+    final at = unlockedAt;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -87,7 +99,10 @@ class _AchievementTile extends StatelessWidget {
               Text(a.progressText!, style: Theme.of(context).textTheme.bodySmall),
             ] else if (a.unlocked) ...[
               const SizedBox(height: 12),
-              Text('達成済みです。', style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                at == null ? '達成済みです。' : '達成済みです（${_formatUnlockDate(at)}）。',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ],
         ),
@@ -145,7 +160,9 @@ class _AchievementTile extends StatelessWidget {
           style: theme.textTheme.titleSmall?.copyWith(color: unlocked ? null : theme.disabledColor),
         ),
         subtitle: Text(
-          achievement.description,
+          unlocked && unlockedAt != null
+              ? '${achievement.description}（${_formatUnlockDate(unlockedAt!)}達成）'
+              : achievement.description,
           style: theme.textTheme.bodySmall?.copyWith(color: unlocked ? null : theme.disabledColor),
         ),
         trailing: unlocked
