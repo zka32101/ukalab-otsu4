@@ -120,6 +120,30 @@ void main() {
     });
   });
 
+  group('sortedGlossaryTermsAlphabetically', () {
+    test('用語名の文字コード順に並べ替える', () {
+      final terms = glossaryTermsBySubject('law');
+      final sorted = sortedGlossaryTermsAlphabetically(terms);
+      final termNames = sorted.map((t) => t.term).toList();
+      final expected = [...termNames]..sort();
+      expect(termNames, expected);
+    });
+
+    test('元の用語と同じ要素を、同じ件数だけ返す', () {
+      final terms = glossaryTermsBySubject('law');
+      final sorted = sortedGlossaryTermsAlphabetically(terms);
+      expect(sorted.length, terms.length);
+      expect(sorted.toSet(), terms.toSet());
+    });
+
+    test('元のリストを変更しない', () {
+      final terms = glossaryTermsBySubject('law');
+      final before = [...terms];
+      sortedGlossaryTermsAlphabetically(terms);
+      expect(terms, before);
+    });
+  });
+
   group('termReferencesIn', () {
     test('本文中に出現する用語集の用語をTermReferenceとして返す', () {
       final refs = termReferencesIn('引火点は可燃性蒸気を発生する最低温度。指定数量も重要。');

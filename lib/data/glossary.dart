@@ -149,6 +149,11 @@ List<GlossaryTerm> searchGlossaryTerms(String keyword) {
 List<GlossaryTerm> shuffledGlossaryTerms(List<GlossaryTerm> terms, {Random? random}) =>
     [...terms]..shuffle(random);
 
+/// [terms] を用語名の文字コード順（五十音順。日本語の場合は読み仮名ではなく
+/// 文字コード順になる点に注意）に並べ替えて返す（暗記カードの五十音順モード）。
+List<GlossaryTerm> sortedGlossaryTermsAlphabetically(List<GlossaryTerm> terms) =>
+    [...terms]..sort((a, b) => a.term.compareTo(b.term));
+
 /// [text] 内に出現する用語集の用語を [TermReference] のリストにして返す。
 /// 解説文中の用語をタップ可能にする（`TappableTermText`。app_common_kit）ために使う。
 List<TermReference> termReferencesIn(String text) => [

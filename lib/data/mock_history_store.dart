@@ -170,6 +170,27 @@ PassPrediction predictPassTrend(List<MockHistoryEntry> history, {required double
   return PassPrediction.needsWork;
 }
 
+/// [predictPassTrend] の科目別版。直近3回（無ければそれ以下）のうち、
+/// [subjectId] のデータがある回だけを対象に平均得点率を求め、合格ラインへの
+/// 到達見込みを判定する。対象データが1件も無ければ null（この科目の推移が
+/// まだ揃っていない場合等）。
+PassPrediction? predictSubjectPassTrend(
+  List<MockHistoryEntry> history,
+  String subjectId, {
+  required double passPct,
+}) {
+  final withData = [
+    for (final e in history)
+      if (e.subjectPct(subjectId) != null) e,
+  ];
+  if (withData.isEmpty) return null;
+  final recent = withData.length > 3 ? withData.sublist(withData.length - 3) : withData;
+  final avgPct = recent.map((e) => e.subjectPct(subjectId)!).reduce((a, b) => a + b) / recent.length;
+  if (avgPct >= passPct) return PassPrediction.onTrack;
+  if (avgPct >= passPct - 10) return PassPrediction.closeToTarget;
+  return PassPrediction.needsWork;
+}
+
 /// 前回の模試からの経過日数が [days] 以上であれば、受験間隔のリマインダーを
 /// 表示するべきかどうか。模試をまだ受けていなければ表示しない（未経験者を
 /// 急かさない）。[history] は古い順（最後の要素が直近）。

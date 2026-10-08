@@ -49,6 +49,7 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   late bool _favoritesOnly;
   bool _unmasteredOnly = false;
   late bool _shuffle;
+  bool _alphabetical = false;
   List<GlossaryTerm>? _shuffledCache;
   late int _index;
   late bool _showDefinition;
@@ -96,16 +97,34 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
   void _toggleShuffle() {
     setState(() {
       _shuffle = !_shuffle;
+      // シャッフルと五十音順は同時に有効にすると矛盾するため、排他にする。
+      if (_shuffle) _alphabetical = false;
       _shuffledCache = null;
       _index = 0;
       _showDefinition = false;
     });
   }
 
-  /// [filtered] をシャッフルモード時はランダムな順序で返す。フィルタの変更で
-  /// 対象の用語が変わらない限り、同じ並び順を保つ（タップごとに並びが
-  /// 変わってしまうのを防ぐ）。
+  void _toggleAlphabetical() {
+    setState(() {
+      _alphabetical = !_alphabetical;
+      if (_alphabetical) {
+        _shuffle = false;
+        _shuffledCache = null;
+      }
+      _index = 0;
+      _showDefinition = false;
+    });
+  }
+
+  /// [filtered] をシャッフルモード時はランダムな順序で、五十音順モード時は
+  /// 用語名の文字コード順で返す。どちらでも無ければ元の並び順のまま。
+  /// シャッフルは、フィルタの変更で対象の用語が変わらない限り、同じ並び順を
+  /// 保つ（タップごとに並びが変わってしまうのを防ぐ）。
   List<GlossaryTerm> _displayTerms(List<GlossaryTerm> filtered) {
+    if (_alphabetical) {
+      return sortedGlossaryTermsAlphabetically(filtered);
+    }
     if (!_shuffle) return filtered;
     final cache = _shuffledCache;
     if (cache != null && cache.length == filtered.length && cache.toSet().containsAll(filtered)) {
@@ -178,6 +197,12 @@ class _GlossaryCardViewState extends ConsumerState<GlossaryCardView> {
               avatar: const Icon(Icons.shuffle, size: 18),
               selected: _shuffle,
               onSelected: (_) => _toggleShuffle(),
+            ),
+            FilterChip(
+              label: const Text('五十音順'),
+              avatar: const Icon(Icons.sort_by_alpha, size: 18),
+              selected: _alphabetical,
+              onSelected: (_) => _toggleAlphabetical(),
             ),
           ],
         ),

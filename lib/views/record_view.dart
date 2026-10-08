@@ -424,16 +424,23 @@ class MockScoreTrendChart extends StatelessWidget {
 }
 
 /// 模試の合格ライン到達見込み1行。直近の傾向に応じたアイコン・メッセージを表示する。
+/// [subjectId] を指定すると、その科目のデータがある回だけを対象にした
+/// 科目別の見込みを表示する（データが揃っていなければ何も表示しない）。
 class PassPredictionRow extends StatelessWidget {
-  const PassPredictionRow({required this.history, required this.passPct});
+  const PassPredictionRow({required this.history, required this.passPct, this.subjectId});
 
   final List<MockHistoryEntry> history;
   final double passPct;
+  final String? subjectId;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final prediction = predictPassTrend(history, passPct: passPct);
+    final subject = subjectId;
+    final prediction = subject == null
+        ? predictPassTrend(history, passPct: passPct)
+        : predictSubjectPassTrend(history, subject, passPct: passPct);
+    if (prediction == null) return const SizedBox.shrink();
     final (icon, text, color) = switch (prediction) {
       PassPrediction.onTrack => (
           Icons.check_circle_outline,
