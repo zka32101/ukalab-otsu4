@@ -160,3 +160,13 @@ List<TermReference> termReferencesIn(String text) => [
       for (final t in glossaryTerms)
         if (text.contains(t.term)) TermReference(termId: t.term, matchText: t.term),
     ];
+
+/// [date] の「今日の一語」（ホーム画面でのピックアップ用）。[terms] が空なら
+/// null。同じ日付なら常に同じ用語を返す（エポックからの経過日数を
+/// [terms] の件数で割った余りで決める。保存は行わず、呼び出すたびに算出する）。
+GlossaryTerm? glossaryTermOfDay(List<GlossaryTerm> terms, DateTime date) {
+  if (terms.isEmpty) return null;
+  final daysSinceEpoch = DateTime(date.year, date.month, date.day).millisecondsSinceEpoch ~/
+      Duration.millisecondsPerDay;
+  return terms[daysSinceEpoch % terms.length];
+}

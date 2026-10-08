@@ -7,9 +7,11 @@ import '../data/daily_answer_stats_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_date_store.dart';
 import '../data/exam_repository.dart';
+import '../data/glossary.dart';
 import '../data/mock_history_store.dart';
 import '../data/reminder_settings_store.dart';
 import '../widgets/oshi_card.dart';
+import 'glossary_card_view.dart';
 
 /// デイリーミッションの目標がある夜（[reminderHour]時以降、既定18時）に、
 /// まだ達成していなければ学習リマインダーを表示する時刻かどうか。OSの
@@ -160,6 +162,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
         ],
         const OshiCard(),
         const SizedBox(height: 16),
+        if (glossaryTermOfDay(glossaryTerms, DateTime.now()) != null) ...[
+          _TermOfDayCard(term: glossaryTermOfDay(glossaryTerms, DateTime.now())!),
+          const SizedBox(height: 16),
+        ],
         if (weeklyAnswered > 0) ...[
           Card(
             child: Padding(
@@ -217,6 +223,46 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 「今日の一語」カード。用語集から日替わりで1つの用語をピックアップして
+/// 表示する（`glossaryTermOfDay`。`lib/data/glossary.dart`）。タップすると
+/// 暗記カード（`GlossaryCardView`）でその用語を開ける。
+class _TermOfDayCard extends StatelessWidget {
+  const _TermOfDayCard({required this.term});
+
+  final GlossaryTerm term;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => GlossaryCardView(initialTerm: term.term)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_stories_outlined, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 6),
+                  Text('今日の一語', style: theme.textTheme.titleSmall),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(term.term, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 4),
+              Text(term.definition, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
