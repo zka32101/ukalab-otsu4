@@ -11,6 +11,7 @@ import 'data/daily_goal_history_store.dart';
 import 'data/daily_goal_store.dart';
 import 'data/exam_date_store.dart';
 import 'data/glossary_favorite_store.dart';
+import 'data/glossary_mastered_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
@@ -91,6 +92,10 @@ void main() async {
   final glossaryFavoriteService = GlossaryFavoriteService();
   await glossaryFavoriteService.load();
 
+  // 「覚えた」と自己申告した用語集の用語。端末内に保存する。
+  final glossaryMasteredService = GlossaryMasteredService();
+  await glossaryMasteredService.load();
+
   // アプリ内リマインダー（学習・模試）の個別オン/オフ設定。端末内に保存する。
   final reminderSettingsService = ReminderSettingsService();
   await reminderSettingsService.load();
@@ -126,6 +131,7 @@ void main() async {
         examDateServiceProvider.overrideWithValue(examDateService),
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
+        glossaryMasteredServiceProvider.overrideWithValue(glossaryMasteredService),
         reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
         comboServiceProvider.overrideWithValue(comboService),

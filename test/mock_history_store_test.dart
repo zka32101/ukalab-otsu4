@@ -43,6 +43,48 @@ void main() {
       expect(service.history, isEmpty);
     });
   });
+
+  group('MockHistoryEntry.subjectPct', () {
+    test('科目のデータがあれば得点率を返す', () {
+      final entry = MockHistoryEntry(
+        at: DateTime(2026, 10, 5),
+        score: 24,
+        max: 35,
+        passed: true,
+        subjectScore: {'law': 12, 'physics_chem': 6},
+        subjectMax: {'law': 15, 'physics_chem': 10},
+      );
+      expect(entry.subjectPct('law'), closeTo(80, 0.01));
+      expect(entry.subjectPct('physics_chem'), closeTo(60, 0.01));
+    });
+
+    test('科目のデータが無ければnull（この項目を追加する前の記録等）', () {
+      final entry = MockHistoryEntry(at: DateTime(2026, 10, 5), score: 24, max: 35, passed: true);
+      expect(entry.subjectPct('law'), isNull);
+    });
+  });
+
+  group('MockHistoryEntry.toJson/fromJson', () {
+    test('科目別の得点・満点を含めて往復する', () {
+      final entry = MockHistoryEntry(
+        at: DateTime(2026, 10, 5),
+        score: 24,
+        max: 35,
+        passed: true,
+        subjectScore: {'law': 12},
+        subjectMax: {'law': 15},
+      );
+      final restored = MockHistoryEntry.fromJson(entry.toJson());
+      expect(restored.subjectPct('law'), closeTo(80, 0.01));
+    });
+
+    test('科目別データが無いJSON（旧形式）も読み込める', () {
+      final json = {'at': '2026-10-05T00:00:00.000', 'score': 24, 'max': 35, 'passed': true};
+      final restored = MockHistoryEntry.fromJson(json);
+      expect(restored.subjectPct('law'), isNull);
+      expect(restored.score, 24);
+    });
+  });
 }
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。

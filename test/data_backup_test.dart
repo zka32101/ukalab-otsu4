@@ -51,6 +51,7 @@ LearningDataBackup _sampleBackup() => LearningDataBackup(
       dailyAnswerStats: [
         DailyAnswerStatsEntry(date: DateTime(2026, 10, 5), answered: 20, correct: 15),
       ],
+      glossaryMastered: {'引火点', '比重'},
     );
 
 void main() {
@@ -75,6 +76,7 @@ void main() {
       expect(restored.recentGlossaryTerms, ['引火点', '指定数量']);
       expect(restored.bestCombo, 8);
       expect(restored.dailyAnswerStats.single.answered, 20);
+      expect(restored.glossaryMastered, {'引火点', '比重'});
     });
 
     test('JSON文字列にエンコード・デコードしても往復する', () {
@@ -102,6 +104,13 @@ void main() {
       json.remove('dailyAnswerStats');
       final restored = LearningDataBackup.fromJson(json);
       expect(restored.dailyAnswerStats, isEmpty);
+    });
+
+    test('glossaryMasteredが無い旧いJSONも空の集合として読み込める', () {
+      final json = _sampleBackup().toJson();
+      json.remove('glossaryMastered');
+      final restored = LearningDataBackup.fromJson(json);
+      expect(restored.glossaryMastered, isEmpty);
     });
   });
 }
