@@ -4,6 +4,21 @@ import 'package:otsu4/data/mock_history_store.dart';
 MockHistoryEntry _entry(int score, int max) =>
     MockHistoryEntry(at: DateTime(2026, 10, 6), score: score, max: max, passed: score * 100 / max >= 60);
 
+MockHistoryEntry _entryWithSubject(
+  int score,
+  int max, {
+  required Map<String, int> subjectScore,
+  required Map<String, int> subjectMax,
+}) =>
+    MockHistoryEntry(
+      at: DateTime(2026, 10, 6),
+      score: score,
+      max: max,
+      passed: score * 100 / max >= 60,
+      subjectScore: subjectScore,
+      subjectMax: subjectMax,
+    );
+
 void main() {
   group('predictPassTrend', () {
     test('直近の平均が合格ライン以上ならonTrack', () {
@@ -29,6 +44,28 @@ void main() {
         _entry(28, 35), // 80%
       ];
       expect(predictPassTrend(history, passPct: 60), PassPrediction.onTrack);
+    });
+  });
+
+  group('predictSubjectPassTrend', () {
+    test('科目のデータが無ければnull', () {
+      final history = [_entry(25, 35)];
+      expect(predictSubjectPassTrend(history, 'law', passPct: 60), isNull);
+    });
+
+    test('科目データがあれば、その科目だけの平均でonTrack/closeToTarget/needsWorkを判定する', () {
+      final history = [
+        _entryWithSubject(25, 35, subjectScore: {'law': 12}, subjectMax: {'law': 15}), // 80%
+      ];
+      expect(predictSubjectPassTrend(history, 'law', passPct: 60), PassPrediction.onTrack);
+    });
+
+    test('科目データが無い回は平均の対象から除く', () {
+      final history = [
+        _entry(5, 35), // 科目データ無し（無視される）
+        _entryWithSubject(25, 35, subjectScore: {'law': 3}, subjectMax: {'law': 15}), // 20%
+      ];
+      expect(predictSubjectPassTrend(history, 'law', passPct: 60), PassPrediction.needsWork);
     });
   });
 }

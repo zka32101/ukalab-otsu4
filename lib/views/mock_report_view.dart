@@ -109,11 +109,15 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
                       MockScoreTrendChart(series: trendSeries, title: trendTitle)
                     else
                       Text('この科目のデータが揃った回がまだ2回未満です。', style: theme.textTheme.bodySmall),
-                    if (selectedSubject == null && exam != null) ...[
+                    if (exam != null) ...[
                       const SizedBox(height: 8),
                       PassPredictionRow(
                         history: mockHistory,
-                        passPct: exam.levels.first.passRule.totalPct,
+                        passPct: selectedSubject == null
+                            ? exam.levels.first.passRule.totalPct
+                            : exam.levels.first.passRule.subjectMinPct ??
+                                exam.levels.first.passRule.totalPct,
+                        subjectId: selectedSubject,
                       ),
                     ],
                   ],
