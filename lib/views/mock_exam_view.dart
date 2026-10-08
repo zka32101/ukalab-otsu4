@@ -17,6 +17,7 @@ import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
+import '../widgets/mock_result_share_card.dart';
 import 'choice_labels.dart';
 import 'mock_review_view.dart';
 
@@ -137,6 +138,36 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
   }
 
   /// 採点して結果を確定する。最後の問題に答えたとき・制限時間が
+  void _showResultShareCard(BuildContext context, MockExamResult result) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MockResultShareCard(
+                score: result.total.score,
+                max: result.total.max,
+                passed: result.passed,
+                date: DateTime.now(),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'スクリーンショットで共有できます。カードに名前などの個人情報は入りません。',
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('閉じる')),
+        ],
+      ),
+    );
+  }
+
   /// 0になったときの両方から呼ぶ。
   void _finish() {
     final result = scoreMockExam(
@@ -225,6 +256,11 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
                 shortfalls: result.subjectShortfalls,
               ),
             ],
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () => _showResultShareCard(context, result),
+              child: const Text('結果カードを見る'),
+            ),
             if (_wrongQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
               OutlinedButton(

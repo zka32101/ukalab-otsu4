@@ -242,33 +242,7 @@ class RecordView extends ConsumerWidget {
         ],
         if (subjectStats.length > 1) ...[
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('弱点マップ', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 4),
-                  Text(
-                    '正答率が低い分野から順に並べています。タップするとその分野を演習できます',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  for (final s in sortedByWeaknessWithId(exam, subjectStats))
-                    _WeakMapBar(
-                      label: s.$2,
-                      stat: s.$3,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => FocusTrainingView(subjectId: s.$1, subjectName: s.$2),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          _WeakMapCard(exam: exam, subjectStats: subjectStats),
         ],
         if (subjectStatsHistory.length > 1) ...[
           const SizedBox(height: 12),
@@ -626,6 +600,147 @@ List<(String, String, SubjectStat)> sortedByWeaknessWithId(
     ];
   }
   return [...named]..sort((a, b) => a.$3.accuracy.compareTo(b.$3.accuracy));
+}
+
+/// 弱点マップのカード。横棒グラフ表示と円グラフ表示を切り替えられる
+/// （`_pieMode`。円グラフは正答率ではなく分野ごとの解答数の内訳を示す）。
+class _WeakMapCard extends StatefulWidget {
+  const _WeakMapCard({required this.exam, required this.subjectStats});
+
+  final ExamConfig? exam;
+  final Map<String, SubjectStat> subjectStats;
+
+  @override
+  State<_WeakMapCard> createState() => _WeakMapCardState();
+}
+
+class _WeakMapCardState extends State<_WeakMapCard> {
+  bool _pieMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ranked = sortedByWeaknessWithId(widget.exam, widget.subjectStats);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text('弱点マップ', style: theme.textTheme.titleSmall)),
+                IconButton(
+                  tooltip: _pieMode ? 'リスト表示に切り替え' : '円グラフ表示に切り替え',
+                  icon: Icon(_pieMode ? Icons.bar_chart : Icons.pie_chart_outline),
+                  onPressed: () => setState(() => _pieMode = !_pieMode),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _pieMode ? '分野ごとの解答数の内訳です' : '正答率が低い分野から順に並べています。タップするとその分野を演習できます',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            if (_pieMode)
+              _WeakMapPie(ranked: ranked)
+            else
+              for (final s in ranked)
+                _WeakMapBar(
+                  label: s.$2,
+                  stat: s.$3,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => FocusTrainingView(subjectId: s.$1, subjectName: s.$2),
+                    ),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 弱点マップの円グラフ表示。分野ごとの解答数の割合を扇形で示し、下に凡例
+/// （分野名・正答率）を並べる。
+class _WeakMapPie extends StatelessWidget {
+  const _WeakMapPie({required this.ranked});
+
+  final List<(String, String, SubjectStat)> ranked;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = [
+      theme.colorScheme.primary,
+      theme.colorScheme.secondary,
+      theme.colorScheme.tertiary,
+      theme.colorScheme.error,
+    ];
+    final total = ranked.fold<int>(0, (sum, s) => sum + s.$3.answered);
+    return Column(
+      children: [
+        SizedBox(
+          width: 140,
+          height: 140,
+          child: CustomPaint(
+            painter: _PieChartPainter(
+              values: [for (final s in ranked) s.$3.answered.toDouble()],
+              colors: colors,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        for (var i = 0; i < ranked.length; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              children: [
+                Container(width: 12, height: 12, color: colors[i % colors.length]),
+                const SizedBox(width: 8),
+                Expanded(child: Text(ranked[i].$2, style: theme.textTheme.bodySmall)),
+                Text(
+                  total == 0 ? '0%' : '${(ranked[i].$3.answered * 100 / total).round()}%',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// 円グラフを描画する。[values] の合計が0のときは何も描かない。
+class _PieChartPainter extends CustomPainter {
+  _PieChartPainter({required this.values, required this.colors});
+
+  final List<double> values;
+  final List<Color> colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = values.fold<double>(0, (sum, v) => sum + v);
+    if (total <= 0) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    var startAngle = -3.14159265 / 2;
+    for (var i = 0; i < values.length; i++) {
+      final sweep = values[i] / total * 2 * 3.14159265;
+      if (sweep <= 0) continue;
+      final paint = Paint()
+        ..color = colors[i % colors.length]
+        ..style = PaintingStyle.fill;
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweep, true, paint);
+      startAngle += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PieChartPainter oldDelegate) =>
+      oldDelegate.values != values || oldDelegate.colors != colors;
 }
 
 /// 弱点マップの1行。正答率に応じて色を変えた横棒グラフ。タップでその分野の
