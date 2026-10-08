@@ -23,7 +23,9 @@ class Otsu4App extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     ref.listen<List<Achievement>>(achievementsProvider, (previous, next) {
       final unlockedIds = {for (final a in next) if (a.unlocked) a.id};
-      final newlyUnlockedIds = ref.read(achievementUnlockProvider.notifier).checkNewlyUnlocked(unlockedIds);
+      final newlyUnlockedIds = ref
+          .read(achievementUnlockProvider.notifier)
+          .checkNewlyUnlocked(unlockedIds, DateTime.now());
       if (newlyUnlockedIds.isEmpty) return;
       for (final a in next) {
         if (!newlyUnlockedIds.contains(a.id)) continue;
