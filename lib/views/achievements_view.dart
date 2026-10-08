@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/achievements.dart';
-import '../data/combo_store.dart';
-import '../data/daily_goal_store.dart';
-import '../data/mock_history_store.dart';
-import '../data/progress_store.dart';
-import '../data/srs_store.dart';
-import '../data/subject_stats_store.dart';
+import '../data/achievements_provider.dart';
 import '../widgets/achievement_share_card.dart';
 
 /// カテゴリタブの表示名（「すべて」はnull）。
@@ -35,22 +29,7 @@ class _AchievementsViewState extends ConsumerState<AchievementsView> {
 
   @override
   Widget build(BuildContext context) {
-    final progress = ref.watch(progressProvider);
-    final mockHistory = ref.watch(mockHistoryProvider);
-    final subjectStats = ref.watch(subjectStatsProvider);
-    final srs = ref.watch(srsProvider);
-    final masteredCount = srs.values.where((i) => i.box == Srs.maxBox).length;
-    final bestCombo = ref.watch(comboProvider);
-    final achievedStreak = effectiveAchievedStreak(ref.watch(dailyGoalProvider), DateTime.now());
-    final achievements = buildAchievements(
-      answered: progress.answered,
-      streakDays: progress.streakDays,
-      mockHistory: mockHistory,
-      subjectStats: subjectStats,
-      bestCombo: bestCombo,
-      masteredCount: masteredCount,
-      achievedStreak: achievedStreak,
-    );
+    final achievements = ref.watch(achievementsProvider);
     final unlockedCount = achievements.where((a) => a.unlocked).length;
     final category = _selectedCategory;
     final filtered = category == null
