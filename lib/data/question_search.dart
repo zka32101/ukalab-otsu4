@@ -1,4 +1,4 @@
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 /// [onlyBookmarked] がtrueなら、[bookmarkedQids] に含まれる問題だけに絞り込む。
 /// falseなら [pool] をそのまま返す。

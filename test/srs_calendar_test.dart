@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otsu4/data/srs_calendar.dart';
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 SrsItem _item(String qid, DateTime dueAt, {int box = 0}) =>
     SrsItem(qid: qid, box: box, dueAt: dueAt);

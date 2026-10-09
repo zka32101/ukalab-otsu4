@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 import 'focus_training_view.dart';
 import 'glossary_card_view.dart';

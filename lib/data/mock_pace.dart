@@ -1,4 +1,4 @@
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 /// 科目ごとの目安配分時間（秒）。[subjectQuestionCounts] の問題数比率で
 /// [totalTimeSec] を配分する。
