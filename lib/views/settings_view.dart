@@ -21,7 +21,6 @@ import '../data/subject_stats_store.dart';
 import '../data/theme_store.dart';
 import '../data/today_highlight.dart';
 import 'focus_training_view.dart';
-import 'purchase_section.dart';
 import 'source_credits_view.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
@@ -59,7 +58,7 @@ class SettingsView extends ConsumerWidget {
           _TodayHighlightCard(highlight: todayHighlight),
           const SizedBox(height: 24),
         ],
-        const PurchaseSection(),
+        PurchaseSection(titleStyle: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 24),
         const _WeakAreaReminderCard(),
         Text('テーマ', style: theme.textTheme.titleSmall),
