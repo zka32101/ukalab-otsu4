@@ -2,6 +2,7 @@ import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/achievement_unlock_store.dart';
 import '../data/achievements_provider.dart';
@@ -13,9 +14,13 @@ import '../data/data_reset.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
 import '../data/question_repository.dart';
+import '../data/exam_repository.dart';
 import '../data/reminder_settings_store.dart';
+import '../data/srs_store.dart';
+import '../data/subject_stats_store.dart';
 import '../data/theme_store.dart';
 import '../data/today_highlight.dart';
+import 'focus_training_view.dart';
 import 'source_credits_view.dart';
 
 /// 免責表示（うかラボ共通方針）。ストア説明文の冒頭の注意書きと趣旨を揃える。
@@ -53,6 +58,7 @@ class SettingsView extends ConsumerWidget {
           _TodayHighlightCard(highlight: todayHighlight),
           const SizedBox(height: 24),
         ],
+        const _WeakAreaReminderCard(),
         Text('テーマ', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -409,6 +415,47 @@ class _TodayHighlightCard extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 苦手分野の復習リマインダー。`weakSubjectIds`（正答率の低い分野）・
+/// `dueWeakQidsProvider`（SRSで復習時期が来ている問題）のいずれかがあれば
+/// 表示し、タップで集中特訓（`FocusTrainingView`）に進める。どちらも無ければ
+/// 何も表示しない。
+class _WeakAreaReminderCard extends ConsumerWidget {
+  const _WeakAreaReminderCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weakIds = weakSubjectIds(ref.watch(subjectStatsProvider));
+    final dueCount = ref.watch(dueWeakQidsProvider).length;
+    if (weakIds.isEmpty && dueCount == 0) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final exam = ref.watch(examConfigProvider).valueOrNull;
+    String subjectName(String id) => exam?.subjects
+            .firstWhere((s) => s.subjectId == id, orElse: () => SubjectConfig(subjectId: id, name: id, order: 0))
+            .name ??
+        id;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Card(
+        child: ListTile(
+          leading: Icon(Icons.psychology_alt_outlined, color: theme.colorScheme.primary),
+          title: const Text('苦手分野の復習'),
+          subtitle: Text([
+            if (weakIds.isNotEmpty) '苦手分野: ${weakIds.map(subjectName).join('・')}',
+            if (dueCount > 0) '復習時期が来た問題: $dueCount問',
+          ].join('\n')),
+          isThreeLine: weakIds.isNotEmpty && dueCount > 0,
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const FocusTrainingView()),
+          ),
         ),
       ),
     );
