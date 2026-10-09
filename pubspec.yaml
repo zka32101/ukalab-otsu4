@@ -20,10 +20,10 @@ dependencies:
     git:
       url: https://github.com/zka32101/app_common_kit.git
       ref: v0.21.0
-  yourwish_kentei:
+  ukalab_core:
     git:
       url: https://github.com/zka32101/yourwish_kentei.git
-      ref: v0.21.0
+      ref: v0.22.0
 
 dev_dependencies:
   flutter_test:

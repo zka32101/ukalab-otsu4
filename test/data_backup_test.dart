@@ -9,7 +9,7 @@ import 'package:otsu4/data/mock_history_store.dart';
 import 'package:otsu4/data/progress_store.dart';
 import 'package:otsu4/data/subject_stats_history_store.dart';
 import 'package:otsu4/data/subject_stats_store.dart';
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 LearningDataBackup _sampleBackup() => LearningDataBackup(
       progress: ProgressSnapshot(

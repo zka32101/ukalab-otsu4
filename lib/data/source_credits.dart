@@ -1,4 +1,4 @@
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 /// 法令問題（`source: statute`）で使われている出典条文の一覧。同じ条文が
 /// 複数の問題で使われていれば重複を除き、出現順を保つ。設定タブの

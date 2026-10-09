@@ -1,4 +1,4 @@
-import 'package:yourwish_kentei/yourwish_kentei.dart';
+import 'package:ukalab_core/ukalab_core.dart';
 
 /// 復習予定を日付（時刻を切り捨てた日単位）ごとにグループ化した件数。
 /// 期限切れ（[now] より前）の項目はすべて「今日」としてまとめる。
