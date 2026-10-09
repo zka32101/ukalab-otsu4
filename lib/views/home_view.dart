@@ -95,16 +95,30 @@ class _HomeViewState extends ConsumerState<HomeView> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.event_outlined, color: theme.colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      examCountdownText(daysUntilExam(examDate, DateTime.now())),
-                      style: theme.textTheme.titleSmall,
-                    ),
+                  Row(
+                    children: [
+                      Icon(Icons.event_outlined, color: theme.colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          examCountdownText(daysUntilExam(examDate, DateTime.now())),
+                          style: theme.textTheme.titleSmall,
+                        ),
+                      ),
+                    ],
                   ),
+                  if (mockHistory.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      passPredictionShortLabel(
+                        predictPassTrend(mockHistory, passPct: exam.levels.first.passRule.totalPct),
+                      ),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ],
               ),
             ),

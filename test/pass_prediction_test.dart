@@ -68,4 +68,12 @@ void main() {
       expect(predictSubjectPassTrend(history, 'law', passPct: 60), PassPrediction.needsWork);
     });
   });
+
+  group('passPredictionShortLabel', () {
+    test('各判定に対応する一言ラベルを返す', () {
+      expect(passPredictionShortLabel(PassPrediction.onTrack), '合格ライン到達中');
+      expect(passPredictionShortLabel(PassPrediction.closeToTarget), 'もう少しで合格ライン');
+      expect(passPredictionShortLabel(PassPrediction.needsWork), '合格ラインまで要対策');
+    });
+  });
 }

@@ -170,6 +170,14 @@ PassPrediction predictPassTrend(List<MockHistoryEntry> history, {required double
   return PassPrediction.needsWork;
 }
 
+/// [PassPrediction] の一言ラベル（ホームの試験日カウントダウン併記等、
+/// 短く表示したい場所で使う）。
+String passPredictionShortLabel(PassPrediction prediction) => switch (prediction) {
+      PassPrediction.onTrack => '合格ライン到達中',
+      PassPrediction.closeToTarget => 'もう少しで合格ライン',
+      PassPrediction.needsWork => '合格ラインまで要対策',
+    };
+
 /// [predictPassTrend] の科目別版。直近3回（無ければそれ以下）のうち、
 /// [subjectId] のデータがある回だけを対象に平均得点率を求め、合格ラインへの
 /// 到達見込みを判定する。対象データが1件も無ければ null（この科目の推移が
