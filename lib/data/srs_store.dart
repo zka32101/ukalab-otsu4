@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
-/// 苦手問題の復習（間隔反復・`yourwish_kentei` の `Srs`）の端末内保存。
+/// 苦手問題の復習（間隔反復・`ukalab_core` の `Srs`）の端末内保存。
 class SrsStore {
   static const _key = 'ukalab_otsu4_srs';
 

@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 推しの成長・コインに使う、このアプリの暫定の学習進捗。
 ///
-/// 正式な出題範囲（`yourwish_kentei` の `Question`）はまだ無い（問題データ未着手。
+/// 正式な出題範囲（`ukalab_core` の `Question`）はまだ無い（問題データ未着手。
 /// README参照）ため、画期的な機能A〜E・一問一答での解答数を暫定の進捗として使う。
-/// 問題データが入ったら、`yourwish_kentei` の網羅率・正答率に基づく計算に
+/// 問題データが入ったら、`ukalab_core` の網羅率・正答率に基づく計算に
 /// 差し替える（`MasteryModel` 自体が差し替え可能な暫定値であることに合わせている）。
 class ProgressSnapshot {
   const ProgressSnapshot({
