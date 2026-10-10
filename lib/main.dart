@@ -18,6 +18,7 @@ import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
 import 'data/recent_glossary_terms_store.dart';
 import 'data/reminder_settings_store.dart';
+import 'data/selected_level_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_history_store.dart';
 import 'data/subject_stats_store.dart';
@@ -87,6 +88,10 @@ void main() async {
   // 試験日（本番の日付）。端末内に保存する。
   final examDateService = ExamDateService();
   await examDateService.load();
+
+  // 選択中の類（乙4・乙1等）。端末内に保存する。
+  final selectedLevelService = SelectedLevelService();
+  await selectedLevelService.load();
 
   // これまでに解答した問題のqid（分野別の出題網羅率で使う）。端末内に保存する。
   final answeredQuestionsService = AnsweredQuestionsService();
@@ -162,6 +167,7 @@ void main() async {
         themeServiceProvider.overrideWithValue(themeService),
         questionMemoServiceProvider.overrideWithValue(questionMemoService),
         examDateServiceProvider.overrideWithValue(examDateService),
+        selectedLevelServiceProvider.overrideWithValue(selectedLevelService),
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
         glossaryMasteredServiceProvider.overrideWithValue(glossaryMasteredService),

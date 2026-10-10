@@ -15,6 +15,7 @@ import '../data/mock_history_store.dart';
 import '../data/mock_pace.dart';
 import '../data/mock_wrong_store.dart';
 import '../data/question_repository.dart';
+import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
@@ -76,8 +77,11 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     }
   }
 
+  /// 選択中の類（乙4・乙1等）の `LevelConfig`。未選択なら従来どおり先頭。
+  LevelConfig _currentLevel(ExamConfig exam) => currentLevel(exam, ref.read(selectedLevelIdProvider));
+
   void _start() {
-    final level = _exam!.levels.first;
+    final level = _currentLevel(_exam!);
     _timer?.cancel();
     setState(() {
       _picked = pickMockExamQuestions(
@@ -175,7 +179,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     final result = scoreMockExam(
       questions: _picked!,
       answers: _answers,
-      rule: _exam!.levels.first.passRule,
+      rule: _currentLevel(_exam!).passRule,
     );
     // 間違えた問題は苦手問題の復習リストに入れつつ（間隔反復）、分野別の
     // 正答率・デイリーミッションの解答数にも積み上げ、振り返り画面用に
@@ -219,6 +223,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(selectedLevelIdProvider);
     if (_error != null) {
       return ErrorState(onRetry: () {
         setState(() => _error = null);
@@ -246,7 +251,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
             ResultSummary(
               correct: result.total.score,
               total: result.total.max,
-              passRatio: exam.levels.first.passRule.totalPct / 100,
+              passRatio: _currentLevel(exam).passRule.totalPct / 100,
               passedText: result.passed ? '合格ライン到達' : '科目の足切りに注意',
               onRetry: _start,
             ),
@@ -293,7 +298,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
 
     final picked = _picked;
     if (picked == null) {
-      final level = exam.levels.first;
+      final level = _currentLevel(exam);
       final enough = _hasEnoughQuestions(qs, level);
       return Center(
         child: Padding(
@@ -320,7 +325,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
     final q = picked[_index];
     final selected = _answers[q.qid];
     final remaining = _remainingSec;
-    final level = exam.levels.first;
+    final level = _currentLevel(exam);
     final subjectCounts = level.subjectQuestionCounts;
     String? paceText;
     Color? paceColor;

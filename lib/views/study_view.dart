@@ -7,6 +7,7 @@ import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_wrong_store.dart';
 import '../data/question_repository.dart';
+import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
 import 'bookmark_list_view.dart';
@@ -69,9 +70,16 @@ class _StudyViewState extends ConsumerState<StudyView> {
   @override
   Widget build(BuildContext context) {
     final exam = _exam;
-    final qs = _questions;
-    if (exam == null || qs == null) return const Center(child: CircularProgressIndicator());
+    final allQs = _questions;
+    if (exam == null || allQs == null) return const Center(child: CircularProgressIndicator());
     final theme = Theme.of(context);
+    // 選択中の類（乙4・乙1等）に関係する科目だけに絞る。他の類の性質消火の
+    // 問題が混ざって表示されないようにする。
+    final level = currentLevel(exam, ref.watch(selectedLevelIdProvider));
+    final relevantSubjectIds = level.subjectQuestionCounts?.keys.toSet();
+    final qs = relevantSubjectIds == null
+        ? allQs
+        : [for (final q in allQs) if (relevantSubjectIds.contains(q.subjectId)) q];
     final dueQids = ref.watch(dueWeakQidsProvider).toSet();
     final dueCount = qs.where((q) => dueQids.contains(q.qid)).length;
     final bookmarkCount = ref.watch(bookmarkProvider).length;

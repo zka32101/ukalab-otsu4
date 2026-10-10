@@ -5,7 +5,8 @@
   "subjects": [
     { "subjectId": "law", "name": "危険物に関する法令", "order": 1 },
     { "subjectId": "physics_chem", "name": "基礎的な物理学及び基礎的な化学", "order": 2 },
-    { "subjectId": "property_extinguish", "name": "危険物の性質並びにその火災予防及び消火の方法", "order": 3 }
+    { "subjectId": "property_extinguish", "name": "危険物の性質並びにその火災予防及び消火の方法（第4類）", "order": 3 },
+    { "subjectId": "property_extinguish_1", "name": "危険物の性質並びにその火災予防及び消火の方法（第1類）", "order": 4 }
   ],
   "levels": [
     {
@@ -15,6 +16,14 @@
       "timeLimitSec": 7200,
       "passRule": { "totalPct": 60, "subjectMinPct": 60 },
       "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish": 10 }
+    },
+    {
+      "levelId": "otsu1",
+      "name": "乙種第1類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_1": 10 }
     }
   ],
   "examDates": []
