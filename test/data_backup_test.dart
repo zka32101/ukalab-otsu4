@@ -9,29 +9,6 @@ import 'package:otsu4/data/progress_store.dart';
 import 'package:ukalab_core/ui.dart' show encodeLearningDataBackup, resetLearningData, restoreLearningDataBackup;
 
 void main() {
-  group('upgradeLegacyBackupText', () {
-    test('旧形式（項目がトップレベル）を共通形式の parts の下に移す', () {
-      final legacy = jsonEncode({
-        'version': 1,
-        'exportedAt': '2026-10-06T00:00:00.000',
-        'bestCombo': 8,
-        'mockWrong': ['q3'],
-      });
-      final upgraded = jsonDecode(upgradeLegacyBackupText(legacy)) as Map<String, dynamic>;
-      expect(upgraded['version'], 1);
-      expect(upgraded['parts'], {
-        'bestCombo': 8,
-        'mockWrong': ['q3'],
-      });
-      expect(upgraded.containsKey('bestCombo'), isFalse);
-    });
-
-    test('すでに共通形式ならそのまま返す', () {
-      const text = '{"version":1,"parts":{"bestCombo":3}}';
-      expect(upgradeLegacyBackupText(text), text);
-    });
-  });
-
   test('otsu4DataParts のidは重複せず、旧バックアップのキーと同じ', () {
     final ids = [for (final p in otsu4DataParts) p.id];
     expect(ids.toSet().length, ids.length);
@@ -82,9 +59,13 @@ void main() {
       await resetLearningData(ref, parts);
       expect(ref.read(progressProvider).answered, 0);
 
-      // 旧形式（項目がトップレベル）に直した文字列でも読み込める。
-      final legacy = jsonEncode({'version': 1, ...((jsonDecode(text) as Map<String, dynamic>)['parts'] as Map<String, dynamic>)});
-      await restoreLearningDataBackup(ref, parts, upgradeLegacyBackupText(legacy));
+      await restoreLearningDataBackup(ref, parts, text);
+
+      // 共通化前の旧形式（項目がトップレベルに並ぶ形）でも読み込める。
+      await resetLearningData(ref, parts);
+      final parsed = jsonDecode(text) as Map<String, dynamic>;
+      final legacy = jsonEncode({'version': 1, ...(parsed['parts'] as Map<String, dynamic>)});
+      await restoreLearningDataBackup(ref, parts, legacy);
       expect(ref.read(progressProvider).answered, 10);
       expect(ref.read(progressProvider).correct, 7);
     });

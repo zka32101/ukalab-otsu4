@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ui.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
@@ -141,21 +138,3 @@ final List<DataPart> otsu4DataParts = [
     reset: (ref) => ref.read(achievementUnlockProvider.notifier).reset(),
   ),
 ];
-
-/// 共通化前（`version: 1`・項目がトップレベルに並ぶ形）のバックアップを、
-/// 共通形式（`parts` の下に並べる形）へ変換する。すでに共通形式なら何もしない。
-String upgradeLegacyBackupText(String text) {
-  final decoded = jsonDecode(text);
-  if (decoded is! Map<String, dynamic> || decoded.containsKey('parts')) return text;
-  final parts = Map<String, dynamic>.of(decoded)
-    ..remove('version')
-    ..remove('exportedAt');
-  return jsonEncode({'version': decoded['version'], 'exportedAt': decoded['exportedAt'], 'parts': parts});
-}
-
-/// 現在の学習記録を、クリップボードに書き出すJSON文字列にする。
-String exportLearningDataJson(WidgetRef ref) => encodeLearningDataBackup(ref, otsu4DataParts);
-
-/// バックアップ（旧形式も可）を読み込み、学習記録を上書きする。
-Future<void> importLearningDataJson(WidgetRef ref, String text) =>
-    restoreLearningDataBackup(ref, otsu4DataParts, upgradeLegacyBackupText(text));
