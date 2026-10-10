@@ -5,6 +5,7 @@ import 'package:ukalab_core/ukalab_core.dart';
 
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
+import '../data/selected_level_store.dart';
 import '../data/subject_stats_store.dart';
 import 'focus_training_view.dart';
 import 'record_view.dart'
@@ -38,6 +39,7 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
     final mockHistory = ref.watch(mockHistoryProvider);
     final subjectStats = ref.watch(subjectStatsProvider);
     final exam = ref.watch(examConfigProvider).valueOrNull;
+    final selectedLevelId = ref.watch(selectedLevelIdProvider);
 
     if (mockHistory.isEmpty) {
       return Scaffold(
@@ -122,9 +124,9 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
                       PassPredictionRow(
                         history: mockHistory,
                         passPct: selectedSubject == null
-                            ? exam.levels.first.passRule.totalPct
-                            : exam.levels.first.passRule.subjectMinPct ??
-                                exam.levels.first.passRule.totalPct,
+                            ? currentLevel(exam, selectedLevelId).passRule.totalPct
+                            : currentLevel(exam, selectedLevelId).passRule.subjectMinPct ??
+                                currentLevel(exam, selectedLevelId).passRule.totalPct,
                         subjectId: selectedSubject,
                       ),
                     ],
@@ -175,7 +177,8 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
                 children: [
                   Text('受験履歴（全${mockHistory.length}回）', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final entry in mockHistory.reversed) MockHistoryRow(entry: entry, exam: exam),
+                  for (final entry in mockHistory.reversed)
+                    MockHistoryRow(entry: entry, exam: exam, levelId: selectedLevelId),
                 ],
               ),
             ),

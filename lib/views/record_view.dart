@@ -10,6 +10,7 @@ import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';
+import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
@@ -38,6 +39,7 @@ class RecordView extends ConsumerWidget {
     final subjectStatsHistory = ref.watch(subjectStatsHistoryProvider);
     final dailyGoalHistory = ref.watch(dailyGoalHistoryProvider);
     final exam = ref.watch(examConfigProvider).valueOrNull;
+    final selectedLevelId = ref.watch(selectedLevelIdProvider);
 
     if (progress.answered == 0 && mockHistory.isEmpty) {
       return const EmptyState(
@@ -197,7 +199,8 @@ class RecordView extends ConsumerWidget {
                 children: [
                   Text('模擬試験の結果', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
-                  for (final entry in mockHistory.reversed.take(5)) MockHistoryRow(entry: entry, exam: exam),
+                  for (final entry in mockHistory.reversed.take(5))
+                    MockHistoryRow(entry: entry, exam: exam, levelId: selectedLevelId),
                   if (mockHistory.length > 1) ...[
                     const SizedBox(height: 12),
                     MockScoreTrendChart(
@@ -208,7 +211,7 @@ class RecordView extends ConsumerWidget {
                     const SizedBox(height: 8),
                     PassPredictionRow(
                       history: mockHistory,
-                      passPct: exam.levels.first.passRule.totalPct,
+                      passPct: currentLevel(exam, selectedLevelId).passRule.totalPct,
                     ),
                   ],
                   const SizedBox(height: 12),
@@ -286,9 +289,10 @@ class RecordView extends ConsumerWidget {
 /// 模擬試験の結果1回分の行。日時・得点率・合否を表示する。
 /// [entry] の科目別データ（`subjectScore`/`subjectMax`）のうち、[exam] の
 /// 科目別合格基準（`passRule.subjectMinPct`）に満たなかった科目の名前を返す。
-/// 科目別データ・しきい値・[exam] のいずれかが無ければ空リスト。
-List<String> shortfallSubjectNames(MockHistoryEntry entry, ExamConfig? exam) {
-  final subjectMinPct = exam?.levels.first.passRule.subjectMinPct;
+/// 科目別データ・しきい値・[exam] のいずれかが無ければ空リスト。[levelId] を
+/// 指定すると、その類（`LevelConfig`）の合格基準を使う（未指定なら先頭）。
+List<String> shortfallSubjectNames(MockHistoryEntry entry, ExamConfig? exam, {String? levelId}) {
+  final subjectMinPct = exam == null ? null : currentLevel(exam, levelId).passRule.subjectMinPct;
   final scores = entry.subjectScore;
   if (exam == null || subjectMinPct == null || scores == null) return [];
   return [
@@ -304,12 +308,15 @@ List<String> shortfallSubjectNames(MockHistoryEntry entry, ExamConfig? exam) {
 }
 
 class MockHistoryRow extends StatelessWidget {
-  const MockHistoryRow({required this.entry, this.exam});
+  const MockHistoryRow({required this.entry, this.exam, this.levelId});
 
   final MockHistoryEntry entry;
 
   /// 渡すと、不合格だった科目（足切り）のバッジを表示する。
   final ExamConfig? exam;
+
+  /// 足切り判定に使う類（`LevelConfig.levelId`）。未指定なら先頭の類。
+  final String? levelId;
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +324,7 @@ class MockHistoryRow extends StatelessWidget {
     final at = entry.at;
     final dateText =
         '${at.year}/${at.month.toString().padLeft(2, '0')}/${at.day.toString().padLeft(2, '0')}';
-    final shortfalls = shortfallSubjectNames(entry, exam);
+    final shortfalls = shortfallSubjectNames(entry, exam, levelId: levelId);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
