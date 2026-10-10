@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:otsu4/data/data_parts.dart';
 import 'package:otsu4/data/progress_store.dart';
-import 'package:ukalab_core/ui.dart';
 
 void main() {
   group('upgradeLegacyBackupText', () {
