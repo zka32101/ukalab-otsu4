@@ -213,7 +213,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
           const SizedBox(height: 16),
         ],
-        Text(exam.name, style: theme.textTheme.headlineSmall),
+        Text('${exam.name}${level.name}', style: theme.textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text(
           '全${level.questionCount}問・${(level.timeLimitSec ?? 0) ~/ 60}分・科目別${level.passRule.subjectMinPct?.round() ?? level.passRule.totalPct.round()}%以上で合格',

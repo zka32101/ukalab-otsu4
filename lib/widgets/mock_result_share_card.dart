@@ -11,12 +11,18 @@ class MockResultShareCard extends StatelessWidget {
     required this.max,
     required this.passed,
     required this.date,
+    this.examName = 'うかラボ 危険物取扱者乙種',
   });
 
   final int score;
   final int max;
   final bool passed;
   final DateTime date;
+
+  /// カード上部の試験名表示。選択中の類（例: 「うかラボ 危険物取扱者乙種第4類」）
+  /// を渡すと、乙種のどの類の結果かが分かるようになる。未指定なら乙種全体の
+  /// 汎用ラベル。
+  final String examName;
 
   double get _pct => max == 0 ? 0 : score * 100 / max;
 
@@ -43,7 +49,7 @@ class MockResultShareCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('うかラボ 危険物取扱者乙種第4類', style: theme.textTheme.labelMedium, textAlign: TextAlign.center),
+                Text(examName, style: theme.textTheme.labelMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 Icon(
                   passed ? Icons.emoji_events : Icons.timer_outlined,

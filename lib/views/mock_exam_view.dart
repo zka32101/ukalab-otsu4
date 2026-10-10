@@ -157,6 +157,7 @@ class _MockExamViewState extends ConsumerState<MockExamView> {
                 max: result.total.max,
                 passed: result.passed,
                 date: DateTime.now(),
+                examName: 'うかラボ 危険物取扱者${_currentLevel(_exam!).name}',
               ),
               const SizedBox(height: 12),
               Text(
