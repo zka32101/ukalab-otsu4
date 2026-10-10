@@ -12,11 +12,11 @@ import 'glossary_mastered_store.dart';
 import 'mock_history_store.dart';
 import 'mock_wrong_store.dart';
 import 'progress_store.dart';
-import 'question_memo_store.dart';
 import 'recent_glossary_terms_store.dart';
 import 'srs_store.dart';
 import 'subject_stats_history_store.dart';
 import 'subject_stats_store.dart';
+import 'package:ukalab_core/ui.dart' show questionMemoProvider;
 
 /// バックアップのJSON形式のバージョン。読み込み側で形式が変わったときの
 /// 目印に使う（現状は1のみ対応）。

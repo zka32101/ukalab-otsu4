@@ -4,20 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
 import '../data/answered_questions_store.dart';
-import '../data/bookmark_store.dart';
 import '../data/combo_store.dart';
 import '../data/daily_answer_stats_store.dart';
 import '../data/daily_goal_history_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exercise_coins.dart';
 import '../data/glossary.dart';
-import '../data/question_memo_store.dart';
 import '../data/recent_questions.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'choice_labels.dart';
 import 'glossary_card_view.dart';
+import 'package:ukalab_core/ui.dart' show bookmarkProvider, questionMemoProvider;
 
 /// 一問一答の演習（`Question` のプール）共通部分。[pool] が空なら
 /// [emptyMessage] を表示する。[StudyView]（全体プール）と、苦手問題だけの

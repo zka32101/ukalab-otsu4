@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/achievement_unlock_store.dart';
 import 'data/answered_questions_store.dart';
-import 'data/bookmark_store.dart';
-import 'data/bookmark_tag_store.dart';
 import 'data/combo_store.dart';
 import 'data/daily_answer_stats_store.dart';
 import 'data/daily_goal_history_store.dart';
@@ -18,7 +16,6 @@ import 'data/glossary_mastered_store.dart';
 import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
-import 'data/question_memo_store.dart';
 import 'data/recent_glossary_terms_store.dart';
 import 'data/reminder_settings_store.dart';
 import 'data/srs_store.dart';
@@ -56,11 +53,11 @@ void main() async {
   await mockWrongService.load();
 
   // 気になる問題のブックマーク。端末内に保存する。
-  final bookmarkService = BookmarkService();
+  final bookmarkService = BookmarkService(store: SharedPreferencesBookmarkStore('otsu4'));
   await bookmarkService.load();
 
   // ブックマークに付けるタグ。端末内に保存する。
-  final bookmarkTagService = BookmarkTagService();
+  final bookmarkTagService = BookmarkTagService(store: SharedPreferencesBookmarkTagStore('otsu4'));
   await bookmarkTagService.load();
 
   // デイリーミッション（今日の目標問題数）。端末内に保存する。
@@ -84,7 +81,7 @@ void main() async {
   await themeService.load();
 
   // 問題ごとの自分用メモ。端末内に保存する。
-  final questionMemoService = QuestionMemoService();
+  final questionMemoService = QuestionMemoService(store: SharedPreferencesQuestionMemoStore('otsu4'));
   await questionMemoService.load();
 
   // 試験日（本番の日付）。端末内に保存する。

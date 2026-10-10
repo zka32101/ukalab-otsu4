@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
 import '../data/answered_questions_store.dart';
-import '../data/bookmark_store.dart';
 import '../data/daily_goal_store.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_wrong_store.dart';
-import '../data/question_memo_store.dart';
 import '../data/question_repository.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
@@ -25,6 +23,7 @@ import 'study_tools_view.dart';
 import 'temperature_lab_view.dart';
 import 'violation_hunt_view.dart';
 import 'weak_review_view.dart';
+import 'package:ukalab_core/ui.dart' show bookmarkProvider, questionMemoProvider;
 
 /// 一問一答の演習（問題データが無ければ空状態）と、体験型の演習（画期的な
 /// 機能A〜E）への入り口。体験型の演習は一問一答の問題データの有無に

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
-import '../data/question_memo_store.dart';
 import '../data/question_repository.dart';
 import 'question_search_view.dart';
+import 'package:ukalab_core/ui.dart' show questionMemoProvider;
 
 /// 解説に書き残した自分用メモ（`lib/data/question_memo_store.dart`）を
 /// まとめて見返せる一覧。メモ本文・問題文でキーワード絞り込みができる。
