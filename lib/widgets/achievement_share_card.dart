@@ -36,7 +36,7 @@ class AchievementShareCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('うかラボ 危険物取扱者乙種第4類', style: theme.textTheme.labelMedium, textAlign: TextAlign.center),
+                Text('うかラボ 危険物取扱者乙種', style: theme.textTheme.labelMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 Icon(achievement.icon, size: 96, color: scheme.primary),
                 const SizedBox(height: 16),

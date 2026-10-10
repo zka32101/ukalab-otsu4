@@ -1,6 +1,6 @@
 {
   "examId": "hazmat4",
-  "name": "危険物取扱者乙種第4類",
+  "name": "危険物取扱者",
   "audience": "adult",
   "subjects": [
     { "subjectId": "law", "name": "危険物に関する法令", "order": 1 },
