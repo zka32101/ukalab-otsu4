@@ -1,13 +1,20 @@
 import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yourwish_kentei/yourwish_kentei.dart';
 
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/subject_stats_store.dart';
 import 'focus_training_view.dart';
 import 'record_view.dart'
-    show MockHistoryRow, MockScoreTrendChart, PassPredictionRow, SubjectStatRow, orderedSubjectsWithId;
+    show
+        MockHistoryRow,
+        MockScoreTrendChart,
+        PassPredictionRow,
+        SubjectStatRow,
+        SubjectTrendRow,
+        orderedSubjectsWithId;
 
 /// 模試結果の推移をまとめて見る成績レポート。記録タブでは直近5回までしか
 /// 表示しない模試結果を、受験回数・合格回数・平均/自己最高得点率とともに
@@ -126,6 +133,10 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
               ),
             ),
           ],
+          if (mockHistory.length > 1 && subjects.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _SubjectMockTrendCompareCard(mockHistory: mockHistory, subjects: subjects),
+          ],
           if (subjectStats.isNotEmpty) ...[
             const SizedBox(height: 12),
             Card(
@@ -170,6 +181,45 @@ class _MockReportViewState extends ConsumerState<MockReportView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 分野別の模試得点率の推移を、チップでの切り替えなしに一度にまとめて
+/// 比較できるカード。各分野ごとに、その分野のデータがある模試回だけを
+/// 対象にした折れ線（`mockSubjectTrendSeries`）を並べる。データが2回未満の
+/// 分野は、推移が描けないため表示しない。
+class _SubjectMockTrendCompareCard extends StatelessWidget {
+  const _SubjectMockTrendCompareCard({required this.mockHistory, required this.subjects});
+
+  final List<MockHistoryEntry> mockHistory;
+  final List<SubjectConfig> subjects;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rows = [
+      for (final s in subjects) (s.name, mockSubjectTrendSeries(mockHistory, s.subjectId)),
+    ].where((r) => r.$2.length > 1).toList();
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('分野別の模試得点率の推移（まとめて比較）', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Text(
+              '科目を切り替えずに、分野ごとの推移を並べて確認できます',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            for (final r in rows) SubjectTrendRow(label: r.$1, series: r.$2),
+          ],
+        ),
       ),
     );
   }
