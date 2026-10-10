@@ -10,6 +10,7 @@ class QuestionRepository {
   static const assetPaths = <String>[
     'assets/questions/law.jsonl',
     'assets/questions/property_extinguish.jsonl',
+    'assets/questions/property_extinguish_1.jsonl',
     'assets/questions/physics_chem.jsonl',
   ];
 

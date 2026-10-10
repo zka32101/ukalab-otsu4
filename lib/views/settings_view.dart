@@ -17,6 +17,7 @@ import '../data/progress_store.dart';
 import '../data/question_repository.dart';
 import '../data/exam_repository.dart';
 import '../data/reminder_settings_store.dart';
+import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
 import '../data/theme_store.dart';
@@ -52,6 +53,8 @@ class SettingsView extends ConsumerWidget {
       unlockedAt: ref.watch(achievementUnlockProvider),
       now: DateTime.now(),
     );
+    final exam = ref.watch(examConfigProvider).valueOrNull;
+    final selectedLevelId = ref.watch(selectedLevelIdProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -62,6 +65,29 @@ class SettingsView extends ConsumerWidget {
         PurchaseSection(titleStyle: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 24),
         const _WeakAreaReminderCard(),
+        if (exam != null && exam.levels.length > 1) ...[
+          Text('学習する類', style: theme.textTheme.titleSmall),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 8, 0, 12),
+            child: Text(
+              '学ぶタブの一問一答・模擬試験で出題する類を選べます（検証中の機能です）。',
+              style: TextStyle(fontSize: 12, height: 1.6),
+            ),
+          ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final level in exam.levels)
+                ChoiceChip(
+                  label: Text(level.name),
+                  selected: currentLevel(exam, selectedLevelId).levelId == level.levelId,
+                  onSelected: (_) => ref.read(selectedLevelIdProvider.notifier).select(level.levelId),
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
         Text('テーマ', style: theme.textTheme.titleSmall),
         const Padding(
           padding: EdgeInsets.fromLTRB(0, 8, 0, 12),

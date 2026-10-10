@@ -10,6 +10,7 @@ import '../data/exam_repository.dart';
 import '../data/glossary.dart';
 import '../data/mock_history_store.dart';
 import '../data/reminder_settings_store.dart';
+import '../data/selected_level_store.dart';
 import '../widgets/oshi_card.dart';
 import 'glossary_card_view.dart';
 
@@ -68,7 +69,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     if (exam == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    final level = exam.levels.first;
+    final level = currentLevel(exam, ref.watch(selectedLevelIdProvider));
     final theme = Theme.of(context);
     final dailyGoal = ref.watch(dailyGoalProvider);
     final reminderSettings = ref.watch(reminderSettingsProvider);
@@ -114,7 +115,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     const SizedBox(height: 8),
                     Text(
                       passPredictionShortLabel(
-                        predictPassTrend(mockHistory, passPct: exam.levels.first.passRule.totalPct),
+                        predictPassTrend(mockHistory, passPct: level.passRule.totalPct),
                       ),
                       style: theme.textTheme.bodySmall,
                     ),
