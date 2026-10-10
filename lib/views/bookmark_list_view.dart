@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
 import '../data/bookmark_store.dart';
+import '../data/bookmark_tag_store.dart';
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
+import 'bookmark_tag_edit_view.dart';
 import 'practice_session_view.dart';
 
 /// ブックマークした問題（`lib/data/bookmark_store.dart`）だけをまとめて
 /// 演習できる画面。`StudyView` の一問一答でブックマークした問題がここに並ぶ。
-/// 複数の分野にまたがる場合は、分野別に絞り込める。
+/// 複数の分野にまたがる場合は分野別に、タグを付けた場合はタグでも絞り込める
+/// （`lib/data/bookmark_tag_store.dart`。タグはAppBarの「タグを編集」から
+/// つけられる）。
 class BookmarkListView extends ConsumerStatefulWidget {
   const BookmarkListView({super.key});
 
@@ -23,6 +27,7 @@ class _BookmarkListViewState extends ConsumerState<BookmarkListView> {
   List<Question>? _questions;
   ExamConfig? _exam;
   String? _subjectFilter;
+  String? _tagFilter;
 
   @override
   void initState() {
@@ -62,10 +67,28 @@ class _BookmarkListViewState extends ConsumerState<BookmarkListView> {
 
     final subjects = _availableSubjects(exam, qs);
     final filter = _subjectFilter;
-    final filteredQs = filterBySubject(qs, filter);
+    final subjectFilteredQs = filterBySubject(qs, filter);
+
+    final tags = ref.watch(bookmarkTagProvider);
+    final availableTags = allBookmarkTags(tags, qs.map((q) => q.qid));
+    final tagFilter = _tagFilter;
+    final filteredQs = tagFilter == null
+        ? subjectFilteredQs
+        : [for (final q in subjectFilteredQs) if ((tags[q.qid] ?? const {}).contains(tagFilter)) q];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ブックマーク')),
+      appBar: AppBar(
+        title: const Text('ブックマーク'),
+        actions: [
+          if (qs.isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => BookmarkTagEditView(questions: qs)),
+              ),
+              child: const Text('タグを編集'),
+            ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -91,13 +114,33 @@ class _BookmarkListViewState extends ConsumerState<BookmarkListView> {
               ),
               const SizedBox(height: 12),
             ],
+            if (availableTags.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  ChoiceChip(
+                    label: const Text('タグ: すべて'),
+                    selected: tagFilter == null,
+                    onSelected: (_) => setState(() => _tagFilter = null),
+                  ),
+                  for (final t in availableTags)
+                    ChoiceChip(
+                      label: Text(t),
+                      selected: tagFilter == t,
+                      onSelected: (_) => setState(() => _tagFilter = t),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
             Expanded(
               child: PracticeSessionView(
-                key: ValueKey(filter),
+                key: ValueKey((filter, tagFilter)),
                 pool: filteredQs,
                 emptyMessage: qs.isEmpty
                     ? 'ブックマークはまだありません。一問一答で問題カードのしおりアイコンから登録できます。'
-                    : 'この分野のブックマークはまだありません。',
+                    : '条件に合うブックマークはまだありません。',
               ),
             ),
           ],

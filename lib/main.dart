@@ -7,6 +7,7 @@ import 'app.dart';
 import 'data/achievement_unlock_store.dart';
 import 'data/answered_questions_store.dart';
 import 'data/bookmark_store.dart';
+import 'data/bookmark_tag_store.dart';
 import 'data/combo_store.dart';
 import 'data/daily_answer_stats_store.dart';
 import 'data/daily_goal_history_store.dart';
@@ -57,6 +58,10 @@ void main() async {
   // 気になる問題のブックマーク。端末内に保存する。
   final bookmarkService = BookmarkService();
   await bookmarkService.load();
+
+  // ブックマークに付けるタグ。端末内に保存する。
+  final bookmarkTagService = BookmarkTagService();
+  await bookmarkTagService.load();
 
   // デイリーミッション（今日の目標問題数）。端末内に保存する。
   final dailyGoalService = DailyGoalService();
@@ -152,6 +157,7 @@ void main() async {
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
         mockWrongServiceProvider.overrideWithValue(mockWrongService),
         bookmarkServiceProvider.overrideWithValue(bookmarkService),
+        bookmarkTagServiceProvider.overrideWithValue(bookmarkTagService),
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
         dailyGoalHistoryServiceProvider.overrideWithValue(dailyGoalHistoryService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
