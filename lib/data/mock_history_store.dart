@@ -199,6 +199,13 @@ PassPrediction? predictSubjectPassTrend(
   return PassPrediction.needsWork;
 }
 
+/// [subjectId] のデータがある回だけを対象にした、古い順の得点率（0.0〜1.0）。
+/// 「分野別の模試得点率の推移」のまとめ比較表示で使う。
+List<double> mockSubjectTrendSeries(List<MockHistoryEntry> history, String subjectId) => [
+      for (final e in history)
+        if (e.subjectPct(subjectId) != null) e.subjectPct(subjectId)! / 100,
+    ];
+
 /// 前回の模試からの経過日数が [days] 以上であれば、受験間隔のリマインダーを
 /// 表示するべきかどうか。模試をまだ受けていなければ表示しない（未経験者を
 /// 急かさない）。[history] は古い順（最後の要素が直近）。

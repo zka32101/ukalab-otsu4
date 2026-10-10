@@ -85,6 +85,32 @@ void main() {
       expect(restored.score, 24);
     });
   });
+
+  group('mockSubjectTrendSeries', () {
+    MockHistoryEntry entry({required int score, required int max, Map<String, int>? subjectScore, Map<String, int>? subjectMax}) =>
+        MockHistoryEntry(
+          at: DateTime(2026, 10, 5),
+          score: score,
+          max: max,
+          passed: score * 100 / max >= 60,
+          subjectScore: subjectScore,
+          subjectMax: subjectMax,
+        );
+
+    test('指定した科目のデータがある回だけを古い順の得点率（0.0〜1.0）で返す', () {
+      final history = [
+        entry(score: 20, max: 35, subjectScore: {'law': 12}, subjectMax: {'law': 15}), // 80%
+        entry(score: 10, max: 35), // 科目データ無し（無視される）
+        entry(score: 25, max: 35, subjectScore: {'law': 9}, subjectMax: {'law': 15}), // 60%
+      ];
+      expect(mockSubjectTrendSeries(history, 'law'), [0.8, 0.6]);
+    });
+
+    test('対象科目のデータが1件も無ければ空を返す', () {
+      final history = [entry(score: 20, max: 35)];
+      expect(mockSubjectTrendSeries(history, 'law'), isEmpty);
+    });
+  });
 }
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。

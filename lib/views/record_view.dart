@@ -260,7 +260,7 @@ class RecordView extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   for (final s in _orderedSubjectIdsAndNames(exam, subjectStats))
-                    _SubjectTrendRow(
+                    SubjectTrendRow(
                       label: s.$2,
                       series: [
                         for (final e in subjectStatsHistory) e.accuracyBySubject[s.$1] ?? 0,
@@ -572,8 +572,9 @@ List<(String, String)> _orderedSubjectIdsAndNames(ExamConfig? exam, Map<String, 
 }
 
 /// 分野別正答率の推移1行。分野名・最新の正答率・折れ線の推移を表示する。
-class _SubjectTrendRow extends StatelessWidget {
-  const _SubjectTrendRow({required this.label, required this.series});
+/// 成績レポート（`lib/views/mock_report_view.dart`）の分野別比較でも使う。
+class SubjectTrendRow extends StatelessWidget {
+  const SubjectTrendRow({required this.label, required this.series});
 
   final String label;
   final List<double> series;
