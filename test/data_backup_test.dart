@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:otsu4/data/data_parts.dart';
 import 'package:otsu4/data/progress_store.dart';
+import 'package:ukalab_core/ui.dart' show encodeLearningDataBackup, resetLearningData, restoreLearningDataBackup;
 
 void main() {
   group('upgradeLegacyBackupText', () {
@@ -75,11 +76,15 @@ void main() {
       await ref.read(progressProvider.notifier).restore(
             ProgressSnapshot(answered: 10, correct: 7, streakDays: 3, lastStudyDate: DateTime(2026, 10, 6)),
           );
-      final text = exportLearningDataJson(ref);
-      await ref.read(progressProvider.notifier).reset();
+      // 全部品を読むには各サービスの override が要るため、進捗の部品だけで往復を確かめる。
+      final parts = [otsu4DataParts.firstWhere((p) => p.id == 'progress')];
+      final text = encodeLearningDataBackup(ref, parts);
+      await resetLearningData(ref, parts);
       expect(ref.read(progressProvider).answered, 0);
 
-      await importLearningDataJson(ref, text);
+      // 旧形式（項目がトップレベル）に直した文字列でも読み込める。
+      final legacy = jsonEncode({'version': 1, ...((jsonDecode(text) as Map<String, dynamic>)['parts'] as Map<String, dynamic>)});
+      await restoreLearningDataBackup(ref, parts, upgradeLegacyBackupText(legacy));
       expect(ref.read(progressProvider).answered, 10);
       expect(ref.read(progressProvider).correct, 7);
     });
