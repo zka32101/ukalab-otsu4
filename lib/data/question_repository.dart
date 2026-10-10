@@ -11,6 +11,10 @@ class QuestionRepository {
     'assets/questions/law.jsonl',
     'assets/questions/property_extinguish.jsonl',
     'assets/questions/property_extinguish_1.jsonl',
+    'assets/questions/property_extinguish_2.jsonl',
+    'assets/questions/property_extinguish_3.jsonl',
+    'assets/questions/property_extinguish_5.jsonl',
+    'assets/questions/property_extinguish_6.jsonl',
     'assets/questions/physics_chem.jsonl',
   ];
 

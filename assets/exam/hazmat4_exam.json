@@ -6,7 +6,11 @@
     { "subjectId": "law", "name": "危険物に関する法令", "order": 1 },
     { "subjectId": "physics_chem", "name": "基礎的な物理学及び基礎的な化学", "order": 2 },
     { "subjectId": "property_extinguish", "name": "危険物の性質並びにその火災予防及び消火の方法（第4類）", "order": 3 },
-    { "subjectId": "property_extinguish_1", "name": "危険物の性質並びにその火災予防及び消火の方法（第1類）", "order": 4 }
+    { "subjectId": "property_extinguish_1", "name": "危険物の性質並びにその火災予防及び消火の方法（第1類）", "order": 4 },
+    { "subjectId": "property_extinguish_2", "name": "危険物の性質並びにその火災予防及び消火の方法（第2類）", "order": 5 },
+    { "subjectId": "property_extinguish_3", "name": "危険物の性質並びにその火災予防及び消火の方法（第3類）", "order": 6 },
+    { "subjectId": "property_extinguish_5", "name": "危険物の性質並びにその火災予防及び消火の方法（第5類）", "order": 7 },
+    { "subjectId": "property_extinguish_6", "name": "危険物の性質並びにその火災予防及び消火の方法（第6類）", "order": 8 }
   ],
   "levels": [
     {
@@ -24,6 +28,38 @@
       "timeLimitSec": 7200,
       "passRule": { "totalPct": 60, "subjectMinPct": 60 },
       "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_1": 10 }
+    },
+    {
+      "levelId": "otsu2",
+      "name": "乙種第2類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_2": 10 }
+    },
+    {
+      "levelId": "otsu3",
+      "name": "乙種第3類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_3": 10 }
+    },
+    {
+      "levelId": "otsu5",
+      "name": "乙種第5類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_5": 10 }
+    },
+    {
+      "levelId": "otsu6",
+      "name": "乙種第6類",
+      "questionCount": 35,
+      "timeLimitSec": 7200,
+      "passRule": { "totalPct": 60, "subjectMinPct": 60 },
+      "subjectQuestionCounts": { "law": 15, "physics_chem": 10, "property_extinguish_6": 10 }
     }
   ],
   "examDates": []
