@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
-import '../data/bookmark_store.dart';
-import '../data/bookmark_tag_store.dart';
 import '../data/exam_repository.dart';
 import '../data/question_repository.dart';
-import 'bookmark_tag_edit_view.dart';
 import 'practice_session_view.dart';
+import 'package:ukalab_core/ui.dart' show BookmarkTagEditScreen, bookmarkProvider, bookmarkTagProvider;
 
 /// ブックマークした問題（`lib/data/bookmark_store.dart`）だけをまとめて
 /// 演習できる画面。`StudyView` の一問一答でブックマークした問題がここに並ぶ。
@@ -83,7 +81,7 @@ class _BookmarkListViewState extends ConsumerState<BookmarkListView> {
           if (qs.isNotEmpty)
             TextButton(
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => BookmarkTagEditView(questions: qs)),
+                MaterialPageRoute(builder: (_) => BookmarkTagEditScreen(questions: qs)),
               ),
               child: const Text('タグを編集'),
             ),

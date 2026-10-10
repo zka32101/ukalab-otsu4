@@ -10,11 +10,11 @@ import 'glossary_mastered_store.dart';
 import 'mock_history_store.dart';
 import 'mock_wrong_store.dart';
 import 'progress_store.dart';
-import 'question_memo_store.dart';
 import 'recent_glossary_terms_store.dart';
 import 'srs_store.dart';
 import 'subject_stats_history_store.dart';
 import 'subject_stats_store.dart';
+import 'package:ukalab_core/ui.dart' show questionMemoProvider;
 
 /// 設定タブの「学習記録をリセット」で呼ぶ。進捗・解答履歴・模試結果・
 /// デイリーミッション・分野別統計・苦手問題の復習・自分用メモ・最近見た
