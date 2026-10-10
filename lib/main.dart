@@ -53,13 +53,8 @@ void main() async {
   final mockWrongService = MockWrongService();
   await mockWrongService.load();
 
-  // 気になる問題のブックマーク。端末内に保存する。
-  final bookmarkService = BookmarkService(store: SharedPreferencesBookmarkStore('otsu4'));
-  await bookmarkService.load();
-
-  // ブックマークに付けるタグ。端末内に保存する。
-  final bookmarkTagService = BookmarkTagService(store: SharedPreferencesBookmarkTagStore('otsu4'));
-  await bookmarkTagService.load();
+  // 気になる問題のブックマーク・タグ・問題ごとの自分用メモ。端末内に保存する。
+  final studyNotes = await studyNotesOverrides('otsu4');
 
   // デイリーミッション（今日の目標問題数）。端末内に保存する。
   final dailyGoalService = DailyGoalService();
@@ -80,10 +75,6 @@ void main() async {
   // テーマ設定（ライト／ダーク／端末に合わせる）。端末内に保存する。
   final themeService = ThemeService();
   await themeService.load();
-
-  // 問題ごとの自分用メモ。端末内に保存する。
-  final questionMemoService = QuestionMemoService(store: SharedPreferencesQuestionMemoStore('otsu4'));
-  await questionMemoService.load();
 
   // 試験日（本番の日付）。端末内に保存する。
   final examDateService = ExamDateService();
@@ -158,14 +149,12 @@ void main() async {
         srsServiceProvider.overrideWithValue(srsService),
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
         mockWrongServiceProvider.overrideWithValue(mockWrongService),
-        bookmarkServiceProvider.overrideWithValue(bookmarkService),
-        bookmarkTagServiceProvider.overrideWithValue(bookmarkTagService),
+        ...studyNotes,
         dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
         dailyGoalHistoryServiceProvider.overrideWithValue(dailyGoalHistoryService),
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
         subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),
-        questionMemoServiceProvider.overrideWithValue(questionMemoService),
         examDateServiceProvider.overrideWithValue(examDateService),
         selectedLevelServiceProvider.overrideWithValue(selectedLevelService),
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
