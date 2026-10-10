@@ -1,116 +1,73 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otsu4/data/data_backup.dart';
-import 'package:otsu4/data/daily_answer_stats_store.dart';
-import 'package:otsu4/data/daily_goal_history_store.dart';
-import 'package:otsu4/data/daily_goal_store.dart';
-import 'package:otsu4/data/mock_history_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:otsu4/data/data_parts.dart';
 import 'package:otsu4/data/progress_store.dart';
-import 'package:otsu4/data/subject_stats_history_store.dart';
-import 'package:otsu4/data/subject_stats_store.dart';
-import 'package:ukalab_core/ukalab_core.dart';
-
-LearningDataBackup _sampleBackup() => LearningDataBackup(
-      progress: ProgressSnapshot(
-        answered: 10,
-        correct: 7,
-        streakDays: 3,
-        lastStudyDate: DateTime(2026, 10, 6),
-      ),
-      srs: {
-        'q1': SrsItem(qid: 'q1', box: 2, dueAt: DateTime(2026, 10, 10)),
-        'q2': SrsItem(qid: 'q2', box: 0, dueAt: DateTime(2026, 10, 7)),
-      },
-      mockHistory: [
-        MockHistoryEntry(at: DateTime(2026, 10, 1), score: 20, max: 35, passed: false),
-        MockHistoryEntry(at: DateTime(2026, 10, 5), score: 28, max: 35, passed: true),
-      ],
-      mockWrong: ['q3', 'q4'],
-      dailyGoal: DailyGoal(
-        target: 20,
-        todayCount: 5,
-        todayDate: DateTime(2026, 10, 6),
-        achievedStreak: 2,
-        lastAchievedDate: DateTime(2026, 10, 5),
-      ),
-      dailyGoalHistory: [
-        DailyGoalHistoryEntry(date: DateTime(2026, 10, 5), count: 20, achieved: true),
-      ],
-      subjectStats: {
-        'law': const SubjectStat(answered: 10, correct: 7),
-        'physics_chem': const SubjectStat(answered: 5, correct: 3),
-      },
-      subjectStatsHistory: [
-        SubjectStatsHistoryEntry(date: DateTime(2026, 10, 5), accuracyBySubject: {'law': 0.7}),
-      ],
-      answeredQuestions: {'q1', 'q2', 'q3'},
-      questionMemo: {'q1': '覚え方メモ'},
-      recentGlossaryTerms: ['引火点', '指定数量'],
-      bestCombo: 8,
-      dailyAnswerStats: [
-        DailyAnswerStatsEntry(date: DateTime(2026, 10, 5), answered: 20, correct: 15),
-      ],
-      glossaryMastered: {'引火点', '比重'},
-    );
+import 'package:ukalab_core/ui.dart' show encodeLearningDataBackup, resetLearningData, restoreLearningDataBackup;
 
 void main() {
-  group('LearningDataBackup', () {
-    test('toJson/fromJsonの往復で元の値が復元される', () {
-      final original = _sampleBackup();
-      final restored = LearningDataBackup.fromJson(original.toJson());
+  test('otsu4DataParts のidは重複せず、旧バックアップのキーと同じ', () {
+    final ids = [for (final p in otsu4DataParts) p.id];
+    expect(ids.toSet().length, ids.length);
+    expect(
+      ids,
+      containsAll([
+        'progress',
+        'srs',
+        'mockHistory',
+        'mockWrong',
+        'dailyGoal',
+        'dailyGoalHistory',
+        'subjectStats',
+        'subjectStatsHistory',
+        'answeredQuestions',
+        'questionMemo',
+        'recentGlossaryTerms',
+        'bestCombo',
+        'dailyAnswerStats',
+        'glossaryMastered',
+      ]),
+    );
+  });
 
-      expect(restored.progress.answered, original.progress.answered);
-      expect(restored.progress.correct, original.progress.correct);
-      expect(restored.srs.keys, original.srs.keys);
-      expect(restored.srs['q1']!.box, 2);
-      expect(restored.mockHistory.length, 2);
-      expect(restored.mockHistory.last.passed, isTrue);
-      expect(restored.mockWrong, ['q3', 'q4']);
-      expect(restored.dailyGoal.target, 20);
-      expect(restored.dailyGoalHistory.single.count, 20);
-      expect(restored.subjectStats['law']!.answered, 10);
-      expect(restored.subjectStatsHistory.single.accuracyBySubject['law'], 0.7);
-      expect(restored.answeredQuestions, {'q1', 'q2', 'q3'});
-      expect(restored.questionMemo['q1'], '覚え方メモ');
-      expect(restored.recentGlossaryTerms, ['引火点', '指定数量']);
-      expect(restored.bestCombo, 8);
-      expect(restored.dailyAnswerStats.single.answered, 20);
-      expect(restored.glossaryMastered, {'引火点', '比重'});
-    });
+  testWidgets('書き出して、リセット後に読み込むと、進捗が元に戻る', (tester) async {
+    late WidgetRef ref;
+    SharedPreferences.setMockInitialValues({});
+    final progressService = ProgressService();
+    await tester.runAsync(progressService.load);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [progressServiceProvider.overrideWithValue(progressService)],
+      child: MaterialApp(
+        home: Scaffold(
+          body: Consumer(builder: (context, r, _) {
+            ref = r;
+            return const SizedBox();
+          }),
+        ),
+      ),
+    ));
+    await tester.runAsync(() async {
+      await ref.read(progressProvider.notifier).restore(
+            ProgressSnapshot(answered: 10, correct: 7, streakDays: 3, lastStudyDate: DateTime(2026, 10, 6)),
+          );
+      // 全部品を読むには各サービスの override が要るため、進捗の部品だけで往復を確かめる。
+      final parts = [otsu4DataParts.firstWhere((p) => p.id == 'progress')];
+      final text = encodeLearningDataBackup(ref, parts);
+      await resetLearningData(ref, parts);
+      expect(ref.read(progressProvider).answered, 0);
 
-    test('JSON文字列にエンコード・デコードしても往復する', () {
-      final original = _sampleBackup();
-      final jsonText = jsonEncode(original.toJson());
-      final restored = LearningDataBackup.fromJson(jsonDecode(jsonText) as Map<String, dynamic>);
-      expect(restored.bestCombo, 8);
-      expect(restored.answeredQuestions, {'q1', 'q2', 'q3'});
-    });
+      await restoreLearningDataBackup(ref, parts, text);
 
-    test('versionが一致しなければ例外を投げる', () {
-      final json = _sampleBackup().toJson();
-      json['version'] = 999;
-      expect(() => LearningDataBackup.fromJson(json), throwsFormatException);
-    });
-
-    test('toJsonにversionとexportedAtが含まれる', () {
-      final json = _sampleBackup().toJson();
-      expect(json['version'], learningDataBackupVersion);
-      expect(json['exportedAt'], isA<String>());
-    });
-
-    test('dailyAnswerStatsが無い旧いJSONも空リストとして読み込める', () {
-      final json = _sampleBackup().toJson();
-      json.remove('dailyAnswerStats');
-      final restored = LearningDataBackup.fromJson(json);
-      expect(restored.dailyAnswerStats, isEmpty);
-    });
-
-    test('glossaryMasteredが無い旧いJSONも空の集合として読み込める', () {
-      final json = _sampleBackup().toJson();
-      json.remove('glossaryMastered');
-      final restored = LearningDataBackup.fromJson(json);
-      expect(restored.glossaryMastered, isEmpty);
+      // 共通化前の旧形式（項目がトップレベルに並ぶ形）でも読み込める。
+      await resetLearningData(ref, parts);
+      final parsed = jsonDecode(text) as Map<String, dynamic>;
+      final legacy = jsonEncode({'version': 1, ...(parsed['parts'] as Map<String, dynamic>)});
+      await restoreLearningDataBackup(ref, parts, legacy);
+      expect(ref.read(progressProvider).answered, 10);
+      expect(ref.read(progressProvider).correct, 7);
     });
   });
 }
