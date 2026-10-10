@@ -19,7 +19,7 @@ dependencies:
   app_common_kit:
     git:
       url: https://github.com/zka32101/app_common_kit.git
-      ref: v1.9.0
+      ref: v1.10.0
   ukalab_core:
     git:
       url: https://github.com/zka32101/ukalab_core.git
