@@ -8,7 +8,7 @@ import '../data/glossary_favorite_store.dart';
 import '../data/question_repository.dart';
 import 'choice_labels.dart';
 import 'glossary_card_view.dart';
-import 'package:ukalab_core/ui.dart' show bookmarkProvider;
+import 'package:ukalab_core/ui.dart' show QuestionDetailScreen, bookmarkProvider;
 
 /// 重要語句で、用語集・問題を横断的に検索できる画面。学ぶタブの入り口から
 /// いつでも開ける（問題データの有無にかかわらず用語集の検索はできる）。
@@ -137,8 +137,8 @@ class _QuestionSearchViewState extends ConsumerState<QuestionSearchView> {
   }
 }
 
-/// 検索結果・メモ一覧から開く、1問だけの読み取り専用の詳細表示。正解を
-/// 直接表示する（一問一答のように選んで答える演習ではない）。
+/// 検索結果・メモ一覧から開く、1問だけの読み取り専用の詳細表示。画面本体は
+/// ukalab_core の [QuestionDetailScreen]。解説の用語はタップして用語集を開ける。
 class QuestionDetailView extends StatelessWidget {
   const QuestionDetailView({super.key, required this.question});
 
@@ -146,41 +146,20 @@ class QuestionDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final q = question;
-    final terms = termReferencesIn(q.explanation);
-    return Scaffold(
-      appBar: AppBar(title: const Text('問題の詳細')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          QuestionCard(text: q.prompt, index: 1, total: 1),
-          const SizedBox(height: 12),
-          for (var i = 0; i < q.choices.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: ChoiceTile(
-                label: choiceLabels[i],
-                text: q.choices[i],
-                state: i == q.answerIndex ? ChoiceState.correct : ChoiceState.idle,
-                onTap: null,
-              ),
-            ),
-          const SizedBox(height: 8),
-          ExplanationPanel(
-            body: q.explanation,
-            sourceRef: q.sourceRef,
-            bodyWidget: terms.isEmpty
-                ? null
-                : TappableTermText(
-                    text: q.explanation,
-                    terms: terms,
-                    onTermTap: (termId) => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => GlossaryCardView(initialTerm: termId)),
-                    ),
-                  ),
+    return QuestionDetailScreen(
+      question: question,
+      choiceLabels: choiceLabels,
+      explanationBuilder: (context, q) {
+        final terms = termReferencesIn(q.explanation);
+        if (terms.isEmpty) return null;
+        return TappableTermText(
+          text: q.explanation,
+          terms: terms,
+          onTermTap: (termId) => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => GlossaryCardView(initialTerm: termId)),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
