@@ -8,8 +8,7 @@ import 'data/achievement_unlock_store.dart';
 import 'data/answered_questions_store.dart';
 import 'data/combo_store.dart';
 import 'data/daily_answer_stats_store.dart';
-import 'data/daily_goal_history_store.dart';
-import 'data/daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 import 'data/exam_date_store.dart';
 import 'data/glossary_favorite_store.dart';
 import 'data/glossary_mastered_store.dart';
@@ -56,13 +55,8 @@ void main() async {
   // 気になる問題のブックマーク・タグ・問題ごとの自分用メモ。端末内に保存する。
   final studyNotes = await studyNotesOverrides('otsu4');
 
-  // デイリーミッション（今日の目標問題数）。端末内に保存する。
-  final dailyGoalService = DailyGoalService();
-  await dailyGoalService.load();
-
-  // デイリーミッションの達成履歴（日次スナップショット）。端末内に保存する。
-  final dailyGoalHistoryService = DailyGoalHistoryService();
-  await dailyGoalHistoryService.load();
+  // デイリーミッション（今日の目標問題数）と、その達成履歴（日次スナップショット）。端末内に保存する。
+  final dailyGoalOverridesList = await dailyGoalOverrides('otsu4');
 
   // 分野別の解答数・正解数。端末内に保存する。
   final subjectStatsService = SubjectStatsService();
@@ -150,8 +144,7 @@ void main() async {
         mockHistoryServiceProvider.overrideWithValue(mockHistoryService),
         mockWrongServiceProvider.overrideWithValue(mockWrongService),
         ...studyNotes,
-        dailyGoalServiceProvider.overrideWithValue(dailyGoalService),
-        dailyGoalHistoryServiceProvider.overrideWithValue(dailyGoalHistoryService),
+        ...dailyGoalOverridesList,
         subjectStatsServiceProvider.overrideWithValue(subjectStatsService),
         subjectStatsHistoryServiceProvider.overrideWithValue(subjectStatsHistoryService),
         themeServiceProvider.overrideWithValue(themeService),

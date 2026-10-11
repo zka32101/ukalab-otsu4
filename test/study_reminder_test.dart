@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otsu4/data/daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 import 'package:otsu4/views/home_view.dart';
 
 void main() {

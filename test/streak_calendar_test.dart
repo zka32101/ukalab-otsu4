@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otsu4/data/daily_goal_history_store.dart';
-import 'package:otsu4/data/streak_calendar.dart';
+import 'package:ukalab_core/daily_goal.dart';
 
 void main() {
   group('streakCalendarDays', () {

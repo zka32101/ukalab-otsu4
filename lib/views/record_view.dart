@@ -5,8 +5,7 @@ import 'package:ukalab_core/ukalab_core.dart';
 
 import '../data/achievements.dart';
 import '../data/combo_store.dart';
-import '../data/daily_goal_history_store.dart';
-import '../data/daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 import '../data/exam_repository.dart';
 import '../data/mock_history_store.dart';
 import '../data/progress_store.dart';

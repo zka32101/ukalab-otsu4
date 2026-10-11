@@ -8,7 +8,7 @@ import '../data/achievement_unlock_store.dart';
 import '../data/achievements_provider.dart';
 import '../data/answered_questions_store.dart';
 import '../data/daily_answer_stats_store.dart';
-import '../data/daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 import '../data/data_parts.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';

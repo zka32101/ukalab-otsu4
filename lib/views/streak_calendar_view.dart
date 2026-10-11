@@ -2,8 +2,7 @@ import 'package:app_common_kit/app_common_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/daily_goal_history_store.dart';
-import '../data/streak_calendar.dart';
+import 'package:ukalab_core/daily_goal.dart';
 
 /// 連続学習日数のカレンダー表示。月単位でページ送りして、目標を達成した日・
 /// 解答はしたが未達成の日・記録が無い日を色分けして見える化する
