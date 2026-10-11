@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otsu4/data/daily_goal_history_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 
 void main() {
   group('DailyGoalHistoryService.recordSnapshot', () {
@@ -63,6 +63,9 @@ void main() {
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。
 class _FakeStore implements DailyGoalHistoryStore {
+  @override
+  String get appId => 'test';
+
   List<DailyGoalHistoryEntry> _saved = [];
 
   @override

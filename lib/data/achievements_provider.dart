@@ -3,7 +3,7 @@ import 'package:ukalab_core/ukalab_core.dart';
 
 import 'achievements.dart';
 import 'combo_store.dart';
-import 'daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 import 'mock_history_store.dart';
 import 'progress_store.dart';
 import 'srs_store.dart';

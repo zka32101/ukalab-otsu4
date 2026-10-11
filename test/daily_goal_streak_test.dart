@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:otsu4/data/daily_goal_store.dart';
+import 'package:ukalab_core/daily_goal.dart';
 
 void main() {
   group('nextAchievedStreak', () {
@@ -113,6 +113,9 @@ void main() {
 
 /// テスト用。SharedPreferencesを使わずメモリ上に保存する。
 class _FakeStore implements DailyGoalStore {
+  @override
+  String get appId => 'test';
+
   DailyGoal _saved = const DailyGoal();
 
   @override
