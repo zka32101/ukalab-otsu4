@@ -9,12 +9,12 @@ import '../data/achievements_provider.dart';
 import '../data/answered_questions_store.dart';
 import '../data/daily_answer_stats_store.dart';
 import 'package:ukalab_core/daily_goal.dart';
+import 'package:ukalab_core/reminder.dart';
 import '../data/data_parts.dart';
 import '../data/exam_date_store.dart';
 import '../data/progress_store.dart';
 import '../data/question_repository.dart';
 import '../data/exam_repository.dart';
-import '../data/reminder_settings_store.dart';
 import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_store.dart';
@@ -44,7 +44,6 @@ class SettingsView extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final examDate = ref.watch(examDateProvider);
     final progress = ref.watch(progressProvider);
-    final reminderSettings = ref.watch(reminderSettingsProvider);
     final todayHighlight = buildTodayHighlight(
       dailyAnswerStats: ref.watch(dailyAnswerStatsProvider),
       achievements: ref.watch(achievementsProvider),
@@ -214,42 +213,7 @@ class SettingsView extends ConsumerWidget {
           const _StudyPlanCard(),
         ],
         const SizedBox(height: 24),
-        Text('リマインダー', style: theme.textTheme.titleSmall),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(0, 8, 0, 4),
-          child: Text(
-            'ホームに表示するアプリ内リマインダーを個別にオフにできます。',
-            style: TextStyle(fontSize: 12, height: 1.6),
-          ),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('学習リマインダー'),
-          subtitle: Text('${reminderSettings.studyReminderHour}時以降に今日の目標が未達成なら知らせます'),
-          value: reminderSettings.studyReminderEnabled,
-          onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setStudyReminderEnabled(v),
-        ),
-        if (reminderSettings.studyReminderEnabled)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('学習リマインダーの時刻'),
-            trailing: DropdownButton<int>(
-              value: reminderSettings.studyReminderHour,
-              items: [
-                for (var h = 0; h < 24; h++) DropdownMenuItem(value: h, child: Text('$h時')),
-              ],
-              onChanged: (h) {
-                if (h != null) ref.read(reminderSettingsProvider.notifier).setStudyReminderHour(h);
-              },
-            ),
-          ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('模試リマインダー'),
-          subtitle: const Text('前回の模擬試験から7日以上経ったら知らせます'),
-          value: reminderSettings.mockReminderEnabled,
-          onChanged: (v) => ref.read(reminderSettingsProvider.notifier).setMockReminderEnabled(v),
-        ),
+        const ReminderSettingsSection(showMockReminder: true),
         const SizedBox(height: 24),
         DataManagementSection(
           parts: otsu4DataParts,
