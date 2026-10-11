@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ukalab_core/daily_goal.dart';
-import 'package:otsu4/views/home_view.dart';
+import 'package:ukalab_core/reminder.dart';
 
 void main() {
   group('shouldShowStudyReminder', () {

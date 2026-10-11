@@ -9,6 +9,7 @@ import 'data/answered_questions_store.dart';
 import 'data/combo_store.dart';
 import 'data/daily_answer_stats_store.dart';
 import 'package:ukalab_core/daily_goal.dart';
+import 'package:ukalab_core/reminder.dart';
 import 'data/exam_date_store.dart';
 import 'data/glossary_favorite_store.dart';
 import 'data/glossary_mastered_store.dart';
@@ -16,7 +17,6 @@ import 'data/mock_history_store.dart';
 import 'data/mock_wrong_store.dart';
 import 'data/progress_store.dart';
 import 'data/recent_glossary_terms_store.dart';
-import 'data/reminder_settings_store.dart';
 import 'data/selected_level_store.dart';
 import 'data/srs_store.dart';
 import 'data/subject_stats_history_store.dart';
@@ -91,8 +91,7 @@ void main() async {
   await glossaryMasteredService.load();
 
   // アプリ内リマインダー（学習・模試）の個別オン/オフ設定。端末内に保存する。
-  final reminderSettingsService = ReminderSettingsService();
-  await reminderSettingsService.load();
+  final reminderOverridesList = await reminderOverrides('otsu4');
 
   // 最近見た用語集の用語（新しい順）。端末内に保存する。
   final recentGlossaryTermsService = RecentGlossaryTermsService();
@@ -153,7 +152,7 @@ void main() async {
         answeredQuestionsServiceProvider.overrideWithValue(answeredQuestionsService),
         glossaryFavoriteServiceProvider.overrideWithValue(glossaryFavoriteService),
         glossaryMasteredServiceProvider.overrideWithValue(glossaryMasteredService),
-        reminderSettingsServiceProvider.overrideWithValue(reminderSettingsService),
+        ...reminderOverridesList,
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
         comboServiceProvider.overrideWithValue(comboService),
         dailyAnswerStatsServiceProvider.overrideWithValue(dailyAnswerStatsService),
