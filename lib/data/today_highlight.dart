@@ -1,4 +1,5 @@
-import 'achievements.dart';
+import 'package:ukalab_core/achievements.dart';
+
 import 'daily_answer_stats_store.dart';
 
 /// 設定タブの「本日の学習ハイライト」カードに表示する内容。

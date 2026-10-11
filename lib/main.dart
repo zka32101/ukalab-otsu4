@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
-import 'data/achievement_unlock_store.dart';
+import 'package:ukalab_core/achievements.dart';
+import 'data/achievements_provider.dart';
 import 'data/answered_questions_store.dart';
 import 'data/combo_store.dart';
 import 'data/daily_answer_stats_store.dart';
@@ -106,8 +107,7 @@ void main() async {
   await dailyAnswerStatsService.load();
 
   // 実績バッジの解除通知済みID（二重通知防止）。端末内に保存する。
-  final achievementUnlockService = AchievementUnlockService();
-  await achievementUnlockService.load();
+  final achievementUnlockOverridesList = await achievementUnlockOverrides('otsu4');
 
   // 課金（RevenueCat）。実際のAPIキー取得後にRevenueCatEntitlementServiceへ差し替える。
   // 価格は競合調査を踏まえた暫定値で、運営者確認が必要（決定14）。
@@ -156,7 +156,8 @@ void main() async {
         recentGlossaryTermsServiceProvider.overrideWithValue(recentGlossaryTermsService),
         comboServiceProvider.overrideWithValue(comboService),
         dailyAnswerStatsServiceProvider.overrideWithValue(dailyAnswerStatsService),
-        achievementUnlockServiceProvider.overrideWithValue(achievementUnlockService),
+        ...achievementUnlockOverridesList,
+        achievementsOverride,
       ],
       child: const Otsu4App(),
     ),

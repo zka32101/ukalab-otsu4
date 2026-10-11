@@ -1,7 +1,7 @@
 import 'package:ukalab_core/ui.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
-import 'achievement_unlock_store.dart';
+import 'package:ukalab_core/achievements.dart';
 import 'answered_questions_store.dart';
 import 'combo_store.dart';
 import 'daily_answer_stats_store.dart';

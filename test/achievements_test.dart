@@ -281,35 +281,35 @@ void main() {
       );
       expect(
         achievements.firstWhere((a) => a.id == 'streak_7').category,
-        AchievementCategory.streak,
+        AchievementCategory.streak.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'achieved_streak_3').category,
-        AchievementCategory.streak,
+        AchievementCategory.streak.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'answered_50').category,
-        AchievementCategory.practice,
+        AchievementCategory.practice.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'combo_5').category,
-        AchievementCategory.practice,
+        AchievementCategory.practice.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'mastered_10').category,
-        AchievementCategory.practice,
+        AchievementCategory.practice.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'mock_pass').category,
-        AchievementCategory.mock,
+        AchievementCategory.mock.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'mock_all_subjects_80').category,
-        AchievementCategory.mock,
+        AchievementCategory.mock.name,
       );
       expect(
         achievements.firstWhere((a) => a.id == 'subject_master').category,
-        AchievementCategory.subject,
+        AchievementCategory.subject.name,
       );
     });
   });

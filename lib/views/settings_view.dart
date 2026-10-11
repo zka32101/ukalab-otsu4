@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
-import '../data/achievement_unlock_store.dart';
-import '../data/achievements_provider.dart';
+import 'package:ukalab_core/achievements.dart';
 import '../data/answered_questions_store.dart';
 import '../data/daily_answer_stats_store.dart';
 import 'package:ukalab_core/daily_goal.dart';
