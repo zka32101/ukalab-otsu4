@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/achievements.dart' as core;
 import 'package:ukalab_core/ukalab_core.dart';
 
