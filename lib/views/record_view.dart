@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ukalab_core/ukalab_core.dart';
 
+import 'package:ukalab_core/achievements.dart' as core;
 import '../data/achievements.dart';
 import '../data/combo_store.dart';
 import 'package:ukalab_core/daily_goal.dart';
@@ -13,7 +14,7 @@ import '../data/selected_level_store.dart';
 import '../data/srs_store.dart';
 import '../data/subject_stats_history_store.dart';
 import '../data/subject_stats_store.dart';
-import 'achievements_view.dart';
+import '../widgets/achievement_share_card.dart';
 import 'focus_training_view.dart';
 import 'mock_report_view.dart';
 import 'srs_calendar_view.dart';
@@ -73,7 +74,10 @@ class RecordView extends ConsumerWidget {
             subtitle: const Text('連続学習日数・解答数・模試合格等のバッジを確認できます'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AchievementsView()),
+              MaterialPageRoute(builder: (_) => core.AchievementsView(
+                  categoryLabels: achievementCategoryLabels,
+                  shareCardBuilder: (a, date) => AchievementShareCard(achievement: a, date: date),
+                )),
             ),
           ),
         ),

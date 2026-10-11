@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/achievements.dart';
+import 'package:ukalab_core/achievements.dart';
 
 /// 実績バッジの達成カード。スクリーンショットでの共有を想定した見た目
 /// （名前・メール等の個人情報は入れない）。OSの共有シート連携は
